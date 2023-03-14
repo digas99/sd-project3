@@ -1,4 +1,16 @@
 package sharedRegions;
 
-public interface ConcentrationSite {
+public class ConcentrationSite {
+
+    public ConcentrationSite() {
+
+    }
+
+    public static void prepareAssaultParty() {
+
+    }
+
+    public static void sendAssaultParty() {
+
+    }
 }

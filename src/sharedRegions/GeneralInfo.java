@@ -1,4 +1,4 @@
 package sharedRegions;
 
-public interface GeneralInfo {
+public class GeneralInfo {
 }
