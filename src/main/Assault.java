@@ -10,7 +10,6 @@ import static utils.Parameters.*;
 @Command(name = "Assault", mixinStandardHelpOptions = true, description = "Project 1 for Sistemas Distribuídos")
 public class Assault {
 
-    @Option(names = {"--masters", "-m"}, description = "Number of thieves Masters")
     private int n_thieves_master = MIN_THIEVES_MASTER;
     @Option(names = {"--ordinary", "-o"}, description = "Number of thieves Ordinary")
     private int n_thieves_ordinary = MIN_THIEVES_ORDINARY;
