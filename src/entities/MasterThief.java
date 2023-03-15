@@ -15,6 +15,12 @@ public class MasterThief extends Thief {
     public MasterThief(String threadName, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite, AssaultParty[] assaultParties)  {
         super(threadName, museum, concentrationSite, collectionSite);
         this.assaultParties = assaultParties;
+        this.setThiefState(MasterThiefStates.PLANNING_HEIST);
+    }
+
+    @Override
+    public void run() {
+        startOperations();
     }
 
     public void takeARest() {
@@ -26,11 +32,6 @@ public class MasterThief extends Thief {
     }
 
     public void startOperations() {
-
-    }
-
-    @Override
-    public void run() {
-
+        this.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
     }
 }

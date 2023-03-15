@@ -9,12 +9,12 @@ import static utils.Parameters.*;
 import static utils.Utils.random;
 
 public abstract class Thief extends Thread {
-    private final ConcentrationSite concentrationSite;
-    private final CollectionSite collectionSite;
-    private final Museum museum;
+    protected final ConcentrationSite concentrationSite;
+    protected final CollectionSite collectionSite;
+    protected final Museum museum;
 
-    private int thiefState;
-    private int displacement;
+    protected int thiefState;
+    protected int displacement;
 
     public int getThiefState() {
         return thiefState;

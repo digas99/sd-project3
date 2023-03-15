@@ -7,6 +7,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import sharedRegions.*;
+import utils.MemException;
 
 import static utils.Parameters.*;
 
@@ -18,7 +19,7 @@ public class Assault {
     private int n_thieves_ordinary = MIN_THIEVES_ORDINARY;
     private int n_assault_parties = MIN_ASSAULT_PARTIES;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws MemException {
         Assault assault = new Assault();
         handleArgsParser(new CommandLine(assault), args);
 
@@ -42,18 +43,35 @@ public class Assault {
         concentrationSite = new ConcentrationSite();
         museum = new Museum();
         assaultParties = new AssaultParty[assault.n_assault_parties];
-        for (int i = 0; i < assault.n_assault_parties; i++) {
-            assaultParties[i] = new AssaultParty();
-        }
+        for (int i = 0; i < assault.n_assault_parties; i++)
+            assaultParties[i] = new AssaultParty(assault.n_thieves_ordinary);
 
         // init masters and thieves
         masters = new MasterThief[assault.n_thieves_master];
         thieves = new OrdinaryThief[assault.n_thieves_ordinary];
+        for (int i = 0; i < assault.n_thieves_master; i++)
+            masters[i] = new MasterThief("Master_" + (i + 1), museum, concentrationSite, collectionSite, assaultParties);
+        for (int i = 0; i < assault.n_thieves_ordinary; i++)
+            thieves[i] = new OrdinaryThief("Ordinary_"+(i+1), museum, concentrationSite, collectionSite);
+
+        // start threads
+        for (int i = 0; i < assault.n_thieves_master; i++)
+            masters[i].start();
+        for (int i = 0; i < assault.n_thieves_ordinary; i++)
+            thieves[i].start();
+
+        // join threads
         for (int i = 0; i < assault.n_thieves_master; i++) {
-            masters[i] = new MasterThief("Master_"+(i+1), museum, concentrationSite, collectionSite, assaultParties);
+            try {
+                masters[i].join();
+            } catch (InterruptedException e) {}
+            GenericIO.writelnString(masters[i].getName() + "has terminated!");
         }
         for (int i = 0; i < assault.n_thieves_ordinary; i++) {
-            thieves[i] = new OrdinaryThief("Ordinary_"+(i+1), museum, concentrationSite, collectionSite);
+            try {
+                thieves[i].join();
+            } catch (InterruptedException e) {}
+            GenericIO.writelnString(thieves[i].getName() + "has terminated!");
         }
     }
 

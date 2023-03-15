@@ -18,14 +18,18 @@ public class OrdinaryThief extends Thief {
 
     public OrdinaryThief(String threadName, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite) {
         super(threadName, museum, concentrationSite, collectionSite);
-    }
-
-    public void amINeeded() {
-
+        this.thiefState = OrdinaryThiefStates.CONCENTRATION_SITE;
     }
 
     @Override
     public void run() {
-
+        while(amINeeded()) {
+            this.assaultParty.prepareExcursion();
+        }
     }
+
+    private boolean amINeeded() {
+        return false;
+    }
+
 }
