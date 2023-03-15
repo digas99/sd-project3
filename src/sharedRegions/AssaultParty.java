@@ -22,6 +22,10 @@ public class AssaultParty {
       return crawlInQueue;
    }
 
+   public boolean isFull() {
+      return crawlInQueue.full();
+   }
+
    public AssaultParty(int n_thieves) throws MemException {
       this.crawlInQueue = new MemFIFO<>(new OrdinaryThief[n_thieves]);
    }

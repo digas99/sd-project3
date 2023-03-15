@@ -12,8 +12,8 @@ public class MasterThief extends Thief {
         return assaultParties;
     }
 
-    public MasterThief(String threadName, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite, AssaultParty[] assaultParties)  {
-        super(threadName, museum, concentrationSite, collectionSite);
+    public MasterThief(String threadName, int thiefID, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite, AssaultParty[] assaultParties)  {
+        super(threadName, thiefID, museum, concentrationSite, collectionSite);
         this.assaultParties = assaultParties;
         this.setThiefState(MasterThiefStates.PLANNING_HEIST);
     }

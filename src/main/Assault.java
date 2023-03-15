@@ -40,7 +40,7 @@ public class Assault {
         // init shared regions
         repos = new GeneralRepos();
         collectionSite = new CollectionSite();
-        concentrationSite = new ConcentrationSite();
+        concentrationSite = new ConcentrationSite(assault.n_thieves_ordinary);
         museum = new Museum();
         assaultParties = new AssaultParty[assault.n_assault_parties];
         for (int i = 0; i < assault.n_assault_parties; i++)
@@ -50,9 +50,9 @@ public class Assault {
         masters = new MasterThief[assault.n_thieves_master];
         thieves = new OrdinaryThief[assault.n_thieves_ordinary];
         for (int i = 0; i < assault.n_thieves_master; i++)
-            masters[i] = new MasterThief("Master_" + (i + 1), museum, concentrationSite, collectionSite, assaultParties);
+            masters[i] = new MasterThief("Master_" + (i + 1), i, museum, concentrationSite, collectionSite, assaultParties);
         for (int i = 0; i < assault.n_thieves_ordinary; i++)
-            thieves[i] = new OrdinaryThief("Ordinary_"+(i+1), museum, concentrationSite, collectionSite);
+            thieves[i] = new OrdinaryThief("Ordinary_"+(i+1), i, museum, concentrationSite, collectionSite);
 
         // start threads
         for (int i = 0; i < assault.n_thieves_master; i++)

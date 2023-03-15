@@ -13,6 +13,7 @@ public abstract class Thief extends Thread {
     protected final CollectionSite collectionSite;
     protected final Museum museum;
 
+    protected int thiefID;
     protected int thiefState;
     protected int displacement;
 
@@ -32,9 +33,18 @@ public abstract class Thief extends Thread {
         this.displacement = displacement;
     }
 
-    public Thief(String threadName, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite) {
+    public int getThiefID() {
+        return thiefID;
+    }
+
+    public void setThiefID(int thiefID) {
+        this.thiefID = thiefID;
+    }
+
+    public Thief(String threadName, int id, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite) {
         super(threadName);
 
+        this.thiefID = id;
         this.displacement = random(MIN_DISPLACEMENT, MAX_DISPLACEMENT);
         this.museum = museum;
         this.concentrationSite = concentrationSite;
