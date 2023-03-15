@@ -13,7 +13,8 @@ public final class Parameters {
     public static final int MIN_DISPLACEMENT = 2;
 
     // Constants for AssaultParty
-    public static final int N_THIEVES_PARTY = 3;
+    public static final int MIN_ASSAULT_PARTIES = 2;
+    public static final int N_THIEVES_PER_PARTY = 3;
 
     // Constants for main
     public static final int MIN_THIEVES_MASTER = 1;
