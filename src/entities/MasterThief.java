@@ -4,6 +4,7 @@ import sharedRegions.AssaultParty;
 import sharedRegions.CollectionSite;
 import sharedRegions.ConcentrationSite;
 import sharedRegions.Museum;
+import utils.MemException;
 
 public class MasterThief extends Thief {
     private AssaultParty assaultParties[];
@@ -21,6 +22,11 @@ public class MasterThief extends Thief {
     @Override
     public void run() {
         startOperations();
+        try {
+            this.concentrationSite.prepareAssaultParty();
+        } catch (MemException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void takeARest() {

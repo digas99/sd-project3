@@ -1,14 +1,16 @@
 package sharedRegions;
 
+import com.sun.org.apache.xpath.internal.operations.Or;
 import entities.MasterThief;
 import entities.OrdinaryThief;
+import entities.OrdinaryThiefStates;
 import utils.MemException;
 import utils.MemFIFO;
 
 public class AssaultParty {
    MasterThief master;
-
-   MemFIFO crawlInQueue;
+   MemFIFO<OrdinaryThief> thieves;
+   MemFIFO<OrdinaryThief> crawlInQueue;
 
    public MasterThief getMaster() {
       return master;
@@ -18,7 +20,7 @@ public class AssaultParty {
       this.master = master;
    }
 
-   public MemFIFO getCrawlInQueue() {
+   public MemFIFO<OrdinaryThief> getCrawlInQueue() {
       return crawlInQueue;
    }
 
@@ -27,6 +29,7 @@ public class AssaultParty {
    }
 
    public AssaultParty(int n_thieves) throws MemException {
+      this.thieves = new MemFIFO<>(new OrdinaryThief[n_thieves]);
       this.crawlInQueue = new MemFIFO<>(new OrdinaryThief[n_thieves]);
    }
 

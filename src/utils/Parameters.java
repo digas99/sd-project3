@@ -1,6 +1,9 @@
 package utils;
 
 public final class Parameters {
+    // Constants for Museum
+    public static final int N_ROOMS = 5;
+
     // Constants for Room
     public static final int MAX_DISTANCE = 30;
     public static final int MIN_DISTANCE = 15;
@@ -13,10 +16,10 @@ public final class Parameters {
     public static final int MIN_DISPLACEMENT = 2;
 
     // Constants for AssaultParty
-    public static final int MIN_ASSAULT_PARTIES = 2;
+    public static final int N_ASSAULT_PARTIES = 2;
     public static final int N_THIEVES_PER_PARTY = 3;
 
     // Constants for main
-    public static final int MIN_THIEVES_MASTER = 1;
-    public static final int MIN_THIEVES_ORDINARY = 6;
+    public static final int N_THIEVES_MASTER = 1;
+    public static final int N_THIEVES_ORDINARY = 6;
 }

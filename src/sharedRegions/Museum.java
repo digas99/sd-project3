@@ -4,7 +4,7 @@ import static utils.Utils.random;
 import static utils.Parameters.*;
 
 public class Museum {
-    private final Room rooms[] = new Room[5];
+    private final Room rooms[] = new Room[N_ROOMS];
 
     public Room[] getRooms() {
         return rooms;

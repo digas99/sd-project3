@@ -4,32 +4,15 @@ import entities.MasterThief;
 import entities.OrdinaryThief;
 import genclass.FileOp;
 import genclass.GenericIO;
-import picocli.CommandLine;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
 import sharedRegions.*;
 import utils.MemException;
 
 import static utils.Parameters.*;
 
-@Command(name = "Assault", mixinStandardHelpOptions = true, description = "Project 1 for Sistemas Distribuídos")
 public class Assault {
 
-    private int n_thieves_master = MIN_THIEVES_MASTER;
-    @Option(names = {"--ordinary", "-o"}, description = "Number of thieves Ordinary")
-    private int n_thieves_ordinary = MIN_THIEVES_ORDINARY;
-    private int n_assault_parties = MIN_ASSAULT_PARTIES;
-
     public static void main(String[] args) throws MemException {
-        Assault assault = new Assault();
-        handleArgsParser(new CommandLine(assault), args);
-
-        GenericIO.writelnString("Starting program with " + assault.n_thieves_ordinary + " Ordinary Thieves");
-
-
-
-        // set number of assault parties
-        assault.n_assault_parties = (int) Math.floor((double) assault.n_thieves_ordinary/3);
+        GenericIO.writelnString("Starting program with " + N_THIEVES_ORDINARY + " Ordinary Thieves");
 
         MasterThief masters[];
         OrdinaryThief thieves[];
@@ -61,55 +44,38 @@ public class Assault {
         // init shared regions
         repos = new GeneralRepos(logFile);
         collectionSite = new CollectionSite();
-        concentrationSite = new ConcentrationSite(assault.n_thieves_ordinary);
+        concentrationSite = new ConcentrationSite(N_THIEVES_ORDINARY);
         museum = new Museum();
-        assaultParties = new AssaultParty[assault.n_assault_parties];
-        for (int i = 0; i < assault.n_assault_parties; i++)
-            assaultParties[i] = new AssaultParty(assault.n_thieves_ordinary);
+        assaultParties = new AssaultParty[N_ASSAULT_PARTIES];
+        for (int i = 0; i < N_ASSAULT_PARTIES; i++)
+            assaultParties[i] = new AssaultParty(N_THIEVES_ORDINARY);
 
         // init masters and thieves
-        masters = new MasterThief[assault.n_thieves_master];
-        thieves = new OrdinaryThief[assault.n_thieves_ordinary];
-        for (int i = 0; i < assault.n_thieves_master; i++)
+        masters = new MasterThief[N_THIEVES_MASTER];
+        thieves = new OrdinaryThief[N_THIEVES_ORDINARY];
+        for (int i = 0; i < N_THIEVES_MASTER; i++)
             masters[i] = new MasterThief("Master_" + (i + 1), i, museum, concentrationSite, collectionSite, assaultParties);
-        for (int i = 0; i < assault.n_thieves_ordinary; i++)
+        for (int i = 0; i < N_THIEVES_ORDINARY; i++)
             thieves[i] = new OrdinaryThief("Ordinary_"+(i+1), i, museum, concentrationSite, collectionSite);
 
         // start threads
-        for (int i = 0; i < assault.n_thieves_master; i++)
+        for (int i = 0; i < N_THIEVES_MASTER; i++)
             masters[i].start();
-        for (int i = 0; i < assault.n_thieves_ordinary; i++)
+        for (int i = 0; i < N_THIEVES_ORDINARY; i++)
             thieves[i].start();
 
         // join threads
-        for (int i = 0; i < assault.n_thieves_master; i++) {
+        for (int i = 0; i < N_THIEVES_MASTER; i++) {
             try {
                 masters[i].join();
             } catch (InterruptedException e) {}
             GenericIO.writelnString(masters[i].getName() + "has terminated!");
         }
-        for (int i = 0; i < assault.n_thieves_ordinary; i++) {
+        for (int i = 0; i < N_THIEVES_ORDINARY; i++) {
             try {
                 thieves[i].join();
             } catch (InterruptedException e) {}
             GenericIO.writelnString(thieves[i].getName() + "has terminated!");
-        }
-    }
-
-    private static void handleArgsParser(CommandLine cl, String[] args) {
-        // handle wrong arguments
-        try {
-            cl.parseArgs(args);
-        } catch (CommandLine.ParameterException e) {
-            cl.usage(System.err);
-            e.printStackTrace();
-            System.exit(1);
-        }
-
-        // print help if arg is --help
-        if (cl.isUsageHelpRequested()) {
-            cl.usage(System.out);
-            System.exit(0);
         }
     }
 }
