@@ -2,6 +2,7 @@ package main;
 
 import entities.MasterThief;
 import entities.OrdinaryThief;
+import genclass.FileOp;
 import genclass.GenericIO;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -25,6 +26,8 @@ public class Assault {
 
         GenericIO.writelnString("Starting program with " + assault.n_thieves_ordinary + " Ordinary Thieves");
 
+
+
         // set number of assault parties
         assault.n_assault_parties = (int) Math.floor((double) assault.n_thieves_ordinary/3);
 
@@ -36,9 +39,27 @@ public class Assault {
         ConcentrationSite concentrationSite;
         Museum museum;
         GeneralRepos repos;
+        String logFile;
+        char opt;
+        boolean success;
+
+        GenericIO.writelnString ("\n" + "      Heist to the Museum\n");
+        do { GenericIO.writeString ("Logging file name? ");
+            logFile = GenericIO.readlnString ();
+            if (FileOp.exists (".", logFile)){
+                do {
+                GenericIO.writeString ("There is already a file with this name. Delete it (y - yes; n - no)? ");
+                opt = GenericIO.readlnChar ();
+            } while ((opt != 'y') && (opt != 'n'));
+                if (opt == 'y')
+                    success = true;
+                else success = false;
+            }
+            else success = true;
+        } while (!success);
 
         // init shared regions
-        repos = new GeneralRepos();
+        repos = new GeneralRepos(logFile);
         collectionSite = new CollectionSite();
         concentrationSite = new ConcentrationSite(assault.n_thieves_ordinary);
         museum = new Museum();
