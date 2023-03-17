@@ -29,8 +29,8 @@ public class AssaultParty {
    }
 
    public AssaultParty(int n_thieves) throws MemException {
-      this.thieves = new MemFIFO<>(new OrdinaryThief[n_thieves]);
-      this.crawlInQueue = new MemFIFO<>(new OrdinaryThief[n_thieves]);
+      thieves = new MemFIFO<>(new OrdinaryThief[n_thieves]);
+      crawlInQueue = new MemFIFO<>(new OrdinaryThief[n_thieves]);
    }
 
    public static void prepareExcursion() {

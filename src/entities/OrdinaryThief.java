@@ -37,19 +37,19 @@ public class OrdinaryThief extends Thief {
 
     public OrdinaryThief(String threadName, int thiefID, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite) {
         super(threadName, thiefID, museum, concentrationSite, collectionSite);
-        this.thiefState = OrdinaryThiefStates.CONCENTRATION_SITE;
-        this.inAssaultParty = false;
-        this.partyMonitor = new Monitor();
+        thiefState = OrdinaryThiefStates.CONCENTRATION_SITE;
+        inAssaultParty = false;
+        partyMonitor = new Monitor();
     }
 
     @Override
     public void run() {
         try {
-            this.concentrationSite.amINeeded();
+            concentrationSite.amINeeded();
         } catch (MemException e) {
             throw new RuntimeException(e);
         }
 
-        this.assaultParty.prepareExcursion();
+        assaultParty.prepareExcursion();
     }
 }

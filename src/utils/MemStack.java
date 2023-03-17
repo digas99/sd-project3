@@ -67,4 +67,22 @@ public class MemStack<R> extends MemObject<R>
         }
         else throw new MemException ("Stack empty!");
    }
+
+    /**
+     * Check if stack is full.
+     *
+     * @return whether the stack is full
+     */
+    public boolean isFull() {
+        return stackPnt == mem.length;
+    }
+
+    /**
+     * Check the size of the stack
+     *
+     * @return size filled in the stack
+     */
+    public int size() {
+        return stackPnt;
+    }
 }

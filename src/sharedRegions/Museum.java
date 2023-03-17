@@ -11,8 +11,8 @@ public class Museum {
     }
 
     public Museum() {
-        for (int i = 0; i < this.rooms.length; i++) {
-            this.rooms[i] = new Room();
+        for (int i = 0; i < rooms.length; i++) {
+            rooms[i] = new Room();
         }
     }
 
