@@ -48,7 +48,7 @@ public class Assault {
         museum = new Museum();
         assaultParties = new AssaultParty[N_ASSAULT_PARTIES];
         for (int i = 0; i < N_ASSAULT_PARTIES; i++)
-            assaultParties[i] = new AssaultParty(N_THIEVES_ORDINARY);
+            assaultParties[i] = new AssaultParty(i, N_THIEVES_ORDINARY);
 
         // init masters and thieves
         masters = new MasterThief[N_THIEVES_MASTER];
@@ -69,13 +69,13 @@ public class Assault {
             try {
                 masters[i].join();
             } catch (InterruptedException e) {}
-            GenericIO.writelnString(masters[i].getName() + "has terminated!");
+            GenericIO.writelnString(masters[i].getName() + " has terminated!");
         }
         for (int i = 0; i < N_THIEVES_ORDINARY; i++) {
             try {
                 thieves[i].join();
             } catch (InterruptedException e) {}
-            GenericIO.writelnString(thieves[i].getName() + "has terminated!");
+            GenericIO.writelnString(thieves[i].getName() + " has terminated!");
         }
     }
 }

@@ -1,5 +1,7 @@
 package utils;
 
+import genclass.GenericIO;
+
 /**
  *    Parametric FIFO derived from a parametric memory.
  *    Errors are reported.
@@ -93,8 +95,22 @@ public class MemFIFO<R> extends MemObject<R>
    *            false, otherwise
    */
 
-   public boolean full ()
+   public boolean isFull ()
    {
      return !((inPnt != outPnt) || empty);
+   }
+
+   public int size () {
+       return outPnt;
+   }
+
+   public void print () {
+       for (int i = 0; i < inPnt; i++)
+           GenericIO.writelnString(mem[i].toString());
+   }
+
+   public void println () {
+       for (int i = 0; i < inPnt; i++)
+           GenericIO.writelnString(mem[i].toString());
    }
 }

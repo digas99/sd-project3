@@ -50,4 +50,10 @@ public abstract class Thief extends Thread {
         this.concentrationSite = concentrationSite;
         this.collectionSite = collectionSite;
     }
+
+    @Override
+    public String toString() {
+        return thiefID + " - " + getName();
+    }
+
 }

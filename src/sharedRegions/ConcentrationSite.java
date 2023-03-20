@@ -1,15 +1,14 @@
 package sharedRegions;
 
 import entities.*;
+import genclass.GenericIO;
 import utils.MemException;
 import utils.MemStack;
-import utils.Monitor;
 
 import static utils.Parameters.*;
 
 public class ConcentrationSite {
     private final MemStack<OrdinaryThief> thieves;
-    private MasterThief master;
 
     public boolean hasEnoughThieves() {
         return thieves.size() >= N_THIEVES_PER_PARTY;
@@ -18,61 +17,63 @@ public class ConcentrationSite {
     public ConcentrationSite(int nThieves) throws MemException {
         // init thieves
         thieves = new MemStack<>(new OrdinaryThief[nThieves]);
-        master = null;
     }
 
-    public void startOperations() throws InterruptedException {
-        master = (MasterThief) Thread.currentThread();
+    public synchronized void startOperations() {
+        MasterThief master = (MasterThief) Thread.currentThread();
         master.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
-
-        // sleep until there are enough thieves for an assault party
-        while (!hasEnoughThieves()) {
-            master.getDecisionMonitor().wait();
-        }
     }
 
-    public boolean amINeeded() throws MemException {
+    public synchronized void amINeeded() {
         OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
-        thieves.write(thief);
+        try {
+            thieves.write(thief);
+        } catch (MemException e) {}
 
         // wake up master if party can be made
         if (hasEnoughThieves())
-            master.getDecisionMonitor().notify();
+            notifyAll();
 
         if (thief.getThiefState() == OrdinaryThiefStates.COLLECTION_SITE)
             thief.setThiefState(OrdinaryThiefStates.CONCENTRATION_SITE);
 
         while (!thief.isInAssaultParty()) {
             try {
-                thief.getPartyMonitor().wait();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+                wait();
+            } catch (InterruptedException e) {}
         }
-
-        return thief.isInAssaultParty();
     }
 
-    public void prepareAssaultParty() throws MemException {
+    public synchronized void prepareAssaultParty() {
+        MasterThief master = (MasterThief) Thread.currentThread();
         master.setThiefState(MasterThiefStates.ASSEMBLING_GROUP);
 
-        AssaultParty assaultParty = master.getAssaultParties().read();
-        Monitor[] thievesMonitors = new Monitor[N_THIEVES_PER_PARTY];
-        for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
-           OrdinaryThief thief = thieves.read();
-           if (!thief.isInAssaultParty()) {
-               assaultParty.thieves.write(thief);
-               thief.setInAssaultParty(true);
-               thievesMonitors[i] = thief.getPartyMonitor();
-           }
+        // sleep until there are enough thieves for an assault party
+        while (!hasEnoughThieves()) {
+            try {
+                wait();
+            } catch (InterruptedException e) {}
         }
 
+        try {
+            AssaultParty assaultParty = master.getAssaultParties().read();
+            for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
+               OrdinaryThief thief = thieves.read();
+               if (!thief.isInAssaultParty()) {
+                   assaultParty.getThieves().write(thief);
+                   thief.setInAssaultParty(true);
+               }
+            }
+
+            GenericIO.writelnString(assaultParty.toString());
+            assaultParty.getThieves().println();
+        } catch (MemException e) {}
+
         // party is filled up and wake up all thieves from that party
-        for (Monitor thiefMonitor : thievesMonitors)
-            thiefMonitor.notify();
+        notifyAll();
     }
 
-    public void sendAssaultParty() {
+    public synchronized void sendAssaultParty() {
         MasterThief master = (MasterThief) Thread.currentThread();
         master.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
     }
