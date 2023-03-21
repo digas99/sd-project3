@@ -3,20 +3,29 @@ package sharedRegions;
 import entities.*;
 import genclass.GenericIO;
 import utils.MemException;
-import utils.MemStack;
+import utils.MemFIFO;
 
 import static utils.Parameters.*;
+import static utils.Utils.logger;
 
 public class ConcentrationSite {
-    private final MemStack<OrdinaryThief> thieves;
+    private final MemFIFO<Integer> thieves;
+    private final MemFIFO<Integer> pickedThieves;
+    private int assaultPartyID;
+    private int nAssaultParties;
+    private boolean allowIn;
 
     public boolean hasEnoughThieves() {
         return thieves.size() >= N_THIEVES_PER_PARTY;
     }
 
-    public ConcentrationSite(int nThieves) throws MemException {
+    public ConcentrationSite(int nThieves, int nAssaultParties) throws MemException {
         // init thieves
-        thieves = new MemStack<>(new OrdinaryThief[nThieves]);
+        thieves = new MemFIFO<>(new Integer[nThieves]);
+        pickedThieves = new MemFIFO<>(new Integer[N_THIEVES_PER_PARTY]);
+        this.nAssaultParties = nAssaultParties;
+        assaultPartyID = 0;
+        allowIn = true;
     }
 
     public synchronized void startOperations() {
@@ -24,24 +33,26 @@ public class ConcentrationSite {
         master.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
     }
 
-    public synchronized void amINeeded() {
+    public synchronized boolean amINeeded() {
+        if (!allowIn) return false;
+
         OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
         try {
-            thieves.write(thief);
-        } catch (MemException e) {}
+            thieves.write(thief.getThiefID());
+            logger(thief.getName(), "entered Concentration Site");
+        } catch (MemException e) {
+        }
 
         // wake up master if party can be made
-        if (hasEnoughThieves())
+        if (hasEnoughThieves()) {
+            allowIn = false;
             notifyAll();
+        }
 
         if (thief.getThiefState() == OrdinaryThiefStates.COLLECTION_SITE)
             thief.setThiefState(OrdinaryThiefStates.CONCENTRATION_SITE);
 
-        while (!thief.isInAssaultParty()) {
-            try {
-                wait();
-            } catch (InterruptedException e) {}
-        }
+        return true;
     }
 
     public synchronized void prepareAssaultParty() {
@@ -51,30 +62,66 @@ public class ConcentrationSite {
         // sleep until there are enough thieves for an assault party
         while (!hasEnoughThieves()) {
             try {
+                logger(master.getName(), "waiting for thieves to enter concentration site");
                 wait();
             } catch (InterruptedException e) {}
         }
 
+        logger(master.getName(), "woke up");
+        logger(master.getName(), "assembling Assault Party " + assaultPartyID);
         try {
-            AssaultParty assaultParty = master.getAssaultParties().read();
             for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
-               OrdinaryThief thief = thieves.read();
-               if (!thief.isInAssaultParty()) {
-                   assaultParty.getThieves().write(thief);
-                   thief.setInAssaultParty(true);
-               }
+                int thiefID = thieves.read();
+                pickedThieves.write(thiefID);
             }
 
-            GenericIO.writelnString(assaultParty.toString());
-            assaultParty.getThieves().println();
         } catch (MemException e) {}
 
-        // party is filled up and wake up all thieves from that party
+        // party is decided so wake up all thieves from that party
         notifyAll();
+
+        // sleep and wait until all thieves have joined the party
+        while (pickedThieves.size() > 0) {
+            try {
+                logger(master.getName(), "waiting for thieves to join party");
+                wait();
+            } catch (InterruptedException e) {}
+        }
+
+        logger(master.getName(), "woke up");
+    }
+
+    public synchronized int prepareExcursion() {
+        OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
+
+        while (pickedThieves.size() == 0) {
+            try {
+                logger(thief.getName(), "waiting to be assigned a party");
+                wait();
+            } catch (InterruptedException e) {}
+        }
+
+        logger(thief.getName(), "woke up");
+
+        thief.setThiefState(OrdinaryThiefStates.CRAWLING_INWARDS);
+        try {
+            pickedThieves.read();
+        } catch (MemException e) {}
+
+        // if thief is the last to enter the party, notify master
+        if (pickedThieves.size() == 0)
+            notifyAll();
+
+        return assaultPartyID;
     }
 
     public synchronized void sendAssaultParty() {
         MasterThief master = (MasterThief) Thread.currentThread();
         master.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
+        GenericIO.writelnString("Sending Assault Party " + assaultPartyID);
+
+        // setup id for next assault party
+        assaultPartyID = (assaultPartyID + 1) % nAssaultParties;
+        allowIn = true;
     }
 }

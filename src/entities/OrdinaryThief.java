@@ -1,32 +1,36 @@
 package entities;
 
+import genclass.GenericIO;
 import sharedRegions.AssaultParty;
 import sharedRegions.CollectionSite;
 import sharedRegions.ConcentrationSite;
 import sharedRegions.Museum;
 
+import static utils.Utils.logger;
+
 public class OrdinaryThief extends Thief {
-    private AssaultParty assaultParty;
-    private boolean inAssaultParty;
+    private AssaultParty[] assaultParties;
 
-    public boolean isInAssaultParty() {
-        return inAssaultParty;
-    }
-
-    public void setInAssaultParty(boolean inAssaultParty) {
-        this.inAssaultParty = inAssaultParty;
-    }
-
-    public OrdinaryThief(String threadName, int thiefID, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite) {
+    public OrdinaryThief(String threadName, int thiefID, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite, AssaultParty[] assaultParties) {
         super(threadName, thiefID, museum, concentrationSite, collectionSite);
         thiefState = OrdinaryThiefStates.CONCENTRATION_SITE;
-        assaultParty = null;
-        inAssaultParty = false;
+        this.assaultParties = assaultParties;
     }
 
     @Override
     public void run() {
-        concentrationSite.amINeeded();
-        // assaultParty.prepareExcursion();
+        while (true) {
+            while (concentrationSite.amINeeded()) {
+                int assaultID = concentrationSite.prepareExcursion();
+                logger(getName(), "entered Assault Party " + assaultID);
+
+                // simulating assault, to be deleted
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 }

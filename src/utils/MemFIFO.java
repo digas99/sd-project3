@@ -38,10 +38,12 @@ public class MemFIFO<R> extends MemObject<R>
    *     @throws MemException when the memory does not exist
    */
 
+  private int size;
+
    public MemFIFO (R [] storage) throws MemException
    {
      super (storage);
-     inPnt = outPnt = 0;
+     inPnt = outPnt = size = 0;
      empty = true;
    }
 
@@ -61,6 +63,7 @@ public class MemFIFO<R> extends MemObject<R>
         { mem[inPnt] = val;
           inPnt = (inPnt + 1) % mem.length;
           empty = false;
+          size++;
         }
         else throw new MemException ("Fifo full!");
    }
@@ -83,6 +86,7 @@ public class MemFIFO<R> extends MemObject<R>
         { val = mem[outPnt];
           outPnt = (outPnt + 1) % mem.length;
           empty = (inPnt == outPnt);
+          size--;
         }
         else throw new MemException ("Fifo empty!");
      return val;
@@ -100,17 +104,25 @@ public class MemFIFO<R> extends MemObject<R>
      return !((inPnt != outPnt) || empty);
    }
 
-   public int size () {
-       return outPnt;
+   public int size() {
+       return size;
    }
 
    public void print () {
-       for (int i = 0; i < inPnt; i++)
+       for (int i = 0; i < size; i++)
            GenericIO.writelnString(mem[i].toString());
    }
 
    public void println () {
-       for (int i = 0; i < inPnt; i++)
+       for (int i = 0; i < size; i++)
            GenericIO.writelnString(mem[i].toString());
+   }
+
+   public boolean has (R value) {
+       for (int i = 0; i < size; i++) {
+           if (mem[i].equals(value))
+               return true;
+       }
+       return false;
    }
 }

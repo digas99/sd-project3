@@ -44,7 +44,7 @@ public class Assault {
         // init shared regions
         repos = new GeneralRepos(logFile);
         collectionSite = new CollectionSite();
-        concentrationSite = new ConcentrationSite(N_THIEVES_ORDINARY);
+        concentrationSite = new ConcentrationSite(N_THIEVES_ORDINARY, N_ASSAULT_PARTIES);
         museum = new Museum();
         assaultParties = new AssaultParty[N_ASSAULT_PARTIES];
         for (int i = 0; i < N_ASSAULT_PARTIES; i++)
@@ -54,9 +54,9 @@ public class Assault {
         masters = new MasterThief[N_THIEVES_MASTER];
         thieves = new OrdinaryThief[N_THIEVES_ORDINARY];
         for (int i = 0; i < N_THIEVES_MASTER; i++)
-            masters[i] = new MasterThief("Master_" + (i + 1), i, museum, concentrationSite, collectionSite, assaultParties);
+            masters[i] = new MasterThief("Master_" + (i + 1), i, museum, concentrationSite, collectionSite) ;
         for (int i = 0; i < N_THIEVES_ORDINARY; i++)
-            thieves[i] = new OrdinaryThief("Ordinary_"+(i+1), i, museum, concentrationSite, collectionSite);
+            thieves[i] = new OrdinaryThief("Ordinary_"+(i+1), i, museum, concentrationSite, collectionSite, assaultParties);
 
         // start threads
         for (int i = 0; i < N_THIEVES_MASTER; i++)
@@ -69,13 +69,13 @@ public class Assault {
             try {
                 masters[i].join();
             } catch (InterruptedException e) {}
-            GenericIO.writelnString(masters[i].getName() + " has terminated!");
+            GenericIO.writelnString("[" + masters[i].getName() + "]: has terminated!");
         }
         for (int i = 0; i < N_THIEVES_ORDINARY; i++) {
             try {
                 thieves[i].join();
             } catch (InterruptedException e) {}
-            GenericIO.writelnString(thieves[i].getName() + " has terminated!");
+            GenericIO.writelnString("[" + thieves[i].getName() + "]: has terminated!");
         }
     }
 }
