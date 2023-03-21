@@ -12,7 +12,6 @@ public abstract class Thief extends Thread {
     protected final ConcentrationSite concentrationSite;
     protected final CollectionSite collectionSite;
     protected final Museum museum;
-
     protected int thiefID;
     protected int thiefState;
     protected int displacement;
@@ -53,7 +52,7 @@ public abstract class Thief extends Thread {
 
     @Override
     public String toString() {
-        return thiefID + " - " + getName();
+        return getName();
     }
 
 }

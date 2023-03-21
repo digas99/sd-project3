@@ -48,7 +48,7 @@ public class Assault {
         museum = new Museum();
         assaultParties = new AssaultParty[N_ASSAULT_PARTIES];
         for (int i = 0; i < N_ASSAULT_PARTIES; i++)
-            assaultParties[i] = new AssaultParty(i, N_THIEVES_ORDINARY);
+            assaultParties[i] = new AssaultParty(i, N_THIEVES_PER_PARTY);
 
         // init masters and thieves
         masters = new MasterThief[N_THIEVES_MASTER];

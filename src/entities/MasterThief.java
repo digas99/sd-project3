@@ -1,33 +1,33 @@
 package entities;
 
-import genclass.GenericIO;
-import sharedRegions.AssaultParty;
 import sharedRegions.CollectionSite;
 import sharedRegions.ConcentrationSite;
 import sharedRegions.Museum;
 import utils.MemException;
-import utils.MemFIFO;
-import utils.Utils;
+
+import static utils.Parameters.*;
 
 public class MasterThief extends Thief {
     public MasterThief(String threadName, int thiefID, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite) throws MemException {
         super(threadName, thiefID, museum, concentrationSite, collectionSite);
-
         setThiefState(MasterThiefStates.PLANNING_HEIST);
     }
 
     @Override
     public void run() {
-        for (int i = 0; i < 4; i++) {
-        //while(true) {
-            concentrationSite.startOperations();
-            concentrationSite.prepareAssaultParty();
-            concentrationSite.sendAssaultParty();
+        concentrationSite.startOperations();
+        lifecycle: for (int i = 0; i < 4; i++) {
+        //lifecycle: while(true) {
+            switch (collectionSite.appraiseSit()) {
+                case CREATE_ASSAULT_PARTY:
+                    concentrationSite.prepareAssaultParty();
+                    concentrationSite.sendAssaultParty();
+                    break;
+                case WAIT_FOR_CANVAS:
+                    break;
+                case END_HEIST:
+                    break lifecycle;
+            }
         }
     }
-
-    public void appraiseSit() {
-
-    }
-
 }

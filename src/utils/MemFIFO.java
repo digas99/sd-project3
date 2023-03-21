@@ -104,19 +104,46 @@ public class MemFIFO<R> extends MemObject<R>
      return !((inPnt != outPnt) || empty);
    }
 
-   public int size() {
+    /**
+     *   FIFO size.
+     *   This refers to the number of elements in the FIFO.
+     *
+     *    @return how much the FIFO is filled.
+     */
+
+    public int size() {
        return size;
    }
 
+    /**
+     *  FIFO print.
+     *  Prints to the console every element in the FIFO in one line.
+     *  This takes advantage of the toString function in the object.
+     */
+
    public void print () {
        for (int i = 0; i < size; i++)
-           GenericIO.writelnString(mem[i].toString());
+           GenericIO.writeString(mem[i].toString());
    }
+
+    /**
+     *  FIFO println.
+     *  Prints to the console every element in the FIFO, one element per line.
+     *  This takes advantage of the toString function in the object.
+     */
 
    public void println () {
        for (int i = 0; i < size; i++)
            GenericIO.writelnString(mem[i].toString());
    }
+
+    /**
+     * FIFO has value.
+     * Checks if value is in the FIFO.
+     *
+     * @param value parametric object to be searched for.
+     * @return true if value found, false otherwise.
+     */
 
    public boolean has (R value) {
        for (int i = 0; i < size; i++) {

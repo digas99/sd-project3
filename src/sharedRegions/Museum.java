@@ -16,18 +16,9 @@ public class Museum {
         }
     }
 
-    public void rollACanvas() {
+    public synchronized void rollACanvas(int assaultID) {
 
     }
-
-    public void crawlIn() {
-
-    }
-
-    public void crawlOut() {
-
-    }
-
 
     private class Room {
 

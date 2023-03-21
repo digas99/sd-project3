@@ -1,6 +1,5 @@
 package entities;
 
-import genclass.GenericIO;
 import sharedRegions.AssaultParty;
 import sharedRegions.CollectionSite;
 import sharedRegions.ConcentrationSite;
@@ -22,14 +21,19 @@ public class OrdinaryThief extends Thief {
         while (true) {
             while (concentrationSite.amINeeded()) {
                 int assaultID = concentrationSite.prepareExcursion();
-                logger(getName(), "entered Assault Party " + assaultID);
-
+                logger(this, "entered Assault Party " + assaultID);
+                AssaultParty party = assaultParties[assaultID];
+                party.crawlIn();
+                museum.rollACanvas(assaultID);
+                party.reverseDirection();
+                party.crawlOut();
+                collectionSite.handACanvas(assaultID);
+                /*
                 // simulating assault, to be deleted
                 try {
                     Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+                } catch (InterruptedException e) {}
+                */
             }
         }
     }

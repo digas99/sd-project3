@@ -1,31 +1,15 @@
 package sharedRegions;
 
-import entities.MasterThief;
 import entities.OrdinaryThief;
+import entities.OrdinaryThiefStates;
 import utils.MemException;
-import utils.MemFIFO;
 
 public class AssaultParty {
-   private MasterThief master;
-   private MemFIFO<OrdinaryThief> thieves;
-   private MemFIFO<OrdinaryThief> crawlInQueue;
    private int id;
-
-   public MasterThief getMaster() {
-      return master;
-   }
-
-   public void setMaster(MasterThief master) {
-      this.master = master;
-   }
-
-   public MemFIFO<OrdinaryThief> getCrawlInQueue() {
-      return crawlInQueue;
-   }
-
-   public MemFIFO<OrdinaryThief> getThieves() {
-      return thieves;
-   }
+   private int[] thieves;
+   private int nextThiefPos;
+   private int nextThiefID;
+   private int nThieves;
 
    public int getId() {
       return id;
@@ -35,26 +19,56 @@ public class AssaultParty {
       this.id = id;
    }
 
-   public boolean isFull() {
-      return crawlInQueue.isFull();
-   }
-
-   public AssaultParty(int id, int n_thieves) throws MemException {
-      thieves = new MemFIFO<>(new OrdinaryThief[n_thieves]);
-      crawlInQueue = new MemFIFO<>(new OrdinaryThief[n_thieves]);
+   public AssaultParty(int id, int size) throws MemException {
       this.id = id;
+      this.thieves = new int[size];
+      nThieves = nextThiefPos = 0;
+      nextThiefID = -1;
    }
 
    @Override
    public String toString() {
-      return "Assault Party "+id;
+      return "AssaultParty_"+id;
    }
 
-   public void prepareExcursion() {
+   public synchronized void crawlIn() {
+      OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
+      thieves[nThieves++] = thief.getThiefID();
+      thief.setThiefState(OrdinaryThiefStates.CRAWLING_INWARDS);
 
+      // first thief to arrive sets next thief as himself
+      if (nextThiefID == -1) nextThiefID = thief.getThiefID();
+
+      // wait for turn
+      while (true) {
+         while (nextThiefID != thief.getThiefID()) {
+            try {
+               wait();
+            } catch (InterruptedException e) {}
+         }
+
+         //while (canIMove) {
+            // TODO: move the most
+         //}
+
+         // wake up next thief
+         nextThiefID = thieves[(++nextThiefPos) % nThieves];
+         notifyAll();
+
+         // TODO: if end of path, break
+         // if (endOfPath) {
+         //   thief.setThiefState(OrdinaryThiefStates.AT_A_ROOM);
+         //   break;
+         // }
+      }
    }
 
-   public void reverseDirection() {
+   public synchronized void reverseDirection() {
+        ((OrdinaryThief) Thread.currentThread()).setThiefState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
+   }
 
+   public synchronized void crawlOut() {
+      OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
+      thief.setThiefState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
    }
 }

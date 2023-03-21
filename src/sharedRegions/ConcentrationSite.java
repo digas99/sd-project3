@@ -39,7 +39,7 @@ public class ConcentrationSite {
         OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
         try {
             thieves.write(thief.getThiefID());
-            logger(thief.getName(), "entered Concentration Site");
+            logger(thief, "entered Concentration Site");
         } catch (MemException e) {
         }
 
@@ -62,13 +62,13 @@ public class ConcentrationSite {
         // sleep until there are enough thieves for an assault party
         while (!hasEnoughThieves()) {
             try {
-                logger(master.getName(), "waiting for thieves to enter concentration site");
+                logger(master, "waiting for thieves to enter concentration site");
                 wait();
             } catch (InterruptedException e) {}
         }
 
-        logger(master.getName(), "woke up");
-        logger(master.getName(), "assembling Assault Party " + assaultPartyID);
+        logger(master, "woke up");
+        logger(master, "assembling Assault Party " + assaultPartyID);
         try {
             for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
                 int thiefID = thieves.read();
@@ -83,12 +83,12 @@ public class ConcentrationSite {
         // sleep and wait until all thieves have joined the party
         while (pickedThieves.size() > 0) {
             try {
-                logger(master.getName(), "waiting for thieves to join party");
+                logger(master, "waiting for thieves to join party");
                 wait();
             } catch (InterruptedException e) {}
         }
 
-        logger(master.getName(), "woke up");
+        logger(master, "woke up");
     }
 
     public synchronized int prepareExcursion() {
@@ -96,12 +96,12 @@ public class ConcentrationSite {
 
         while (pickedThieves.size() == 0) {
             try {
-                logger(thief.getName(), "waiting to be assigned a party");
+                logger(thief, "waiting to be assigned a party");
                 wait();
             } catch (InterruptedException e) {}
         }
 
-        logger(thief.getName(), "woke up");
+        logger(thief, "woke up");
 
         thief.setThiefState(OrdinaryThiefStates.CRAWLING_INWARDS);
         try {
