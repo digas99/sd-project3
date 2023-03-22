@@ -5,7 +5,6 @@ import genclass.GenericIO;
 import utils.MemException;
 import utils.MemFIFO;
 
-import static utils.Parameters.*;
 import static utils.Utils.logger;
 
 public class ConcentrationSite {
@@ -14,24 +13,25 @@ public class ConcentrationSite {
     private int assaultPartyID;
     private int nAssaultParties;
     private int joinedThieves;
+    private int thievesPerParty;
     private boolean endHeist;
     private boolean makeParty;
     private AssaultParty assaultParty;
 
     private boolean hasEnoughThieves() {
-        return thieves.size() >= N_THIEVES_PER_PARTY;
+        return thieves.size() >= thievesPerParty;
     }
 
-    public ConcentrationSite(int nThieves, int nAssaultParties) throws MemException {
-        // init thieves
+    public ConcentrationSite(int nThieves, int nAssaultParties, int thievesPerParty, int nRooms) throws MemException {
         thieves = new MemFIFO<>(new Integer[nThieves]);
-        freeRooms = new MemFIFO<>(new Integer[N_ROOMS]);
-        for (int i = 0; i < N_ROOMS; i++)
+        freeRooms = new MemFIFO<>(new Integer[nRooms]);
+        for (int i = 0; i < nRooms; i++)
             freeRooms.write(i);
         this.nAssaultParties = nAssaultParties;
         assaultPartyID = joinedThieves = 0;
         endHeist = makeParty = false;
         assaultParty = null;
+        this.thievesPerParty = thievesPerParty;
     }
 
     public String toString() {
@@ -102,7 +102,7 @@ public class ConcentrationSite {
         notifyAll();
 
         // sleep and wait until all thieves have joined the party
-        while (joinedThieves < N_THIEVES_PER_PARTY) {
+        while (joinedThieves < thievesPerParty) {
             try {
                 logger(this, master, "waiting for thieves to join party");
                 wait();
@@ -134,7 +134,7 @@ public class ConcentrationSite {
 
         // make sure thieves wake up in order
         try {
-            while (!makeParty || thief.getThiefID() != thieves.peek() || joinedThieves >= N_THIEVES_PER_PARTY) {
+            while (!makeParty || thief.getThiefID() != thieves.peek() || joinedThieves >= thievesPerParty) {
                 logger(this, thief, "waiting to be able to join party");
                 wait();
             }

@@ -45,11 +45,11 @@ public class Assault {
         // init shared regions
         repos = new GeneralRepos(logFile);
         collectionSite = new CollectionSite();
-        concentrationSite = new ConcentrationSite(N_THIEVES_ORDINARY, N_ASSAULT_PARTIES);
+        concentrationSite = new ConcentrationSite(N_THIEVES_ORDINARY, N_ASSAULT_PARTIES, N_THIEVES_PER_PARTY, N_ROOMS);
         museum = new Museum();
         assaultParties = new AssaultParty[N_ASSAULT_PARTIES];
         for (int i = 0; i < N_ASSAULT_PARTIES; i++)
-            assaultParties[i] = new AssaultParty(i, N_THIEVES_PER_PARTY);
+            assaultParties[i] = new AssaultParty(i, N_THIEVES_PER_PARTY, N_THIEVES_PER_PARTY);
 
         // init masters and thieves
         masters = new MasterThief[N_THIEVES_MASTER];

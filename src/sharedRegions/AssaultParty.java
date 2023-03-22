@@ -8,9 +8,9 @@ import genclass.GenericIO;
 import utils.MemException;
 
 import static utils.Utils.logger;
-import static utils.Parameters.*;
 
 public class AssaultParty {
+   private final int thievesPerParty;
    private int id;
    private int[] thieves;
    private int roomID;
@@ -38,11 +38,12 @@ public class AssaultParty {
       return nThieves;
    }
 
-   public AssaultParty(int id, int size) throws MemException {
+   public AssaultParty(int id, int size, int thievesPerParty) throws MemException {
       this.id = id;
       this.thieves = new int[size];
       nThieves = nextThiefPos = 0;
       nextThiefID = roomID = -1;
+      this.thievesPerParty = thievesPerParty;
    }
 
    @Override
@@ -75,7 +76,7 @@ public class AssaultParty {
 
       // wait for turn
       while (true) {
-         while (nextThiefID != thief.getThiefID() || nThieves < N_THIEVES_PER_PARTY) {
+         while (nextThiefID != thief.getThiefID() || nThieves < thievesPerParty) {
             try {
                logger(this, thief, "waiting for turn");
                wait();
