@@ -52,6 +52,8 @@ public class Assault {
         for (int i = 0; i < N_ASSAULT_PARTIES; i++)
             assaultParties[i] = new AssaultParty(i, N_THIEVES_PER_PARTY,repos);
 
+        repos.reportLegend();
+
         // init masters and thieves
         masters = new MasterThief[N_THIEVES_MASTER];
         thieves = new OrdinaryThief[N_THIEVES_ORDINARY];
