@@ -9,7 +9,7 @@ public class CollectionSite {
     private int collectedCanvas;
     private boolean endHeist;
 
-    public CollectionSite() {
+    public CollectionSite(GeneralRepos repos) {
         collectedCanvas = 0;
         endHeist = false;
     }
