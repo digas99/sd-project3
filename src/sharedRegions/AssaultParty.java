@@ -1,12 +1,19 @@
 package sharedRegions;
 
+import entities.MasterThief;
+import entities.MasterThiefStates;
 import entities.OrdinaryThief;
 import entities.OrdinaryThiefStates;
+import genclass.GenericIO;
 import utils.MemException;
+
+import static utils.Utils.logger;
+import static utils.Parameters.*;
 
 public class AssaultParty {
    private int id;
    private int[] thieves;
+   private int roomID;
    private int nextThiefPos;
    private int nextThiefID;
    private int nThieves;
@@ -19,16 +26,43 @@ public class AssaultParty {
       this.id = id;
    }
 
+   public int getRoomID() {
+      return roomID;
+   }
+
+   public void setRoomID(int roomID) {
+      this.roomID = roomID;
+   }
+
+   public int size() {
+      return nThieves;
+   }
+
    public AssaultParty(int id, int size) throws MemException {
       this.id = id;
       this.thieves = new int[size];
       nThieves = nextThiefPos = 0;
-      nextThiefID = -1;
+      nextThiefID = roomID = -1;
    }
 
    @Override
    public String toString() {
       return "AssaultParty_"+id;
+   }
+
+   /**
+    * Send Assault Party.
+    * The master thief calls this method to wake up the first thief of the Assault Party and trigger his crawling.
+    * It also sets up the ID for the next assault party and resets other variables.
+    */
+
+   public synchronized void sendAssaultParty() {
+      MasterThief master = (MasterThief) Thread.currentThread();
+      master.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
+      GenericIO.writelnString("Sending " + this + " to room " + roomID);
+
+      // wake up first thief
+      notifyAll();
    }
 
    public synchronized void crawlIn() {
@@ -41,14 +75,17 @@ public class AssaultParty {
 
       // wait for turn
       while (true) {
-         while (nextThiefID != thief.getThiefID()) {
+         while (nextThiefID != thief.getThiefID() || nThieves < N_THIEVES_PER_PARTY) {
             try {
+               logger(this, thief, "waiting for turn");
                wait();
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {
+            }
          }
 
-         //while (canIMove) {
-            // TODO: move the most
+         logger(this, thief, "woke up");
+         //while (canIMove()) {
+         // TODO: move the most
          //}
 
          // wake up next thief
@@ -60,7 +97,12 @@ public class AssaultParty {
          //   thief.setThiefState(OrdinaryThiefStates.AT_A_ROOM);
          //   break;
          // }
+         break;
       }
+   }
+
+   private boolean canIMove(OrdinaryThief thief) {
+      return false;
    }
 
    public synchronized void reverseDirection() {

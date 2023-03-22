@@ -36,6 +36,10 @@ public class Utils {
         GenericIO.writelnString("[" + entity.toString() + "]: " + message);
     }
 
+    public static void logger(Object place, Object entity, String message) {
+        GenericIO.writelnString("[" + place.toString() + "][" + entity.toString() + "]: " + message);
+    }
+
     /**
      * Entity logger.
      * Conveniently formatted print to log messages from an entity

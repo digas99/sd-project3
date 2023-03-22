@@ -152,4 +152,9 @@ public class MemFIFO<R> extends MemObject<R>
        }
        return false;
    }
+
+   public R peek() throws MemException {
+       if (empty) throw new MemException("Fifo empty!");
+       return mem[outPnt];
+   }
 }

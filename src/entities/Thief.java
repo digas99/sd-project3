@@ -12,6 +12,7 @@ public abstract class Thief extends Thread {
     protected final ConcentrationSite concentrationSite;
     protected final CollectionSite collectionSite;
     protected final Museum museum;
+    protected AssaultParty[] assaultParties;
     protected int thiefID;
     protected int thiefState;
     protected int displacement;
@@ -40,7 +41,11 @@ public abstract class Thief extends Thread {
         this.thiefID = thiefID;
     }
 
-    public Thief(String threadName, int id, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite) {
+    public Museum getMuseum() {
+        return museum;
+    }
+
+    public Thief(String threadName, int id, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite, AssaultParty[] assaultParties) {
         super(threadName);
 
         this.thiefID = id;
@@ -48,6 +53,7 @@ public abstract class Thief extends Thread {
         this.museum = museum;
         this.concentrationSite = concentrationSite;
         this.collectionSite = collectionSite;
+        this.assaultParties = assaultParties;
     }
 
     @Override

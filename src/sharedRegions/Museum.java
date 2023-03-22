@@ -6,13 +6,13 @@ import static utils.Parameters.*;
 public class Museum {
     private final Room rooms[] = new Room[N_ROOMS];
 
-    public Room[] getRooms() {
-        return rooms;
+    public Room getRoom(int roomID) {
+        return rooms[roomID];
     }
 
     public Museum() {
         for (int i = 0; i < rooms.length; i++) {
-            rooms[i] = new Room();
+            rooms[i] = new Room(i);
         }
     }
 
@@ -20,14 +20,32 @@ public class Museum {
 
     }
 
-    private class Room {
+    class Room {
 
+        private int id;
         private int distance;
         private int paintings;
 
-        public Room() {
-            this.distance = random(MIN_DISTANCE, MAX_DISTANCE);
-            this.paintings = random(MIN_PAINTINGS, MAX_PAINTINGS);
+        public int getDistance() {
+            return distance;
+        }
+
+        public void setDistance(int distance) {
+            this.distance = distance;
+        }
+
+        public int getPaintings() {
+            return paintings;
+        }
+
+        public void setPaintings(int paintings) {
+            this.paintings = paintings;
+        }
+
+        public Room(int id) {
+            this.id = id;
+            distance = random(MIN_DISTANCE, MAX_DISTANCE);
+            paintings = random(MIN_PAINTINGS, MAX_PAINTINGS);
         }
     }
 }

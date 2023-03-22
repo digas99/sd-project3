@@ -8,6 +8,7 @@ import sharedRegions.*;
 import utils.MemException;
 
 import static utils.Parameters.*;
+import static utils.Utils.logger;
 
 public class Assault {
 
@@ -54,9 +55,9 @@ public class Assault {
         masters = new MasterThief[N_THIEVES_MASTER];
         thieves = new OrdinaryThief[N_THIEVES_ORDINARY];
         for (int i = 0; i < N_THIEVES_MASTER; i++)
-            masters[i] = new MasterThief("Master_" + (i + 1), i, museum, concentrationSite, collectionSite) ;
+            masters[i] = new MasterThief("Master_" + (i + 1), i, museum, concentrationSite, collectionSite, assaultParties) ;
         for (int i = 0; i < N_THIEVES_ORDINARY; i++)
-            thieves[i] = new OrdinaryThief("Ordinary_"+(i+1), i, museum, concentrationSite, collectionSite, assaultParties);
+            thieves[i] = new OrdinaryThief("Ordinary_" + (i+1), i, museum, concentrationSite, collectionSite, assaultParties);
 
         // start threads
         for (int i = 0; i < N_THIEVES_MASTER; i++)
@@ -69,13 +70,13 @@ public class Assault {
             try {
                 masters[i].join();
             } catch (InterruptedException e) {}
-            GenericIO.writelnString("[" + masters[i].getName() + "]: has terminated!");
+            logger(masters[i], "has terminated!");
         }
         for (int i = 0; i < N_THIEVES_ORDINARY; i++) {
             try {
                 thieves[i].join();
             } catch (InterruptedException e) {}
-            GenericIO.writelnString("[" + thieves[i].getName() + "]: has terminated!");
+            logger(thieves[i], "has terminated!");
         }
     }
 }
