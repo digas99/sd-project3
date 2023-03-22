@@ -10,7 +10,7 @@ public class Museum {
         return rooms[roomID];
     }
 
-    public Museum() {
+    public Museum(GeneralRepos repos) {
         for (int i = 0; i < rooms.length; i++) {
             rooms[i] = new Room(i);
         }

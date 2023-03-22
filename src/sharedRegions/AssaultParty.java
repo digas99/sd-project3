@@ -38,7 +38,7 @@ public class AssaultParty {
       return nThieves;
    }
 
-   public AssaultParty(int id, int size, int thievesPerParty) throws MemException {
+   public AssaultParty(int id, int size, int thievesPerParty, GeneralRepos repos) throws MemException {
       this.id = id;
       this.thieves = new int[size];
       nThieves = nextThiefPos = 0;

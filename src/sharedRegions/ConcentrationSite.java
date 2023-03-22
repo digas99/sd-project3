@@ -22,7 +22,7 @@ public class ConcentrationSite {
         return thieves.size() >= thievesPerParty;
     }
 
-    public ConcentrationSite(int nThieves, int nAssaultParties, int thievesPerParty, int nRooms) throws MemException {
+    public ConcentrationSite(int nThieves, int nAssaultParties, int thievesPerParty, int nRooms, GeneralRepos repos) throws MemException {
         thieves = new MemFIFO<>(new Integer[nThieves]);
         freeRooms = new MemFIFO<>(new Integer[nRooms]);
         for (int i = 0; i < nRooms; i++)

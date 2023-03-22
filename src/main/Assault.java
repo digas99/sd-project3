@@ -22,6 +22,7 @@ public class Assault {
         CollectionSite collectionSite;
         ConcentrationSite concentrationSite;
         Museum museum;
+        AssaultParty assault;
         GeneralRepos repos;
         String logFile;
         char opt;
@@ -44,12 +45,14 @@ public class Assault {
 
         // init shared regions
         repos = new GeneralRepos(logFile);
-        collectionSite = new CollectionSite();
-        concentrationSite = new ConcentrationSite(N_THIEVES_ORDINARY, N_ASSAULT_PARTIES, N_THIEVES_PER_PARTY, N_ROOMS);
-        museum = new Museum();
+        collectionSite = new CollectionSite(repos);
+        concentrationSite = new ConcentrationSite(N_THIEVES_ORDINARY, N_ASSAULT_PARTIES,N_THIEVES_PER_PARTY,N_ROOMS,repos);
+        museum = new Museum(repos);
         assaultParties = new AssaultParty[N_ASSAULT_PARTIES];
         for (int i = 0; i < N_ASSAULT_PARTIES; i++)
-            assaultParties[i] = new AssaultParty(i, N_THIEVES_PER_PARTY, N_THIEVES_PER_PARTY);
+            assaultParties[i] = new AssaultParty(i, N_THIEVES_PER_PARTY,N_THIEVES_PER_PARTY,repos);
+
+        repos.reportLegend();
 
         // init masters and thieves
         masters = new MasterThief[N_THIEVES_MASTER];
