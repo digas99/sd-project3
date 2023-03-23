@@ -42,7 +42,7 @@ public class Museum {
         // roll a canvas
         room.setPaintings(room.getPaintings() - 1);
         GenericIO.writelnString();
-        logger(this, thief, "Rolled a canvas from "+ room + ". There are " + room.getPaintings() + " left.");
+        logger(this, thief, "Rolled a canvas from "+ room + ". There are " + room.getPaintings() + "/" + room.getTotalPaintings() + " left.");
     }
 
     class Room {
@@ -50,6 +50,7 @@ public class Museum {
         private int id;
         private int distance;
         private int paintings;
+        private int totalPaintings;
         private int assaultPartyID;
 
         public int getDistance() {
@@ -76,10 +77,18 @@ public class Museum {
             this.assaultPartyID = assaultPartyID;
         }
 
+        public int getTotalPaintings() {
+            return totalPaintings;
+        }
+
+        public void setTotalPaintings(int totalPaintings) {
+            this.totalPaintings = totalPaintings;
+        }
+
         public Room(int id) {
             this.id = id;
             distance = random(MIN_DISTANCE, MAX_DISTANCE);
-            paintings = random(MIN_PAINTINGS, MAX_PAINTINGS);
+            paintings = totalPaintings = random(MIN_PAINTINGS, MAX_PAINTINGS);
             assaultPartyID = -1;
         }
 

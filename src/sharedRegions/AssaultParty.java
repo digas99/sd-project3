@@ -126,22 +126,56 @@ public class AssaultParty {
          while (thief.canIMove())
             move(thief);
 
+         // check for endOfPath
+         boolean endOfPath = thief.getPosition() == room.getDistance();
+         if (endOfPath) {
+            loggerCrawl(this, thief, "REACHED ROOM");
+            thief.setThiefState(OrdinaryThiefStates.AT_A_ROOM);
+         }
+
          // wake up next thief
          if (!wakeUpNextThief(thief)) {
             // print final positions if there are no more thieves to wake up
             printPositions();
          }
 
-         // check for endOfPath
-         boolean endOfPath = thief.getPosition() == room.getDistance();
          if (endOfPath) {
-            loggerCrawl(this, thief, "REACHED ROOM");
-            thief.setThiefState(OrdinaryThiefStates.AT_A_ROOM);
             GenericIO.writelnString((Thread.currentThread()) + " left CrawlIn function...");
             break;
          }
       }
    }
+
+    public synchronized void reverseDirection() {
+        OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
+        thief.setThiefState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
+
+        loggerCrawl(this, thief, "ready to reverse direction");
+        // if this was the last thief to reverse direction, notify the first party member to begin the crawling out
+        // the id of the last thief to arrive is saved in nextThiefID from the last call to crawlIn
+        if (thief.getThiefID() == nextThiefID) {
+            loggerCrawl(this, thief, "wakes up first thief to begin crawling out");
+            // set next thief id to the first thief
+            nextThiefID = thieves[0].getThiefID();
+            notifyAll();
+        }
+    }
+
+    public synchronized void crawlOut() {
+        OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
+        thief.setThiefState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
+
+        while (true) {
+            // sleep if not his turn
+            while (nextThiefID != thief.getThiefID()) {
+                try {
+                    wait();
+                } catch (InterruptedException e) {}
+            }
+
+            loggerCrawl(this, thief, "woke up");
+        }
+    }
 
    private void move(OrdinaryThief thief) {
       if (thief.getMovesLeft() == 0) {
@@ -206,16 +240,15 @@ public class AssaultParty {
       do {
          nextThief = lowerThief(thief);
          thief = nextThief;
-
          if (++counter == N_THIEVES_PER_PARTY) break;
-      } while (nextThief.getThiefState() == OrdinaryThiefStates.AT_A_ROOM);
+      } while (nextThief.getPosition() == room.getDistance());
 
       if (currentThief == nextThief) return false;
 
       // only choose next thief if not all thieves are at the room
+      GenericIO.writelnString("Counter: " + counter);
       if (counter != N_THIEVES_PER_PARTY) {
          nextThiefID = nextThief.getThiefID();
-         GenericIO.writelnString("Next thief: " + nextThief);
          nextThief.resetMovesLeft();
          nextThief.canIMove(true);
          notifyAll();
@@ -418,14 +451,5 @@ public class AssaultParty {
          print += "["+t.getPosition()+"]";
       }
       GenericIO.writelnString(print+"\n");
-   }
-
-   public synchronized void reverseDirection() {
-        ((OrdinaryThief) Thread.currentThread()).setThiefState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
-   }
-
-   public synchronized void crawlOut() {
-      OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
-      thief.setThiefState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
    }
 }
