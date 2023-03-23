@@ -23,7 +23,7 @@ public class GeneralRepos {
 
     private void reporInitialStatus(){
         TextFile log = new TextFile();
-        if(!log.openForWriting("/home/lara/Desktop/sd-project1", logFile)){
+        if(!log.openForWriting(".", logFile)){
             GenericIO.writelnString ("The operation of creating the file " + logFile + " failed!");
             System.exit (1);
         }
@@ -75,7 +75,7 @@ public class GeneralRepos {
     {
         TextFile log = new TextFile ();                  	// instantiation of a text file handler
         String lineStatus = "";                              		// state line to be printed
-        if (!log.openForAppending ("/home/lara/Desktop/sd-project1", logFile))
+        if (!log.openForAppending (".", logFile))
         {
             GenericIO.writelnString ("The operation of opening for appending the file " + logFile + " failed!");
             System.exit (1);

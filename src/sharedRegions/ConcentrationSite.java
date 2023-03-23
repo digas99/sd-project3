@@ -1,7 +1,6 @@
 package sharedRegions;
 
 import entities.*;
-import genclass.GenericIO;
 import utils.MemException;
 import utils.MemFIFO;
 
@@ -111,11 +110,6 @@ public class ConcentrationSite {
 
         logger(this, master, "woke up");
 
-        // all thieves have joined the party
-        try {
-            assaultParty.setRoomID(freeRooms.read());
-        } catch (MemException e) {}
-
         // setup id for next assault party
         assaultPartyID = (assaultPartyID + 1) % nAssaultParties;
         joinedThieves = 0;
@@ -147,8 +141,13 @@ public class ConcentrationSite {
         try {
             thieves.read();
             thief.joinParty(assaultPartyID);
-            assaultParty = thief.getParty();
             joinedThieves++;
+
+            // only run this code once per party
+            if (joinedThieves == 1) {
+                assaultParty = thief.getParty();
+                assaultParty.setRoomID(freeRooms.read());
+            }
             logger(this, thief, "joined "+ assaultParty);
         } catch (MemException e) {}
 

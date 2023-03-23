@@ -1,5 +1,7 @@
 package sharedRegions;
 
+import genclass.GenericIO;
+
 import static utils.Utils.random;
 import static utils.Parameters.*;
 
@@ -7,6 +9,7 @@ public class Museum {
     private final Room rooms[] = new Room[N_ROOMS];
 
     public Room getRoom(int roomID) {
+        GenericIO.writelnString("Museum: getRoom("+roomID+") "+rooms.length);
         return rooms[roomID];
     }
 
@@ -46,6 +49,11 @@ public class Museum {
             this.id = id;
             distance = random(MIN_DISTANCE, MAX_DISTANCE);
             paintings = random(MIN_PAINTINGS, MAX_PAINTINGS);
+        }
+
+        @Override
+        public String toString() {
+            return "Room_"+id;
         }
     }
 }

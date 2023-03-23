@@ -15,7 +15,6 @@ public abstract class Thief extends Thread {
     protected AssaultParty[] assaultParties;
     protected int thiefID;
     protected int thiefState;
-    protected int displacement;
 
     public int getThiefState() {
         return thiefState;
@@ -23,14 +22,6 @@ public abstract class Thief extends Thread {
 
     public void setThiefState(int thiefState) {
         this.thiefState = thiefState;
-    }
-
-    public int getDisplacement() {
-        return displacement;
-    }
-
-    public void setDisplacement(int displacement) {
-        this.displacement = displacement;
     }
 
     public int getThiefID() {
@@ -49,7 +40,6 @@ public abstract class Thief extends Thread {
         super(threadName);
 
         this.thiefID = id;
-        this.displacement = random(MIN_DISPLACEMENT, MAX_DISPLACEMENT);
         this.museum = museum;
         this.concentrationSite = concentrationSite;
         this.collectionSite = collectionSite;

@@ -22,7 +22,6 @@ public class Assault {
         CollectionSite collectionSite;
         ConcentrationSite concentrationSite;
         Museum museum;
-        AssaultParty assault;
         GeneralRepos repos;
         String logFile;
         char opt;
@@ -50,7 +49,7 @@ public class Assault {
         museum = new Museum(repos);
         assaultParties = new AssaultParty[N_ASSAULT_PARTIES];
         for (int i = 0; i < N_ASSAULT_PARTIES; i++)
-            assaultParties[i] = new AssaultParty(i, N_THIEVES_PER_PARTY,N_THIEVES_PER_PARTY,repos);
+            assaultParties[i] = new AssaultParty(i, N_THIEVES_PER_PARTY,N_THIEVES_PER_PARTY,MAX_SEPARATION_LIMIT,repos);
 
         repos.reportLegend();
 
