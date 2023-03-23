@@ -76,7 +76,7 @@ public class OrdinaryThief extends Thief {
                 party.crawlIn();
                 museum.rollACanvas(party.getId());
                 party.reverseDirection();
-                //party.crawlOut();
+                party.crawlOut();
                 //collectionSite.handACanvas(assaultID);
 
                 // simulating assault, to be deleted
