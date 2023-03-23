@@ -130,29 +130,19 @@ public class AssaultParty {
 
          GenericIO.writelnString(thief + ": " + thief.getPosition() + " - " + room.getDistance());
 
+         // wake up next thief
+         if (!wakeUpNextThief(thief)) {
+            // print final positions if there are no more thieves to wake up
+            printPositions();
+         }
+
          // check for endOfPath
          boolean endOfPath = thief.getPosition() == room.getDistance();
          if (endOfPath) {
             loggerCrawl(this, thief, "REACHED ROOM");
             thief.setThiefState(OrdinaryThiefStates.AT_A_ROOM);
+            GenericIO.writelnString((Thread.currentThread()) + " left CrawlIn function...");
             break;
-         }
-
-         // wake up next thief
-         OrdinaryThief nextThief;
-         int counter = 0;
-         do {
-            nextThief = lowerThief(thief);
-            thief = nextThief;
-         } while (nextThief.getThiefState() == OrdinaryThiefStates.AT_A_ROOM || ++counter == N_THIEVES_PER_PARTY);
-
-         // only choose next thief if not all thieves are at the room
-         if (counter != N_THIEVES_PER_PARTY) {
-            nextThiefID = nextThief.getThiefID();
-            GenericIO.writelnString("Next thief: " + nextThief);
-            nextThief.resetMovesLeft();
-            nextThief.canIMove(true);
-            notifyAll();
          }
       }
    }
@@ -202,8 +192,41 @@ public class AssaultParty {
          return;
       }
 
-      // fix excess moves or if went to a occupied position
+      // fix excess moves or if went to an occupied position
       if (checkExcessMove(thief, distanceToMove) || checkOccupiedMove(thief)) thief.setMovesLeft(0);
+   }
+
+   /**
+    * Find a next thief to wake up.
+    *
+    * @param thief Thief that just moved
+    * @return true if found a thief to wake up, false otherwise
+    */
+
+   private boolean wakeUpNextThief(OrdinaryThief thief) {
+      OrdinaryThief currentThief = thief;
+      OrdinaryThief nextThief;
+      int counter = 0;
+      do {
+         nextThief = lowerThief(thief);
+         thief = nextThief;
+
+         if (++counter == N_THIEVES_PER_PARTY) break;
+      } while (nextThief.getThiefState() == OrdinaryThiefStates.AT_A_ROOM);
+
+      if (currentThief == nextThief) return false;
+
+      // only choose next thief if not all thieves are at the room
+      if (counter != N_THIEVES_PER_PARTY) {
+         nextThiefID = nextThief.getThiefID();
+         GenericIO.writelnString("Next thief: " + nextThief);
+         nextThief.resetMovesLeft();
+         nextThief.canIMove(true);
+         notifyAll();
+         return true;
+      }
+
+      return false;
    }
 
    /**

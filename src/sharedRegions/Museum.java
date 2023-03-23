@@ -43,7 +43,6 @@ public class Museum {
         room.setPaintings(room.getPaintings() - 1);
         GenericIO.writelnString();
         logger(this, thief, "Rolled a canvas from "+ room + ". There are " + room.getPaintings() + " left.");
-        GenericIO.writelnString();
     }
 
     class Room {
