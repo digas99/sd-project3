@@ -49,7 +49,7 @@ public class Assault {
         museum = new Museum(repos);
         assaultParties = new AssaultParty[N_ASSAULT_PARTIES];
         for (int i = 0; i < N_ASSAULT_PARTIES; i++)
-            assaultParties[i] = new AssaultParty(i, N_THIEVES_PER_PARTY,N_THIEVES_PER_PARTY,MAX_SEPARATION_LIMIT,repos);
+            assaultParties[i] = new AssaultParty(i, repos);
 
         repos.reportLegend();
 
@@ -57,9 +57,9 @@ public class Assault {
         masters = new MasterThief[N_THIEVES_MASTER];
         thieves = new OrdinaryThief[N_THIEVES_ORDINARY];
         for (int i = 0; i < N_THIEVES_MASTER; i++)
-            masters[i] = new MasterThief("Master_" + (i + 1), i, museum, concentrationSite, collectionSite, assaultParties) ;
+            masters[i] = new MasterThief("Master_" + i, i, museum, concentrationSite, collectionSite, assaultParties) ;
         for (int i = 0; i < N_THIEVES_ORDINARY; i++)
-            thieves[i] = new OrdinaryThief("Ordinary_" + (i+1), i, museum, concentrationSite, collectionSite, assaultParties);
+            thieves[i] = new OrdinaryThief("Ordinary_" + i, i, museum, concentrationSite, collectionSite, assaultParties);
 
         // start threads
         for (int i = 0; i < N_THIEVES_MASTER; i++)

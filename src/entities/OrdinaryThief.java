@@ -56,11 +56,15 @@ public class OrdinaryThief extends Thief {
         this.movesLeft = movesLeft;
     }
 
+    public void resetMovesLeft() {
+        movesLeft = max(displacement, MAX_SEPARATION_LIMIT);
+    }
+
     public OrdinaryThief(String threadName, int thiefID, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite, AssaultParty[] assaultParties) {
         super(threadName, thiefID, museum, concentrationSite, collectionSite, assaultParties);
         thiefState = OrdinaryThiefStates.CONCENTRATION_SITE;
         displacement = random(MIN_DISPLACEMENT, MAX_DISPLACEMENT);
-        movesLeft = max(displacement, MAX_SEPARATION_LIMIT);
+        resetMovesLeft();
         canIMove = false;
     }
 
@@ -70,7 +74,7 @@ public class OrdinaryThief extends Thief {
             while (concentrationSite.amINeeded()) {
                 concentrationSite.prepareExcursion();
                 party.crawlIn();
-                //museum.rollACanvas(assaultID);
+                museum.rollACanvas(party.getId());
                 //party.reverseDirection();
                 //party.crawlOut();
                 //collectionSite.handACanvas(assaultID);
