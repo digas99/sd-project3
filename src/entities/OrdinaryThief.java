@@ -75,7 +75,7 @@ public class OrdinaryThief extends Thief {
                 concentrationSite.prepareExcursion();
                 party.crawlIn();
                 museum.rollACanvas(party.getId());
-                //party.reverseDirection();
+                party.reverseDirection();
                 //party.crawlOut();
                 //collectionSite.handACanvas(assaultID);
 

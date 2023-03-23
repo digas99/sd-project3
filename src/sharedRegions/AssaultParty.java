@@ -120,15 +120,11 @@ public class AssaultParty {
             } catch (InterruptedException e) {}
          }
 
-         GenericIO.writelnString();
          printPositions();
 
-         GenericIO.writelnString();
          //loggerCrawl(this, thief, "woke up");
          while (thief.canIMove())
             move(thief);
-
-         GenericIO.writelnString(thief + ": " + thief.getPosition() + " - " + room.getDistance());
 
          // wake up next thief
          if (!wakeUpNextThief(thief)) {
@@ -413,14 +409,15 @@ public class AssaultParty {
    }
 
    private void printPositions() {
+      String print = "\nPositions for " + this + " in " + room + ":\n";
       for (OrdinaryThief t : thieves) {
-         GenericIO.writeString("["+t.getThiefID()+"]");
+         print += "["+t.getThiefID()+"]";
       }
-      GenericIO.writelnString("\n-----------");
+      print += "\n---------\n";
       for (OrdinaryThief t : thieves) {
-         GenericIO.writeString("["+t.getPosition()+"]");
+         print += "["+t.getPosition()+"]";
       }
-      GenericIO.writelnString();
+      GenericIO.writelnString(print+"\n");
    }
 
    public synchronized void reverseDirection() {
