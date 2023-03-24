@@ -24,11 +24,11 @@ public class OrdinaryThief extends Thief {
         return party;
     }
 
-    public boolean canIMove() {
+    public boolean canMove() {
         return canIMove;
     }
 
-    public void canIMove(boolean canIMove) {
+    public void canMove(boolean canIMove) {
         this.canIMove = canIMove;
     }
 
@@ -78,11 +78,6 @@ public class OrdinaryThief extends Thief {
                 party.reverseDirection();
                 party.crawlOut();
                 //collectionSite.handACanvas(assaultID);
-
-                // simulating assault, to be deleted
-                try {
-                    Thread.sleep(100000);
-                } catch (InterruptedException e) {}
             }
         }
     }
