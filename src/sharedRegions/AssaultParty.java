@@ -36,6 +36,8 @@ public class AssaultParty {
     */
    private Museum.Room room;
 
+   private final GeneralRepos repos;
+
    public int getId() {
       return id;
    }
@@ -50,6 +52,7 @@ public class AssaultParty {
 
    public void setRoomID(int roomID) {
       this.roomID = roomID;
+      repos.setRoomID(roomID);
    }
 
    public AssaultParty(int id, GeneralRepos repos) throws MemException {
@@ -57,6 +60,7 @@ public class AssaultParty {
       this.thieves = new OrdinaryThief[N_THIEVES_PER_PARTY];
       nThieves = 0;
       nextThiefID = roomID = -1;
+      this.repos = repos;
    }
 
    @Override
@@ -74,6 +78,8 @@ public class AssaultParty {
       MasterThief master = (MasterThief) Thread.currentThread();
       master.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
       GenericIO.writelnString("Sending " + this + " to Room " + roomID);
+
+      repos.setAssaultPartyID(id);
 
       GenericIO.writelnString("\n|| Beginning " + this + " ||\nLOG FORMAT: [" + this + "][OrdinaryThief][SPEED][POS][MOVES]\n");
 
@@ -100,6 +106,8 @@ public class AssaultParty {
       OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
       thieves[nThieves++] = thief;
       thief.setThiefState(OrdinaryThiefStates.CRAWLING_INWARDS);
+      repos.setOrdinaryThiefState(thief.getThiefID(), OrdinaryThiefStates.CRAWLING_INWARDS);
+      repos.setOrdinaryThiefId(thief.getThiefID());
 
       // first thief to arrive sets next thief as himself
       if (nextThiefID == -1) {
@@ -120,12 +128,14 @@ public class AssaultParty {
       } while(crawl(thief, room.getDistance(), OrdinaryThiefStates.AT_A_ROOM, false));
 
       GenericIO.writelnString((Thread.currentThread()) + " left " + Thread.currentThread().getStackTrace()[1].getMethodName() + " function...");
+      repos.setDistance(room.getDistance());
       loggerCrawl(this, thief, "REACHED ROOM");
    }
 
    public synchronized void crawlOut() {
        OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
        thief.setThiefState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
+       repos.setOrdinaryThiefState(thief.getThiefID(), OrdinaryThiefStates.CRAWLING_OUTWARDS);
 
        // if this is the first thief to start crawl out, reset his moves left
        if (thief.getThiefID() == thieves[0].getThiefID())
@@ -151,6 +161,8 @@ public class AssaultParty {
 
        if (!wakeUpNextThief(thief, backwards)) // wake up next thief
            printPositions(); // if last thief, print final positions
+
+       repos.setOrdinaryThiefPosition(thief.getThiefID(), thief.getPosition());
 
        if (thief.getPosition() == goal) { // check for end of path
            thief.setThiefState(endState);
@@ -197,6 +209,7 @@ public class AssaultParty {
 
    private void updatePosition(OrdinaryThief thief, int value, boolean backwards) {
       thief.setPosition(!backwards ? thief.getPosition() + value : thief.getPosition() - value);
+      repos.setOrdinaryThiefPosition(thief.getThiefID(), thief.getPosition());
    }
 
    /**

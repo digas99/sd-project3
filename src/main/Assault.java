@@ -30,13 +30,14 @@ public class Assault {
         GenericIO.writelnString ("\n" + "      Heist to the Museum\n");
         do { GenericIO.writeString ("Logging file name? ");
             logFile = GenericIO.readlnString ();
-            if (FileOp.exists (".", logFile)){
+            if (FileOp.exists ("./logs/", logFile)){
                 do {
                 GenericIO.writeString ("There is already a file with this name. Delete it (y - yes; n - no)? ");
                 opt = GenericIO.readlnChar ();
             } while ((opt != 'y') && (opt != 'n'));
                 if (opt == 'y')
                     success = true;
+
                 else success = false;
             }
             else success = true;
@@ -51,7 +52,6 @@ public class Assault {
         for (int i = 0; i < N_ASSAULT_PARTIES; i++)
             assaultParties[i] = new AssaultParty(i, repos);
 
-        repos.reportLegend();
 
         // init masters and thieves
         masters = new MasterThief[N_THIEVES_MASTER];
