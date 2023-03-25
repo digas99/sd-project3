@@ -55,12 +55,16 @@ public class AssaultParty {
       repos.setRoomID(roomID);
    }
 
+   public void resetThieves() {
+       thieves = new OrdinaryThief[N_THIEVES_PER_PARTY];
+       nThieves = 0;
+       nextThiefID = roomID = -1;
+   }
+
    public AssaultParty(int id, GeneralRepos repos) throws MemException {
       this.id = id;
-      this.thieves = new OrdinaryThief[N_THIEVES_PER_PARTY];
-      nThieves = 0;
-      nextThiefID = roomID = -1;
       this.repos = repos;
+      resetThieves();
    }
 
    @Override
@@ -234,7 +238,6 @@ public class AssaultParty {
       if (currentThief == nextThief) return false;
 
       // only choose next thief if not all thieves are at the room
-      GenericIO.writelnString("Counter: " + counter);
       if (counter != N_THIEVES_PER_PARTY) {
          nextThiefID = nextThief.getThiefID();
          nextThief.resetMovesLeft();

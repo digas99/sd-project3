@@ -1,13 +1,13 @@
 package entities;
 
+import genclass.GenericIO;
 import sharedRegions.AssaultParty;
 import sharedRegions.CollectionSite;
 import sharedRegions.ConcentrationSite;
 import sharedRegions.Museum;
 
 import static utils.Parameters.*;
-import static utils.Utils.random;
-import static utils.Utils.max;
+import static utils.Utils.*;
 
 public class OrdinaryThief extends Thief {
     private AssaultParty party;
@@ -74,15 +74,13 @@ public class OrdinaryThief extends Thief {
 
     @Override
     public void run() {
-        while (true) {
-            while (concentrationSite.amINeeded()) {
-                concentrationSite.prepareExcursion();
-                party.crawlIn();
-                museum.rollACanvas(party.getId());
-                party.reverseDirection();
-                party.crawlOut();
-                collectionSite.handACanvas();
-            }
+        while (concentrationSite.amINeeded()) {
+            concentrationSite.prepareExcursion();
+            party.crawlIn();
+            museum.rollACanvas(party.getId());
+            party.reverseDirection();
+            party.crawlOut();
+            collectionSite.handACanvas();
         }
     }
 }

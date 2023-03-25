@@ -7,11 +7,18 @@ import genclass.GenericIO;
 import utils.MemException;
 import utils.MemFIFO;
 
+import java.util.Arrays;
+
 import static utils.Parameters.*;
 import static utils.Utils.all;
 
 public class CollectionSite {
     private MemFIFO<Integer> arrivedThieves;
+
+    /**
+     * The number of thieves from each party that are in the site.
+     */
+    private final int[] partyThievesInSite;
     private final boolean[] roomEmpty;
 
     public CollectionSite(GeneralRepos repos) {
@@ -21,12 +28,16 @@ public class CollectionSite {
         roomEmpty = new boolean[N_ROOMS];
         for (int i = 0; i < N_ROOMS; i++)
             roomEmpty[i] = false;
+        partyThievesInSite = new int[N_ASSAULT_PARTIES];
+        for (int i = 0; i < N_ASSAULT_PARTIES; i++)
+            partyThievesInSite[i] = 0;
     }
 
     public synchronized int appraiseSit() {
         MasterThief master = (MasterThief) Thread.currentThread();
 
         // check if the heist should end
+        GenericIO.writelnString("Rooms : " + Arrays.toString(roomEmpty));
         if (all(roomEmpty)) {
             // update concentration site
             master.getConcentrationSite().endHeist(true);
@@ -34,8 +45,7 @@ public class CollectionSite {
         }
 
         // check if it should wait for canvas
-        GenericIO.writelnString("Master: " + master.getConcentrationSite().getJoinedThieves());
-        if (master.sentAnyAssaultParty() && master.getConcentrationSite().getJoinedThieves() < N_THIEVES_PER_PARTY)
+        if (master.sentAnyAssaultParty() && master.getConcentrationSite().numberOfThieves() < N_THIEVES_PER_PARTY)
             return WAIT_FOR_CANVAS;
 
         // otherwise, make more assault parties
@@ -55,7 +65,11 @@ public class CollectionSite {
 
     public synchronized void handACanvas() {
         OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
-        roomEmpty[thief.getParty().getRoomID()] = !thief.hasCanvas();
+        if (!thief.hasCanvas()) {
+            roomEmpty[thief.getParty().getRoomID()] = true;
+            thief.getMuseum().getRoom(thief.getParty().getRoomID()).setAssaultPartyID(-1);
+        }
+        partyThievesInSite[thief.getParty().getId()]++;
 
         // wake up master
         try {
@@ -70,7 +84,12 @@ public class CollectionSite {
             } catch (InterruptedException e) {}
         }
 
+        partyThievesInSite[thief.getParty().getId()]--;
         thief.hasCanvas(false);
+
+        // if last thief from party handing a canvas, free room
+        if (partyThievesInSite[thief.getParty().getId()] == 0)
+            ((OrdinaryThief) Thread.currentThread()).getConcentrationSite().setRoomState(thief.getParty().getRoomID(), FREE_ROOM);
     }
 
     public void collectACanvas() {

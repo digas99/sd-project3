@@ -1,6 +1,7 @@
 package sharedRegions;
 
 import entities.*;
+import genclass.GenericIO;
 import utils.MemException;
 import utils.MemFIFO;
 
@@ -36,6 +37,10 @@ public class ConcentrationSite {
         this.endHeist = endHeist;
     }
 
+    public int numberOfThieves() {
+        return thieves.size();
+    }
+
     public ConcentrationSite(GeneralRepos repos) throws MemException {
         thieves = new MemFIFO<>(new Integer[N_THIEVES_PER_PARTY]);
         rooms = new int[N_ROOMS];
@@ -68,14 +73,14 @@ public class ConcentrationSite {
      */
 
     public synchronized boolean amINeeded() {
+        logger(this, Thread.currentThread(), "is needed.");
         if (endHeist) return false;
 
         OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
         try {
             thieves.write(thief.getThiefID());
             logger(this, thief, "entered Concentration Site");
-        } catch (MemException e) {
-        }
+        } catch (MemException e) {}
 
         // wake up master for her to decide if she needs more thieves
         notifyAll();
@@ -159,7 +164,9 @@ public class ConcentrationSite {
             // only run this code once per party
             if (joinedThieves == 1) {
                 assaultParty = thief.getParty();
+                assaultParty.resetThieves();
                 assaultParty.setRoomID(getFreeRoom());
+                GenericIO.writelnString("Assault Party " + assaultParty.getId() + " is ready to go for " + assaultParty.getRoomID());
             }
             logger(this, thief, "joined "+ assaultParty);
         } catch (MemException e) {}

@@ -10,7 +10,6 @@ public class Museum {
     private final Room rooms[] = new Room[N_ROOMS];
 
     public Room getRoom(int roomID) {
-        GenericIO.writelnString("Museum: getRoom("+roomID+") "+rooms.length);
         return rooms[roomID];
     }
 
@@ -46,9 +45,9 @@ public class Museum {
         else {
             room.setPaintings(room.getPaintings() - 1);
             thief.hasCanvas(true);
+            GenericIO.writelnString();
+            logger(this, thief, "Rolled a canvas from "+ room + ". There are " + room.getPaintings() + "/" + room.getTotalPaintings() + " left.");
         }
-        GenericIO.writelnString();
-        logger(this, thief, "Rolled a canvas from "+ room + ". There are " + room.getPaintings() + "/" + room.getTotalPaintings() + " left.");
     }
 
     class Room {
