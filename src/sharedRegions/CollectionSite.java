@@ -3,6 +3,7 @@ package sharedRegions;
 import entities.MasterThief;
 import entities.MasterThiefStates;
 import entities.OrdinaryThief;
+import genclass.GenericIO;
 import utils.MemException;
 import utils.MemFIFO;
 
@@ -33,6 +34,7 @@ public class CollectionSite {
         }
 
         // check if it should wait for canvas
+        GenericIO.writelnString("Master: " + master.getConcentrationSite().getJoinedThieves());
         if (master.sentAnyAssaultParty() && master.getConcentrationSite().getJoinedThieves() < N_THIEVES_PER_PARTY)
             return WAIT_FOR_CANVAS;
 
