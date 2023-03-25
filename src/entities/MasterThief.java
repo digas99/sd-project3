@@ -9,9 +9,20 @@ import utils.MemException;
 import static utils.Parameters.*;
 
 public class MasterThief extends Thief {
+    boolean sentAnyAssaultParty;
+
+    public boolean sentAnyAssaultParty() {
+        return sentAnyAssaultParty;
+    }
+
+    public void sentAnyAssaultParty(boolean sentAnyAssaultParty) {
+        this.sentAnyAssaultParty = sentAnyAssaultParty;
+    }
+
     public MasterThief(String threadName, int thiefID, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite, AssaultParty[] assaultParties) throws MemException {
         super(threadName, thiefID, museum, concentrationSite, collectionSite, assaultParties);
         setThiefState(MasterThiefStates.PLANNING_HEIST);
+        sentAnyAssaultParty = false;
     }
 
     @Override
@@ -24,8 +35,11 @@ public class MasterThief extends Thief {
                     assaultParties[assaultPartyID].sendAssaultParty();
                     break;
                 case WAIT_FOR_CANVAS:
+                    collectionSite.takeARest();
+                    collectionSite.collectACanvas();
                     break;
                 case END_HEIST:
+                    collectionSite.sumUpResults();
                     break lifecycle;
             }
         }

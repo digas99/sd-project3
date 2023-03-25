@@ -78,6 +78,7 @@ public class AssaultParty {
       MasterThief master = (MasterThief) Thread.currentThread();
       master.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
       GenericIO.writelnString("Sending " + this + " to Room " + roomID);
+      master.sentAnyAssaultParty(true);
 
       repos.setAssaultPartyID(id);
 

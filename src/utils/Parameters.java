@@ -5,13 +5,24 @@ package utils;
  */
 
 public final class Parameters {
-    // Constants for Museum
     /**
      * Number of Rooms in the Museum.
      */
     public static final int N_ROOMS = 5;
+    /**
+     * The room is free to be assigned to an Assault Party
+     */
+    public static final int FREE_ROOM = 0;
+    /**
+     * The room is currently the target of an ongoing Assault Party
+     */
+    public static final int BUSY_ROOM = 1;
+    /**
+     * The room is empty, no paintings left
+     */
+    public static final int EMPTY_ROOM = 2;
 
-    // Constants for Room
+
     /**
      * Maximum distance the painting are from the entrance.
      */
@@ -29,7 +40,7 @@ public final class Parameters {
      */
     public static final int MIN_PAINTINGS = 8;
 
-    // Constants for Thieves
+
     /**
      * Maximum distance a thief can be from the previous thief.
      */
@@ -43,17 +54,17 @@ public final class Parameters {
      */
     public static final int MIN_DISPLACEMENT = 2;
 
-    // Constants for AssaultParty
+
     /**
      * Number of Assault Parties.
      */
-    public static final int N_ASSAULT_PARTIES = 2;
+    public static final int N_ASSAULT_PARTIES = 1;
     /**
      * Number of thieves in each Assault Party.
      */
     public static final int N_THIEVES_PER_PARTY = 3;
 
-    // Constants for main
+
     /**
      * Number of Master Thieves.
      */
@@ -61,9 +72,9 @@ public final class Parameters {
     /**
      * Number of Ordinary Thieves.
      */
-    public static final int N_THIEVES_ORDINARY = 6;
+    public static final int N_THIEVES_ORDINARY = 3;
 
-    // Constants for Control/Collection Site
+
     /**
      * Master Thief Appraise Sit decision to create a new Assault Party.
      */
