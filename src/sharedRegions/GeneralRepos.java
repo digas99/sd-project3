@@ -44,7 +44,6 @@ public class GeneralRepos {
         position = 0;
         roomID = 0;
         canvas = 0;
-        reportInitialStatus();
 
 
     }
@@ -113,8 +112,8 @@ public class GeneralRepos {
                     break;
             }
         }
-        lineStatus += "  " + String.format("%2d", roomID) + "  " + String.format("%2d", id) + "  " + String.format("%2d", position) + "  " + String.format("%2d", canvas) + "  " + String.format("%2d", roomID) + "  " + String.format("%2d", id) + "  " + String.format("%2d", position) + "  " + String.format("%2d", canvas) +
-                "  " + String.format("%2d",nPaintings ) + "  " + String.format("%2d", distance);
+        lineStatus += "  " + String.format("%2d", roomID) + "  " + String.format("%2d", id) + "  " + String.format("%2d", position) + "  " + String.format("%2d", canvas) + "                 " + String.format("%2d", roomID) + "  " + String.format("%2d", id) + "  " + String.format("%2d", position) + "  " + String.format("%2d", canvas) +
+                "              " + String.format("%2d",nPaintings ) + "  " + String.format("%2d", distance);
         log.writelnString(lineStatus);
 
         if (!log.close()) {
