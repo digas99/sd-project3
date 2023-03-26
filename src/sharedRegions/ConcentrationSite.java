@@ -74,7 +74,6 @@ public class ConcentrationSite {
 
     public synchronized boolean amINeeded() {
         logger(this, Thread.currentThread(), "is needed.");
-        if (endHeist) return false;
 
         OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
         try {
@@ -82,13 +81,14 @@ public class ConcentrationSite {
             logger(this, thief, "entered Concentration Site");
         } catch (MemException e) {}
 
-        // wake up master for her to decide if she needs more thieves
-        notifyAll();
-
         if (thief.getThiefState() == OrdinaryThiefStates.COLLECTION_SITE)
             thief.setThiefState(OrdinaryThiefStates.CONCENTRATION_SITE);
 
-        return true;
+        // wake up master for her to decide if she needs more thieves
+        GenericIO.writelnString("There are " + numberOfThieves() + " thieves in the concentration site.");
+        notifyAll();
+
+        return !endHeist;
     }
 
     /**
@@ -146,11 +146,13 @@ public class ConcentrationSite {
 
         // make sure thieves wake up in order
         try {
-            while (!makeParty || thief.getThiefID() != thieves.peek() || joinedThieves >= N_THIEVES_PER_PARTY) {
+            while (!endHeist && (!makeParty || thief.getThiefID() != thieves.peek() || joinedThieves >= N_THIEVES_PER_PARTY)) {
                 logger(this, thief, "waiting to be able to join party");
                 wait();
             }
         } catch (InterruptedException | MemException e) {}
+
+        if (endHeist) return;
 
         logger(this, thief, "woke up");
 

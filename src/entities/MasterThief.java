@@ -7,6 +7,7 @@ import sharedRegions.Museum;
 import utils.MemException;
 
 import static utils.Parameters.*;
+import static utils.Utils.logger;
 
 public class MasterThief extends Thief {
     boolean sentAnyAssaultParty;
@@ -31,14 +32,17 @@ public class MasterThief extends Thief {
         lifecycle: while(true) {
             switch (collectionSite.appraiseSit()) {
                 case CREATE_ASSAULT_PARTY:
+                    logger(this, "CREATE_ASSAULT_PARTY");
                     int assaultPartyID = concentrationSite.prepareAssaultParty();
                     assaultParties[assaultPartyID].sendAssaultParty();
                     break;
                 case WAIT_FOR_CANVAS:
+                    logger(this, "WAIT_FOR_CANVAS");
                     collectionSite.takeARest();
                     collectionSite.collectACanvas();
                     break;
                 case END_HEIST:
+                    logger(this, "END_HEIST");
                     collectionSite.sumUpResults();
                     break lifecycle;
             }

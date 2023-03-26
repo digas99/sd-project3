@@ -10,7 +10,7 @@ import utils.MemFIFO;
 import java.util.Arrays;
 
 import static utils.Parameters.*;
-import static utils.Utils.all;
+import static utils.Utils.*;
 
 public class CollectionSite {
     private MemFIFO<Integer> arrivedThieves;
@@ -20,6 +20,11 @@ public class CollectionSite {
      */
     private final int[] partyThievesInSite;
     private final boolean[] roomEmpty;
+
+    @Override
+    public String toString() {
+        return "Collection Site";
+    }
 
     public CollectionSite(GeneralRepos repos) {
         try {
@@ -45,8 +50,10 @@ public class CollectionSite {
         }
 
         // check if it should wait for canvas
-        if (master.sentAnyAssaultParty() && master.getConcentrationSite().numberOfThieves() < N_THIEVES_PER_PARTY)
+        if (master.sentAnyAssaultParty() && master.getConcentrationSite().numberOfThieves() < N_THIEVES_PER_PARTY) {
+            GenericIO.writelnString("Thieves in site: " + master.getConcentrationSite().numberOfThieves());
             return WAIT_FOR_CANVAS;
+        }
 
         // otherwise, make more assault parties
         return CREATE_ASSAULT_PARTY;
@@ -56,7 +63,7 @@ public class CollectionSite {
         MasterThief master = (MasterThief) Thread.currentThread();
         master.setThiefState(MasterThiefStates.WAITING_ARRIVAL);
 
-        while (arrivedThieves.size() == 0) {
+        while (arrivedThieves.size() == 0 && master.getConcentrationSite().numberOfThieves() < N_THIEVES_ORDINARY) {
             try {
                 wait();
             } catch (InterruptedException e) {}
@@ -86,13 +93,14 @@ public class CollectionSite {
 
         partyThievesInSite[thief.getParty().getId()]--;
         thief.hasCanvas(false);
+        loggerCrawl(this, thief, "Handed canvas to master thief.");
 
         // if last thief from party handing a canvas, free room
         if (partyThievesInSite[thief.getParty().getId()] == 0)
             ((OrdinaryThief) Thread.currentThread()).getConcentrationSite().setRoomState(thief.getParty().getRoomID(), FREE_ROOM);
     }
 
-    public void collectACanvas() {
+    public synchronized void collectACanvas() {
         try {
             // collect a canvas by taking a thief from the queue
             arrivedThieves.read();
@@ -105,9 +113,11 @@ public class CollectionSite {
         }
     }
 
-    public void sumUpResults() {
+    public synchronized void sumUpResults() {
         MasterThief master = (MasterThief) Thread.currentThread();
         master.setThiefState(MasterThiefStates.PRESENTING_REPORT);
+        GenericIO.writelnString("Master Thief is presenting the report.");
 
+        notifyAll();
     }
 }
