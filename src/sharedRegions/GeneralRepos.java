@@ -191,9 +191,6 @@ public class GeneralRepos {
                 "   "+ String.format("%4d", ordinaryThiefStates[0]) + "  "+String.format(s )+"  "+String.format("%1d",displacement) + "    " +
                 String.format("%4d", ordinaryThiefStates[1]) + "  "+String.format(s )+"  "+String.format("%1d",displacement) + "   " +
                 String.format("%4d", ordinaryThiefStates[2]) + "  "+String.format(s )+"  "+String.format("%1d",displacement) + "   " +
-                String.format("%4d", ordinaryThiefStates[3]) + "  "+String.format(s )+"  "+String.format("%1d",displacement) + "   " +
-                String.format("%4d", ordinaryThiefStates[4]) + "  "+String.format(s )+"  "+String.format("%1d",displacement) + "   " +
-                String.format("%4d", ordinaryThiefStates[5]) + "  "+String.format(s )+"  "+String.format("%1d",displacement) + "   " +
                 "\n" +
                 "    "+ String.format("%2d", roomID) + "  " + String.format("%2d", id) + "  " + String.format("%2d", position) + "  " + String.format("%2d", canvas)+ "  "+
                 "  " + String.format("%2d", id) + "  " + String.format("%2d", position) + "  " + String.format("%2d", canvas) + "  " +
