@@ -46,7 +46,7 @@ public class Assault {
         // init shared regions
         repos = new GeneralRepos(logFile);
         collectionSite = new CollectionSite(repos);
-        concentrationSite = new ConcentrationSite(N_THIEVES_ORDINARY, N_ASSAULT_PARTIES,N_THIEVES_PER_PARTY,N_ROOMS,repos);
+        concentrationSite = new ConcentrationSite(repos);
         museum = new Museum(repos);
         assaultParties = new AssaultParty[N_ASSAULT_PARTIES];
         for (int i = 0; i < N_ASSAULT_PARTIES; i++)

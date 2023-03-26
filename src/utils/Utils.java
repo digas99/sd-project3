@@ -17,7 +17,6 @@ public class Utils {
      * @param max highest number from the interval
      * @return a number between min and max
      */
-
     public static int random(int min, int max) {
         if (min >= max)
             throw new IllegalArgumentException("Max must be greater than Min");
@@ -41,6 +40,12 @@ public class Utils {
         return min;
     }
 
+    /**
+     * Max value of all arguments passed.
+     *
+     * @param values variable number of arguments
+     * @return the maximum value of all arguments passed
+     */
     public static int max(int... values) {
         int max = values[0];
         for (int i = 1; i < values.length; i++) {
@@ -76,7 +81,42 @@ public class Utils {
         GenericIO.writelnString("[" + place.toString() + "][" + entity.toString() + "]: " + message);
     }
 
+    /**
+     * Entity Crawl logger.
+     * Conveniently formatted print to log messages from an entity when crawling
+     *
+     * @param place any instance of class that has a toString()
+     * @param entity any instance of class that has a toString()
+     * @param message text presented after the enunciation of the entity
+     */
+
     public static void loggerCrawl(Object place, Object entity, String message) {
         GenericIO.writelnString("[" + place.toString() + "][" + entity.toString() + "][" + ((OrdinaryThief) entity).getDisplacement() + "][" + ((OrdinaryThief) entity).getPosition() + "][" + ((OrdinaryThief) entity).getMovesLeft() + "]: " + message);
+    }
+
+    /**
+     * Is Any
+     * Check if any element of an array is true
+     *
+     * @param array array of booleans
+     * @return true if any element is true, false otherwise
+     */
+    public static boolean any(boolean[] array) {
+        for (boolean b : array)
+            if (b) return true;
+        return false;
+    }
+
+    /**
+     * Is All
+     * Check if all elements of an array are true
+     *
+     * @param array array of booleans
+     * @return true if all elements are true, false otherwise
+     */
+    public static boolean all(boolean[] array) {
+        for (boolean b : array)
+            if (!b) return false;
+        return true;
     }
 }

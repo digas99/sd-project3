@@ -1,6 +1,5 @@
 package sharedRegions;
 
-import com.sun.org.apache.xpath.internal.operations.Or;
 import entities.OrdinaryThief;
 import genclass.GenericIO;
 
@@ -11,7 +10,6 @@ public class Museum {
     private final Room rooms[] = new Room[N_ROOMS];
 
     public Room getRoom(int roomID) {
-        GenericIO.writelnString("Museum: getRoom("+roomID+") "+rooms.length);
         return rooms[roomID];
     }
 
@@ -40,9 +38,16 @@ public class Museum {
         // get room from assault party
         Room room = getRoomFromAssault(assaultID);
         // roll a canvas
-        room.setPaintings(room.getPaintings() - 1);
-        GenericIO.writelnString();
-        logger(this, thief, "Rolled a canvas from "+ room + ". There are " + room.getPaintings() + "/" + room.getTotalPaintings() + " left.");
+        if (room.getPaintings() == 0) {
+            logger(this, thief, "There are no more paintings in " + room + ". Thief leaves empty handed.");
+            thief.hasCanvas(false);
+        }
+        else {
+            room.setPaintings(room.getPaintings() - 1);
+            thief.hasCanvas(true);
+            GenericIO.writelnString();
+            logger(this, thief, "Rolled a canvas from "+ room + ". There are " + room.getPaintings() + "/" + room.getTotalPaintings() + " left.");
+        }
     }
 
     class Room {
