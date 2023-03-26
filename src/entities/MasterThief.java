@@ -1,9 +1,6 @@
 package entities;
 
-import sharedRegions.AssaultParty;
-import sharedRegions.CollectionSite;
-import sharedRegions.ConcentrationSite;
-import sharedRegions.Museum;
+import sharedRegions.*;
 import utils.MemException;
 
 import static utils.Parameters.*;

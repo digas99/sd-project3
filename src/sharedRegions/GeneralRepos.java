@@ -7,27 +7,66 @@ import static utils.Parameters.*;
 
 public class GeneralRepos {
 
+    /**
+     *  Name of the logging file.
+     */
     private final String logFile;
 
+    /**
+     * Ordinary Thief states.
+     */
     private int[] ordinaryThiefStates;
 
+    /**
+     * Master Thief state.
+     */
     private int masterThiefStates;
 
+    /**
+     * Number of paintings in the museum.
+     */
     private int nPaintings;
 
+    /**
+     * Number of rooms in the museum.
+     */
     private int nRooms;
 
+    /**
+     * ID of the thief t
+     */
     private int id;
 
+    /**
+     * Distance to the concentration site.
+     */
     private int distance;
 
+    /**
+     * Position of the thief t.
+     */
     private int position;
 
+    /**
+     * ID of the room.
+     */
     private int roomID;
 
+    /**
+     * Number of canvas in the room.
+     */
     private int canvas;
 
+    /**
+     * Number of paintings in the room.
+     */
     private int paintings;
+
+    private String sumUp = "My friends, tonight's effort produced";
+
+    private int displacement;
+
+    private String s = "P";
 
 
     public GeneralRepos(String logFile) {
@@ -44,9 +83,42 @@ public class GeneralRepos {
         position = 0;
         roomID = 0;
         canvas = 0;
+        paintings = 0;
+        displacement = 0;
+
+        reportInitialStatus();
 
 
     }
+
+    public synchronized void updateMasterThiefState(int state) {
+        switch (state){
+            case MasterThiefStates.PLANNING_HEIST:
+                GenericIO.writelnString("Master Thief is planning the heist");
+                break;
+            case MasterThiefStates.DECIDING_WHAT_TO_DO:
+                GenericIO.writelnString("Master Thief is deciding what to do");
+                break;
+            case MasterThiefStates.ASSEMBLING_GROUP:
+                GenericIO.writelnString("Master Thief is assembling a group");
+                break;
+            case MasterThiefStates.WAITING_ARRIVAL:
+                GenericIO.writelnString("Master Thief is waiting for the group to arrive");
+                break;
+            case MasterThiefStates.PRESENTING_REPORT:
+                GenericIO.writelnString("Master Thief is presenting the report");
+                break;
+        }
+        masterThiefStates = state;
+        reportStatus();
+    }
+
+    public synchronized void setOrdinaryThiefStates(int[] states) {
+        ordinaryThiefStates = states;
+        reportStatus();
+    }
+
+
 
     private void reportInitialStatus() {
         TextFile log = new TextFile();
@@ -55,22 +127,23 @@ public class GeneralRepos {
             System.exit(1);
         }
         log.writelnString("                                    Heist to the Museum - Description of the internal state");
-        log.writelnString("MstT      Thief 1        Thief 2        Thief 3          Thief 4         Thief 5         Thief 6");
-        log.writelnString("Stat     Stat S MD       Stat S MD      Stat S MD        Stat S MD       Stat S MD       Stat S MD");
-        log.writelnString("                Assault party 1                                  Assault party 2                                                 Museum");
-        log.writelnString("      Elem 1         Elem 2        Elem 3                    Elem 1        Elem 2         Elem 3          Room 1      Room 2      Room 3      Room 4      Room 5");
-        log.writelnString("Rid  Id Pos Cv     Id Pos Cv     Id Pos Cv             Rid  Id Pos Cv     Id Pos Cv     Id Pos Cv         NP DT       NP DT       NP DT       NP DT       NP DT");
+        log.writelnString(" "+"MstT    Thief 1      Thief 2      Thief 3      Thief 4      Thief 5      Thief 6");
+        log.writelnString(" "+"Stat    Stat S MD    Stat S MD    Stat S MD    Stat S MD    Stat S MD    Stat S MD");
+        log.writelnString("     "+"                Assault party 1                                  Assault party 2                                                 Museum");
+        log.writelnString("     "+"      Elem 1         Elem 2        Elem 3                    Elem 1        Elem 2         Elem 3          Room 1      Room 2      Room 3      Room 4      Room 5");
+        log.writelnString("     "+"Rid  Id Pos Cv     Id Pos Cv     Id Pos Cv             Rid  Id Pos Cv     Id Pos Cv     Id Pos Cv         NP DT       NP DT       NP DT       NP DT       NP DT");
         if (!log.close()) {
             GenericIO.writelnString("The operation of closing the file " + logFile + " failed!");
             System.exit(1);
         }
-        reportStatus();
+
     }
 
     private void reportStatus() {
         TextFile log = new TextFile();
 
         String lineStatus = "";
+        String line = "";
 
         if (!log.openForAppending("./logs/", logFile)) {
             GenericIO.writelnString("The operation of opening for appending the file " + logFile + " failed!");
@@ -78,42 +151,61 @@ public class GeneralRepos {
         }
         switch (masterThiefStates) {
             case MasterThiefStates.PLANNING_HEIST:
-                lineStatus += "PLHT";
+                lineStatus += "";
                 break;
             case MasterThiefStates.DECIDING_WHAT_TO_DO:
-                lineStatus += "DWTD";
+                lineStatus += "";
                 break;
             case MasterThiefStates.ASSEMBLING_GROUP:
-                lineStatus += "ASGR";
+                lineStatus += "";
                 break;
             case MasterThiefStates.WAITING_ARRIVAL:
-                lineStatus += "WTAR";
+                lineStatus += "";
                 break;
             case MasterThiefStates.PRESENTING_REPORT:
-                lineStatus += "PRRP";
+                lineStatus += "";
                 break;
         }
         for (int i = 0; i < N_THIEVES_ORDINARY; i++) {
             switch (ordinaryThiefStates[i]) {
                 case OrdinaryThiefStates.CONCENTRATION_SITE:
-                    lineStatus += "COlS";
+                    lineStatus += "";
                     break;
                 case OrdinaryThiefStates.CRAWLING_INWARDS:
-                    lineStatus += "CRIN";
+                    lineStatus += "";
                     break;
                 case OrdinaryThiefStates.AT_A_ROOM:
-                    lineStatus += "ATAR";
+                    lineStatus += "";
                     break;
                 case OrdinaryThiefStates.CRAWLING_OUTWARDS:
-                    lineStatus += "CROT";
+                    lineStatus += "";
                     break;
                 case OrdinaryThiefStates.COLLECTION_SITE:
-                    lineStatus += "CONS";
+                    lineStatus += "";
                     break;
             }
         }
-        lineStatus += "  " + String.format("%2d", roomID) + "  " + String.format("%2d", id) + "  " + String.format("%2d", position) + "  " + String.format("%2d", canvas) + "                 " + String.format("%2d", roomID) + "  " + String.format("%2d", id) + "  " + String.format("%2d", position) + "  " + String.format("%2d", canvas) +
-                "              " + String.format("%2d",nPaintings ) + "  " + String.format("%2d", distance);
+        log.writelnString("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+
+        lineStatus += String.format("%4d",masterThiefStates)+
+                "   "+ String.format("%4d", ordinaryThiefStates[0]) + "  "+String.format(s )+"  "+String.format("%1d",displacement) + "    " +
+                String.format("%4d", ordinaryThiefStates[1]) + "  "+String.format(s )+"  "+String.format("%1d",displacement) + "   " +
+                String.format("%4d", ordinaryThiefStates[2]) + "  "+String.format(s )+"  "+String.format("%1d",displacement) + "   " +
+                String.format("%4d", ordinaryThiefStates[3]) + "  "+String.format(s )+"  "+String.format("%1d",displacement) + "   " +
+                String.format("%4d", ordinaryThiefStates[4]) + "  "+String.format(s )+"  "+String.format("%1d",displacement) + "   " +
+                String.format("%4d", ordinaryThiefStates[5]) + "  "+String.format(s )+"  "+String.format("%1d",displacement) + "   " +
+                "\n" +
+                "    "+ String.format("%2d", roomID) + "  " + String.format("%2d", id) + "  " + String.format("%2d", position) + "  " + String.format("%2d", canvas)+ "  "+
+                "  " + String.format("%2d", id) + "  " + String.format("%2d", position) + "  " + String.format("%2d", canvas) + "  " +
+                "  " + String.format("%2d", id) + "  " + String.format("%2d", position) + "  " + String.format("%2d", canvas)+
+                "            " + String.format("%2d", roomID) + "  " + String.format("%2d", id) + "  " + String.format("%2d", position) + "  " + String.format("%2d", canvas) +"   "+
+                "  " + String.format("%2d", id) + "  " + String.format("%2d", position) + "  " + String.format("%2d", canvas) + "  " +
+                "  " + String.format("%2d", id) + "  " + String.format("%2d", position) + "  " + String.format("%2d", canvas) + "  " +
+                "      " + String.format("%2d",nPaintings ) + "  " + String.format("%2d", distance) +
+                "      " + String.format("%2d",nPaintings ) + "  " + String.format("%2d", distance) +
+                "      " + String.format("%2d",nPaintings ) + "  " + String.format("%2d", distance) +
+                "      " + String.format("%2d",nPaintings ) + "  " + String.format("%2d", distance) +
+                "      " + String.format("%2d",nPaintings ) + "  " + String.format("%2d", distance) ;
         log.writelnString(lineStatus);
 
         if (!log.close()) {
@@ -196,6 +288,23 @@ public class GeneralRepos {
     public synchronized void setPaintings(int nPaintings) {
         this.paintings = nPaintings;
         reportStatus();
+    }
+
+    public void printSumUp()
+    {
+        TextFile log = new TextFile ();
+
+        if (!log.openForAppending (".", logFile))
+        { GenericIO.writelnString ("The operation of opening for appending the file " + logFile + " failed!");
+            System.exit (1);
+        }
+
+        log.writelnString("\n" + sumUp + ".");
+
+        if (!log.close ())
+        { GenericIO.writelnString ("The operation of closing the file " + logFile + " failed!");
+            System.exit (1);
+        }
     }
 }
 
