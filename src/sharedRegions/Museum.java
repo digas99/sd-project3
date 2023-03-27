@@ -90,6 +90,14 @@ public class Museum {
             this.totalPaintings = totalPaintings;
         }
 
+        public int getID() {
+            return id;
+        }
+
+        public void setID(int id) {
+            this.id = id;
+        }
+
         public Room(int id) {
             this.id = id;
             distance = random(MIN_DISTANCE, MAX_DISTANCE);

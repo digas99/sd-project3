@@ -39,6 +39,18 @@ public class OrdinaryThief extends Thief {
         this.hasCanvas = hasCanvas;
     }
 
+    public AssaultParty getParty() {
+        return party;
+    }
+
+    public void setParty(AssaultParty party) {
+        this.party = party;
+    }
+
+    public int getRoomID() {
+        return party.getRoom().getID();
+    }
+
     public OrdinaryThief(String threadName, int thiefID, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite, AssaultParty[] assaultParties) {
         super(threadName, thiefID, museum, concentrationSite, collectionSite, assaultParties);
         thiefState = OrdinaryThiefStates.CONCENTRATION_SITE;
