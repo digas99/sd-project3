@@ -1,6 +1,7 @@
 package sharedRegions;
 
 import entities.OrdinaryThief;
+import entities.OrdinaryThiefStates;
 import genclass.GenericIO;
 
 import static utils.Parameters.*;
@@ -9,17 +10,8 @@ import static utils.Utils.*;
 public class Museum {
     private final Room rooms[] = new Room[N_ROOMS];
 
-    public Room getRoom(int roomID) {
-        return rooms[roomID];
-    }
-
-    public Room getRoomFromAssault(int assaultPartyID) {
-        for (Room r : rooms) {
-            if (r.getAssaultPartyID() == assaultPartyID) {
-                return r;
-            }
-        }
-        return null;
+    public Room[] getRooms() {
+        return rooms;
     }
 
     public Museum(GeneralRepos repos) {
@@ -34,23 +26,31 @@ public class Museum {
     }
 
     public synchronized void rollACanvas(int assaultID) {
-        OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
-        // get room from assault party
-        Room room = getRoomFromAssault(assaultID);
-        // roll a canvas
+        OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
+        ordinaryThief.setThiefState(OrdinaryThiefStates.AT_A_ROOM);
+        logger(ordinaryThief, "Rolling a canvas");
+
+        Room room = getRoom(assaultID);
         if (room.getPaintings() == 0) {
-            logger(this, thief, "There are no more paintings in " + room + ". Thief leaves empty handed.");
-            thief.hasCanvas(false);
+            logger(ordinaryThief, "Left empty handed from " + room);
+            ordinaryThief.hasCanvas(false);
         }
         else {
             room.setPaintings(room.getPaintings() - 1);
-            thief.hasCanvas(true);
-            GenericIO.writelnString();
-            logger(this, thief, "Rolled a canvas from "+ room + ". There are " + room.getPaintings() + "/" + room.getTotalPaintings() + " left.");
+            logger(ordinaryThief, "Rolled a canvas from " + room + ". " + room.getPaintings() + "/"+ room.getTotalPaintings() +" left");
+            ordinaryThief.hasCanvas(true);
         }
     }
 
-    class Room {
+    public Room getRoom(int assaultID) {
+        for (Room room : rooms) {
+            if (room.getAssaultPartyID() == assaultID)
+                return room;
+        }
+        return null;
+    }
+
+    public class Room {
 
         private int id;
         private int distance;

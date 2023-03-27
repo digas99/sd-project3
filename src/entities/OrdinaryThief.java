@@ -11,49 +11,24 @@ import static utils.Utils.*;
 
 public class OrdinaryThief extends Thief {
     private AssaultParty party;
-    private boolean canIMove;
-    private int position;
     private int displacement;
-    private int movesLeft;
     private boolean hasCanvas;
-    public void joinParty(int partyID) {
-        this.party = assaultParties[partyID];
+    private Museum.Room[] rooms;
+
+    public void setAssaultParty(int partyID) {
+        party = assaultParties[partyID];
     }
 
-    public AssaultParty getParty() {
-        return party;
-    }
-
-    public boolean canMove() {
-        return canIMove;
-    }
-
-    public void canMove(boolean canIMove) {
-        this.canIMove = canIMove;
-    }
-
-    public int getPosition() {
-        return position;
-    }
-
-    public void setPosition(int position) {
-        this.position = position;
+    public void setRoomOfParty(int roomID) {
+        party.setRoom(rooms[roomID]);
     }
 
     public int getDisplacement() {
         return displacement;
     }
 
-    public int getMovesLeft() {
-        return movesLeft;
-    }
-
-    public void setMovesLeft(int movesLeft) {
-        this.movesLeft = movesLeft;
-    }
-
-    public void resetMovesLeft() {
-        movesLeft = max(displacement, MAX_SEPARATION_LIMIT);
+    public void setDisplacement(int displacement) {
+        this.displacement = displacement;
     }
 
     public boolean hasCanvas() {
@@ -68,8 +43,8 @@ public class OrdinaryThief extends Thief {
         super(threadName, thiefID, museum, concentrationSite, collectionSite, assaultParties);
         thiefState = OrdinaryThiefStates.CONCENTRATION_SITE;
         displacement = random(MIN_DISPLACEMENT, MAX_DISPLACEMENT);
-        resetMovesLeft();
-        canIMove = hasCanvas = false;
+        hasCanvas = false;
+        rooms = museum.getRooms();
     }
 
     @Override
@@ -77,7 +52,7 @@ public class OrdinaryThief extends Thief {
         while (concentrationSite.amINeeded()) {
             concentrationSite.prepareExcursion();
             party.crawlIn();
-            museum.rollACanvas(party.getId());
+            museum.rollACanvas(party.getID());
             party.reverseDirection();
             party.crawlOut();
             collectionSite.handACanvas();

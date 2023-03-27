@@ -1,5 +1,6 @@
 package utils;
 
+import com.sun.org.apache.xpath.internal.operations.Or;
 import entities.OrdinaryThief;
 import genclass.GenericIO;
 
@@ -68,6 +69,10 @@ public class Utils {
         GenericIO.writelnString("[" + entity.toString() + "]: " + message);
     }
 
+    public static void loggerCrawl(Object entity, String message) {
+        GenericIO.writelnString("[" + entity.toString() + "][" + ((OrdinaryThief) entity).getDisplacement() + "]: " + message);
+    }
+
     /**
      * Entity logger.
      * Conveniently formatted print to log messages from an entity
@@ -79,19 +84,6 @@ public class Utils {
 
     public static void logger(Object place, Object entity, String message) {
         GenericIO.writelnString("[" + place.toString() + "][" + entity.toString() + "]: " + message);
-    }
-
-    /**
-     * Entity Crawl logger.
-     * Conveniently formatted print to log messages from an entity when crawling
-     *
-     * @param place any instance of class that has a toString()
-     * @param entity any instance of class that has a toString()
-     * @param message text presented after the enunciation of the entity
-     */
-
-    public static void loggerCrawl(Object place, Object entity, String message) {
-        GenericIO.writelnString("[" + place.toString() + "][" + entity.toString() + "][" + ((OrdinaryThief) entity).getDisplacement() + "][" + ((OrdinaryThief) entity).getPosition() + "][" + ((OrdinaryThief) entity).getMovesLeft() + "]: " + message);
     }
 
     /**

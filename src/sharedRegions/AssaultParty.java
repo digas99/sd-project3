@@ -5,66 +5,62 @@ import entities.MasterThiefStates;
 import entities.OrdinaryThief;
 import entities.OrdinaryThiefStates;
 import genclass.GenericIO;
-import utils.MemException;
 
-import static utils.Parameters.*;
-import static utils.Utils.*;
+import java.util.Arrays;
+import java.util.Comparator;
+
+import static utils.Parameters.MAX_SEPARATION_LIMIT;
+import static utils.Parameters.N_THIEVES_PER_PARTY;
+import static utils.Utils.loggerCrawl;
+import static utils.Utils.min;
 
 public class AssaultParty {
-   /**
-    * ID of the Assault Party.
-    */
    private int id;
-   /**
-    * Array of thieves in the party.
-    */
-   private OrdinaryThief[] thieves;
-   /**
-    * ID of the room being sacked.
-    */
-   private int roomID;
-   /**
-    * ID of the next thief to crawl.
-    */
+   private final GeneralRepos repos;
+   private boolean begin;
    private int nextThiefID;
-   /**
-    * Number of thieves that joined the party so far.
-    */
-   private int nThieves;
-   /**
-    * Room being sacked.
-    */
+   private Mapping[] thieves;
    private Museum.Room room;
 
-   private final GeneralRepos repos;
-
-   public int getId() {
+   public int getID() {
       return id;
    }
 
-   public void setId(int id) {
+   public void setID(int id) {
       this.id = id;
    }
 
-   public int getRoomID() {
-      return roomID;
+   public void addThief(int thiefID) {
+      for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
+         if (thieves[i] == null) {
+            GenericIO.writelnString("Thief " + thiefID + " is in party " + id);
+            thieves[i] = new Mapping(thiefID, 0);
+            break;
+         }
+      }
    }
 
-   public void setRoomID(int roomID) {
-      this.roomID = roomID;
-      repos.setRoomID(roomID);
+   public Museum.Room getRoom() {
+      return room;
    }
 
-   public void resetThieves() {
-       thieves = new OrdinaryThief[N_THIEVES_PER_PARTY];
-       nThieves = 0;
-       nextThiefID = roomID = -1;
+   public void setRoom(Museum.Room room) {
+      GenericIO.writelnString("Party " + id + " is in room " + room);
+      GenericIO.writelnString(room + " has distance " + room.getDistance() + " and paintings " + room.getPaintings());
+      this.room = room;
+      room.setAssaultPartyID(id);
    }
 
-   public AssaultParty(int id, GeneralRepos repos) throws MemException {
+   public AssaultParty(int id, GeneralRepos repos) {
       this.id = id;
       this.repos = repos;
-      resetThieves();
+      begin = false;
+      thieves = new Mapping[N_THIEVES_PER_PARTY];
+      for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
+         thieves[i] = null;
+      }
+      room = null;
+      nextThiefID = -1;
    }
 
    @Override
@@ -72,386 +68,229 @@ public class AssaultParty {
       return "AssaultParty_"+id;
    }
 
-   /**
-    * Send Assault Party.
-    * The master thief calls this method to wake up the first thief of the Assault Party and trigger his crawling.
-    * It also sets up the ID for the next assault party and resets other variables.
-    */
-
    public synchronized void sendAssaultParty() {
-      MasterThief master = (MasterThief) Thread.currentThread();
-      master.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
-      GenericIO.writelnString("Sending " + this + " to Room " + roomID);
-      master.sentAnyAssaultParty(true);
-
-      repos.setAssaultPartyID(id);
-
-      GenericIO.writelnString("\n|| Beginning " + this + " ||\nLOG FORMAT: [" + this + "][OrdinaryThief][SPEED][POS][MOVES]\n");
-
-      // wake up first thief
+      MasterThief masterThief = (MasterThief) Thread.currentThread();
+      masterThief.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
+      masterThief.setActiveAssaultParties(masterThief.getActiveAssaultParties() + 1);
+      begin = true;
       notifyAll();
    }
 
     public synchronized void reverseDirection() {
-        OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
-        thief.setThiefState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
-
-        loggerCrawl(this, thief, "ready to reverse direction");
-        // if this was the last thief to reverse direction, notify the first party member to begin the crawling out
-        // the id of the last thief to arrive is saved in nextThiefID from the last call to crawlIn
-        if (thief.getThiefID() == nextThiefID) {
-            loggerCrawl(this, thief, "wakes up first thief to begin crawling out");
-            // set next thief id to the first thief
-            nextThiefID = thieves[0].getThiefID();
-            notifyAll();
-        }
     }
 
    public synchronized void crawlIn() {
-      OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
+      OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
+      ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_INWARDS);
+      int thiefID = ordinaryThief.getThiefID();
 
-      try {
-        thieves[nThieves++] = thief;
-      } catch (ArrayIndexOutOfBoundsException e) {}
+      addThief(thiefID);
 
-      thief.setThiefState(OrdinaryThiefStates.CRAWLING_INWARDS);
-      repos.setOrdinaryThiefState(thief.getThiefID(), OrdinaryThiefStates.CRAWLING_INWARDS);
-      repos.setOrdinaryThiefId(thief.getThiefID());
+      if (nextThiefID == -1)
+         nextThiefID = thiefID;
 
-      // first thief to arrive sets next thief as himself
-      if (nextThiefID == -1) {
-         nextThiefID = thief.getThiefID();
-         room = thief.getMuseum().getRoom(roomID);
-         room.setAssaultPartyID(id);
-         thief.canMove(true);
+      while (true) {
+         // wait until master says to begin
+         while (!getThief(thiefID).isAtGoal() && (!begin || nextThiefID != thiefID || size(thieves) < N_THIEVES_PER_PARTY)) {
+            try {
+               wait();
+            } catch (InterruptedException e) {e.printStackTrace();}
+         }
 
-         GenericIO.writelnString("\n" + room + " has " + room.getPaintings() + " paintings and is " + room.getDistance() + " steps away.\n");
+         // if thief is at goal, stop crawling
+         if (getThief(thiefID).isAtGoal()) {
+            ordinaryThief.setThiefState(OrdinaryThiefStates.AT_A_ROOM);
+            break;
+         }
+
+         crawl(ordinaryThief);
+
+         // wake up next thief
+         nextThiefID = getNextThief(thiefID);
+         GenericIO.writelnString("Next Thief: " + nextThiefID);
+         if (nextThiefID == -1) {
+            begin = false;
+            return;
+         }
+
+         notifyAll();
+      }
+   }
+
+   private void crawl(OrdinaryThief ordinaryThief) {
+      printPositions();
+
+      int move, distanceToGoal;
+      int thiefID = ordinaryThief.getThiefID();
+      int goal = room.getDistance();
+      boolean canMove = true;
+      while (canMove) {
+         move = ordinaryThief.getDisplacement();
+         boolean validMove;
+         do {
+            distanceToGoal = Math.abs(goal - getThiefPosition(thiefID));
+            move = min(move, distanceToGoal);
+
+            setThiefPosition(thiefID, getThiefPosition(thiefID) + move);
+            loggerCrawl(ordinaryThief, "MOVE " + move + " POS " + getThiefPosition(thiefID));
+
+            // check thieves separation from each other
+            validMove = !wrongSeparation() && !checkOverlay(goal);
+            if (!validMove) {
+               setThiefPosition(thiefID, getThiefPosition(thiefID) - move);
+               loggerCrawl(ordinaryThief, "REVERTED TO POS "+getThiefPosition(thiefID));
+               move--;
+            } else {
+               if (getThiefPosition(thiefID) == goal) {
+                  getThief(thiefID).isAtGoal(true);
+                  loggerCrawl(ordinaryThief, "ARRIVED AT GOAL");
+                  return;
+               }
+            }
+
+            if (move == 0) {
+               canMove = false;
+               break;
+            }
+         } while (!validMove);
       }
 
-      do {
-          while (nextThiefID != thief.getThiefID() || nThieves < N_THIEVES_PER_PARTY) {
-              try {
-                  wait(); // sleep if not his turn
-              } catch (InterruptedException e) {}
-          }
-      } while(crawl(thief, room.getDistance(), OrdinaryThiefStates.AT_A_ROOM, false));
+   }
 
-      GenericIO.writelnString((Thread.currentThread()) + " left " + Thread.currentThread().getStackTrace()[1].getMethodName() + " function...");
-      repos.setDistance(room.getDistance());
-      loggerCrawl(this, thief, "REACHED ROOM");
+   // make sure thieves are only MAX_SEPARATION_LIMIT apart from each other (not circular)
+   private boolean wrongSeparation() {
+      orderThieves();
+
+      boolean valid0 = Math.abs(thieves[0].getPosition() - thieves[1].getPosition()) <= MAX_SEPARATION_LIMIT;
+      boolean valid1 = Math.abs(thieves[1].getPosition() - thieves[2].getPosition()) <= MAX_SEPARATION_LIMIT;
+      if (!valid0 || !valid1) GenericIO.writelnString("WRONG SEPARATION");
+      return !valid0 || !valid1;
+   }
+
+   // make sure thieves are not overlapping
+   private boolean checkOverlay(int goal) {
+      for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
+         for (int j = i+1; j < N_THIEVES_PER_PARTY; j++) {
+            if (thieves[i].getPosition() != 0 && thieves[i].getPosition() != goal && thieves[i].getPosition() == thieves[j].getPosition()) {
+               GenericIO.writelnString("OVERLAY");
+               return true;
+            }
+         }
+      }
+      return false;
    }
 
    public synchronized void crawlOut() {
-       OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
-       thief.setThiefState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
-       repos.setOrdinaryThiefState(thief.getThiefID(), OrdinaryThiefStates.CRAWLING_OUTWARDS);
 
-       // if this is the first thief to start crawl out, reset his moves left
-       if (thief.getThiefID() == thieves[0].getThiefID())
-           thief.canMove(true);
-
-       do {
-           while (nextThiefID != thief.getThiefID()) {
-               try {
-                   wait(); // sleep if not his turn
-               } catch (InterruptedException e) {}
-           }
-       } while (crawl(thief, 0, OrdinaryThiefStates.COLLECTION_SITE, true));
-
-       GenericIO.writelnString((Thread.currentThread()) + " left " + Thread.currentThread().getStackTrace()[1].getMethodName() + " function...");
-       loggerCrawl(this, thief, "REACHED COLLECTION SITE");
    }
 
-   private boolean crawl(OrdinaryThief thief, int goal, int endState, boolean backwards) {
-       //printPositions();
-
-       while(thief.canMove()) // move the most
-           move(thief, goal, backwards);
-
-       //if (!wakeUpNextThief(thief, backwards)) // wake up next thief
-           //printPositions(); // if last thief, print final positions
-        wakeUpNextThief(thief, backwards);
-
-
-       repos.setOrdinaryThiefPosition(thief.getThiefID(), thief.getPosition());
-
-       if (thief.getPosition() == goal) { // check for end of path
-           thief.setThiefState(endState);
-           thief.resetMovesLeft();
-           thief.canMove(false);
-           return false;
-       }
-
-       return true;
-   }
-
-  private void move(OrdinaryThief thief, int goal, boolean backwards) {
-     if (thief.getMovesLeft() == 0) {
-        noMoreMoves(thief);
-        return;
-     }
-
-     int distanceToMove = min(thief.getDisplacement(), Math.abs(goal - thief.getPosition()), thief.getMovesLeft());
-
-     // is front or middle thief, check the distance to the next thief
-     boolean lastThief = !backwards ? isLastThief(thief) : isFirstThief(thief);
-     if (!lastThief) {
-         OrdinaryThief lowerThief = !backwards ? lowerThief(thief) : higherThief(thief);
-         distanceToMove = min(distanceToMove, MAX_SEPARATION_LIMIT - Math.abs(thief.getPosition() - lowerThief.getPosition()));
-         if (distanceToMove == 0) {
-             noMoreMoves(thief);
-             return;
-         }
-     }
-
-     // make the move
-     updatePosition(thief, distanceToMove, backwards);
-     thief.setMovesLeft(thief.getMovesLeft() - distanceToMove);
-     //loggerCrawl(this, thief, "MOVED " + (backwards ? "-" : "") + distanceToMove + " positions to " + thief.getPosition());
-
-     if (thief.getPosition() == goal) {
-        noMoreMoves(thief);
-        return;
-     }
-
-     // fix excess moves or if went to an occupied position
-     if (checkExcessMove(thief, distanceToMove, backwards) || checkOccupiedMove(thief, backwards)) thief.setMovesLeft(0);
-  }
-
-   private void updatePosition(OrdinaryThief thief, int value, boolean backwards) {
-      thief.setPosition(!backwards ? thief.getPosition() + value : thief.getPosition() - value);
-      repos.setOrdinaryThiefPosition(thief.getThiefID(), thief.getPosition());
-   }
-
-   /**
-    * Find a next thief to wake up.
-    *
-    * @param thief Thief that just moved
-    * @return true if found a thief to wake up, false otherwise
-    */
-
-   private boolean wakeUpNextThief(OrdinaryThief thief, boolean backwards) {
-      OrdinaryThief currentThief = thief;
-      OrdinaryThief nextThief;
-      int goal = !backwards ? room.getDistance() : 0;
-      int counter = 0;
-      do {
-         nextThief = !backwards ? lowerThief(thief) : higherThief(thief);
-         thief = nextThief;
-         if (++counter == N_THIEVES_PER_PARTY) break;
-      } while (nextThief.getPosition() == goal);
-
-      if (currentThief == nextThief) return false;
-
-      // only choose next thief if not all thieves are at the room
-      if (counter != N_THIEVES_PER_PARTY) {
-         nextThiefID = nextThief.getThiefID();
-         nextThief.resetMovesLeft();
-         nextThief.canMove(true);
-         notifyAll();
-         return true;
-      }
-
-      return false;
-   }
-
-   /**
-    * Check if thief moved in excess.
-    * Fix thief position if it moved past another thief and went too far related to that new lower thief.
-    *
-    * @param thief
-    * @param distanceToMove
-    * @return true if a fix in the position was made.
-    */
-
-   private boolean checkExcessMove(OrdinaryThief thief, int distanceToMove, boolean backwards) {
-      OrdinaryThief newLowerThief = !backwards ? lowerThief(thief) : higherThief(thief);
-      //GenericIO.writelnString("new lower thief: " + newLowerThief);
-      int distanceToNextThief = Math.abs(newLowerThief.getPosition() - thief.getPosition());
-      if (distanceToNextThief > MAX_SEPARATION_LIMIT) {
-         int excessMove = distanceToMove - distanceToNextThief;
-         // fix position
-         updatePosition(thief, excessMove, !backwards);
-         //loggerCrawl(this, thief, "[EXCESS MOVE] fixing...");
-         //loggerCrawl(this, thief, "MOVED " + excessMove + " positions to "+ thief.getPosition());
-         return true;
-      }
-      return false;
-   }
-
-   /**
-    * Check if thief move went to an occupied position.
-    * The thief's position is fixed (decreased) until it is no longer in an occupied position.
-    *
-    * @param thief
-    * @return true if a fix in the position was made.
-    */
-
-   private boolean checkOccupiedMove(OrdinaryThief thief, boolean backwards) {
-      boolean wrongMove = false;
-      // fix if it got to occupied position
-      while (inOccupiedPos(thief)) {
-         wrongMove = true;
-         updatePosition(thief, 1, !backwards);
-         //loggerCrawl(this, thief, "[MOVED TO OCCUPIED POSITION] fixing...");
-         //loggerCrawl(this, thief, "MOVED " + "1 positions to "+ thief.getPosition());
-      }
-      return wrongMove;
-   }
-
-   /**
-    * Check if thief is in occupied position.
-    *
-    * @param thief
-    * @return true if it is in occupied position, false if not
-    */
-
-   private boolean inOccupiedPos(OrdinaryThief thief) {
-      int thiefPos = thief.getPosition();
-      for (OrdinaryThief t : thieves) {
-         if (thief != t) {
-            if (thiefPos == t.getPosition())
-               return true;
+   // get next thief
+   // TODO: FIX THIS
+   private int getNextThief(int thiefID) {
+      orderThieves();
+      int nextThiefID = -1;
+      for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
+         if (thieves[i].getThiefID() == thiefID) {
+            int nextPos = i > 0 ? i-1 : N_THIEVES_PER_PARTY-1;
+            nextThiefID = thieves[nextPos].getThiefID();
+            break;
          }
       }
-      return false;
+      return nextThiefID;
    }
 
-   /**
-    * Get the thief that is in a lower position than the one given.
-    * This behaves in a circular way.
-    *
-    * @param thief
-    * @return thief in a lower position
-    */
-
-   private OrdinaryThief lowerThief(OrdinaryThief thief) {
-      int thiefPos = thief.getPosition() == 0 ? 1 : thief.getPosition(); // handle first time situation
-      int nextPos = -1;
-      OrdinaryThief nextThief = null;
-      // add highest to make it circular, if needed
-      int highestPos = 0;
-      OrdinaryThief highestThief = null;
-
-      for (OrdinaryThief t : thieves) {
-         // skip itself
-         if (thief == t) continue;
-
-         // get lower thief
-         if (t.getPosition() < thiefPos && t.getPosition() > nextPos) {
-            nextPos = t.getPosition();
-            nextThief = t;
-         }
-
-         // get highest thief
-         if (t.getPosition() > highestPos) {
-            highestPos = t.getPosition();
-            highestThief = t;
+   // set thief position
+   private void setThiefPosition(int thiefID, int position) {
+      for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
+         if (thieves[i].getThiefID() == thiefID) {
+            thieves[i].setPosition(position);
+            break;
          }
       }
-
-      // make it circular
-      if (nextThief == null) nextThief = highestThief;
-
-      return nextThief;
    }
 
-   /**
-    * Get the thief that is in a higher position that the one given.
-    * This behaves in a circular way.
-    *
-    * @param thief
-    * @return thief in a higher position
-    */
-
-   private OrdinaryThief higherThief(OrdinaryThief thief) {
-      int thiefPos = thief.getPosition() == room.getDistance() ? room.getDistance() - 1 : thief.getPosition(); // handle first time situation
-      int prevPos = Integer.MAX_VALUE;
-      OrdinaryThief prevThief = null;
-      // add lowest to make it circular, if needed
-      int lowestPos = Integer.MAX_VALUE;
-      OrdinaryThief lowestThief = null;
-
-      for (OrdinaryThief t : thieves) {
-         // skip itself
-         if (thief == t) continue;
-
-         // get higher thief
-
-         if (t.getPosition() > thiefPos && t.getPosition() < prevPos) {
-            prevPos = t.getPosition();
-            prevThief = t;
-         }
-
-         // get lowest thief
-         if (t.getPosition() < lowestPos) {
-            lowestPos = t.getPosition();
-            lowestThief = t;
+   // get thief position
+   private int getThiefPosition(int thiefID) {
+      int position = -1;
+      for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
+         if (thieves[i].getThiefID() == thiefID) {
+            position = thieves[i].getPosition();
+            break;
          }
       }
-
-      // make it circular
-      if (prevThief == null) prevThief = lowestThief;
-
-      return prevThief;
+      return position;
    }
 
-   private boolean isMiddleThief(OrdinaryThief thief) {
-      return !isFirstThief(thief) && !isLastThief(thief);
+   // order thieves by position
+   private void orderThieves() {
+      Arrays.sort(thieves, Comparator.comparingInt(Mapping::getPosition));
    }
 
-   /**
-    * Check if given thief is the first thief (the one in the highest position)
-    *
-    * @param thief
-    * @return true if it is the first, false if not
-    */
-
-   private boolean isFirstThief(OrdinaryThief thief) {
-      int highestPos = 0;
-      OrdinaryThief firstThief = null;
-      for (OrdinaryThief t : thieves) {
-         if (t.getPosition() > highestPos) {
-            highestPos = t.getPosition();
-            firstThief = t;
-         }
+   private int size(Mapping[] thieves) {
+      int size = 0;
+      for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
+         if (thieves[i] != null)
+            size++;
       }
-      return firstThief == null || thief == firstThief;
+      return size;
    }
 
-   /**
-    * Check if given thief is the last thief (the one in the lowest position)
-    *
-    * @param thief
-    * @return true if it is the last, false if not
-    */
-
-   private boolean isLastThief(OrdinaryThief thief) {
-      int leastPos = Integer.MAX_VALUE;
-      OrdinaryThief lastThief = null;
-      for (OrdinaryThief t : thieves) {
-         if (t.getPosition() < leastPos) {
-            leastPos = t.getPosition();
-            lastThief = t;
-         }
-      }
-      return thief == lastThief;
-   }
-
-   private void noMoreMoves(OrdinaryThief thief) {
-      thief.setMovesLeft(0);
-      thief.canMove(false);
-   }
-
+   // print positions
    private void printPositions() {
-      String print = "\nPositions for " + this + " in " + room + ":\n";
-      for (OrdinaryThief t : thieves) {
-         print += "["+t.getThiefID()+"]";
+      String print = "POS " + this + "\n";
+      for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
+         print += thieves[i].getThiefID() + " ";
       }
-      print += "\n---------\n";
-      for (OrdinaryThief t : thieves) {
-         print += "["+t.getPosition()+"]";
+      print+="\n";
+      for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
+         print += thieves[i].getPosition() + " ";
       }
-      GenericIO.writelnString(print+"\n");
+      GenericIO.writelnString(print);
+   }
+
+   private Mapping getThief(int thiefID) {
+      for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
+         if (thieves[i].getThiefID() == thiefID)
+            return thieves[i];
+      }
+      return null;
+   }
+
+   class Mapping {
+      private int thiefID;
+      private int position;
+      private boolean isAtGoal;
+
+      public Mapping(int thiefID, int position) {
+         this.thiefID = thiefID;
+         this.position = position;
+         this.isAtGoal = false;
+      }
+
+      @Override
+      public String toString() {
+         return thiefID + " " + position + " " + isAtGoal;
+      }
+
+      public int getThiefID() {
+          return thiefID;
+      }
+      public int getPosition() {
+          return position;
+      }
+      public void setThiefID(int thiefID) {
+          this.thiefID = thiefID;
+      }
+      public void setPosition(int position) {
+          this.position = position;
+      }
+
+      public boolean isAtGoal() {
+         return isAtGoal;
+      }
+
+      public void isAtGoal(boolean atGoal) {
+         isAtGoal = atGoal;
+      }
    }
 }

@@ -7,20 +7,33 @@ import static utils.Parameters.*;
 import static utils.Utils.logger;
 
 public class MasterThief extends Thief {
-    boolean sentAnyAssaultParty;
 
-    public boolean sentAnyAssaultParty() {
-        return sentAnyAssaultParty;
-    }
-
-    public void sentAnyAssaultParty(boolean sentAnyAssaultParty) {
-        this.sentAnyAssaultParty = sentAnyAssaultParty;
-    }
+    private int activeAssaultParties;
+    private boolean[] hasCanvas;
 
     public MasterThief(String threadName, int thiefID, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite, AssaultParty[] assaultParties) throws MemException {
         super(threadName, thiefID, museum, concentrationSite, collectionSite, assaultParties);
         setThiefState(MasterThiefStates.PLANNING_HEIST);
-        sentAnyAssaultParty = false;
+        activeAssaultParties = 0;
+        hasCanvas = new boolean[N_ASSAULT_PARTIES];
+        for (int i = 0; i < N_ASSAULT_PARTIES; i++)
+            hasCanvas[i] = true;
+    }
+
+    public int getActiveAssaultParties() {
+        return activeAssaultParties;
+    }
+
+    public void setActiveAssaultParties(int activeAssaultParties) {
+        this.activeAssaultParties = activeAssaultParties;
+    }
+
+    public boolean hasCanvas(int partyID) {
+        return hasCanvas[partyID];
+    }
+
+    public void hasCanvas(int partyID, boolean hasCanvas) {
+        this.hasCanvas[partyID] = hasCanvas;
     }
 
     @Override
