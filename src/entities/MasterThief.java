@@ -9,15 +9,15 @@ import static utils.Utils.logger;
 public class MasterThief extends Thief {
 
     private int activeAssaultParties;
-    private boolean[] hasCanvas;
+    private int[] roomState;
 
     public MasterThief(String threadName, int thiefID, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite, AssaultParty[] assaultParties) throws MemException {
         super(threadName, thiefID, museum, concentrationSite, collectionSite, assaultParties);
         setThiefState(MasterThiefStates.PLANNING_HEIST);
         activeAssaultParties = 0;
-        hasCanvas = new boolean[N_ASSAULT_PARTIES];
-        for (int i = 0; i < N_ASSAULT_PARTIES; i++)
-            hasCanvas[i] = true;
+        roomState = new int[N_ROOMS];
+        for (int i = 0; i < N_ROOMS; i++)
+            roomState[i] = FREE_ROOM;
     }
 
     public int getActiveAssaultParties() {
@@ -28,12 +28,12 @@ public class MasterThief extends Thief {
         this.activeAssaultParties = activeAssaultParties;
     }
 
-    public boolean hasCanvas(int partyID) {
-        return hasCanvas[partyID];
+    public int[] getRoomState() {
+        return roomState;
     }
 
-    public void hasCanvas(int partyID, boolean hasCanvas) {
-        this.hasCanvas[partyID] = hasCanvas;
+    public void setRoomState(int[] roomState) {
+        this.roomState = roomState;
     }
 
     @Override

@@ -14,6 +14,13 @@ public class Museum {
         return rooms;
     }
 
+    public void clearRooms(int assaultID) {
+        for (Room room : rooms) {
+            if (room.getAssaultPartyID() == assaultID)
+                room.setAssaultPartyID(-1);
+        }
+    }
+
     public Museum(GeneralRepos repos) {
         for (int i = 0; i < rooms.length; i++) {
             rooms[i] = new Room(i);

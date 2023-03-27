@@ -87,4 +87,18 @@ public final class Parameters {
      * Master Thief Appraise Sit decision to end the heist.
      */
     public static final int END_HEIST = 2;
+
+    // Thief Canvas State in Collection Site
+    /**
+     * Thief is not present in the Collection Site.
+     */
+    public static final int UNKNOWN = 0;
+    /**
+     * Thief is present in the Collection Site with a Canvas.
+     */
+    public static final int WITH_CANVAS = 1;
+    /**
+     * Thief is present in the Collection Site without a Canvas.
+     */
+    public static final int WITHOUT_CANVAS = 2;
 }

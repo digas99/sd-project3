@@ -20,7 +20,7 @@ public class OrdinaryThief extends Thief {
     }
 
     public void setRoomOfParty(int roomID) {
-        party.setRoom(rooms[roomID]);
+        party.setRoom(museum, rooms[roomID]);
     }
 
     public int getDisplacement() {
