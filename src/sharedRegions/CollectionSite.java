@@ -64,18 +64,29 @@ public class CollectionSite {
         try { thiefQueue = new MemFIFO<>(new Integer[N_THIEVES_ORDINARY]); } catch (MemException e) {e.printStackTrace();}
     }
 
+    public int registeredThieves() {
+        int count = 0;
+        for (int i = 0; i < N_THIEVES_ORDINARY; i++)
+            if (registeredThieves[i]) count++;
+        return count;
+    }
+
     public synchronized int appraiseSit() {
         MasterThief masterThief = (MasterThief) Thread.currentThread();
 
-        if (endHeist) {
+        if (endHeist && occupancy() == 0) {
             masterThief.getConcentrationSite().endHeist(true);
             return END_HEIST;
         }
 
         logger(masterThief, "Appraising situation. Concentration Site Occupancy: " + masterThief.getConcentrationSite().occupancy() + "/" + N_THIEVES_ORDINARY);
+        logger(masterThief, "Appraising situation. Registered Thieves: " + registeredThieves());
+        logger(masterThief, "Appraising situation. Number Parties in Site: " + numberPartiesInSite() + "/" + N_ASSAULT_PARTIES);
         logger(masterThief, "Appraising situation. Active Assault Parties: " + masterThief.getActiveAssaultParties() + "/" + N_ASSAULT_PARTIES);
         logger(masterThief, "Appraising situation. Thief Queue Size: " + thiefQueue.size() + "/" + N_ASSAULT_PARTIES);
-        if ((masterThief.getActiveAssaultParties() > 0 && masterThief.getConcentrationSite().occupancy() < N_THIEVES_PER_PARTY) || thiefQueue.size() > 0)
+        if ((masterThief.getActiveAssaultParties() > 0
+                && masterThief.getConcentrationSite().occupancy() < N_THIEVES_PER_PARTY)
+                    || thiefQueue.size() > 0)
             return WAIT_FOR_CANVAS;
 
         return CREATE_ASSAULT_PARTY;
@@ -104,22 +115,17 @@ public class CollectionSite {
         if (thiefCanvasState[ordinaryThief.getThiefID()] == WITHOUT_CANVAS)
             roomState[ordinaryThief.getRoomID()] = EMPTY_ROOM;
 
-        // wake up master thief
-        notifyAll();
-
-        // wait until master thief appraises the situation
-        while (appraisedThief != ordinaryThief.getThiefID() && thiefQueue.has(ordinaryThief.getThiefID())) {
-            try { wait(); } catch (InterruptedException e) {e.printStackTrace();}
-        }
-
         // leave collection site
         inside[ordinaryThief.getThiefID()] = false;
 
         // if last thief of party
         int[] thievesOfParty = ordinaryThief.getParty().getThieves();
         int nThievesFromParty = 0;
-        for (int thiefFromParty : thievesOfParty)
-            if (registeredThieves[thiefFromParty]) nThievesFromParty++;
+        for (int thiefFromParty : thievesOfParty) {
+            if (registeredThieves[thiefFromParty])
+                nThievesFromParty++;
+        }
+
         if (nThievesFromParty == N_THIEVES_PER_PARTY) {
             logger(ordinaryThief, "Last thief from party leaving Collection Site.");
             // clear registered thieves from his party
@@ -129,7 +135,16 @@ public class CollectionSite {
             ordinaryThief.getConcentrationSite().setRoomState(ordinaryThief.getRoomID(), ordinaryThief.hasCanvas() ? FREE_ROOM : EMPTY_ROOM);
         }
 
+        // wake up master thief
+        notifyAll();
+
+        // wait until master thief appraises the situation
+        while (appraisedThief != ordinaryThief.getThiefID() && thiefQueue.has(ordinaryThief.getThiefID())) {
+            try { wait(); } catch (InterruptedException e) {e.printStackTrace();}
+        }
+
         logger(ordinaryThief, "Left collection site. Collection Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
+
     }
 
     public synchronized void collectACanvas() {
@@ -155,6 +170,7 @@ public class CollectionSite {
         endHeist = Arrays.stream(roomState).allMatch(roomState -> roomState == EMPTY_ROOM);
         masterThief.setRoomState(roomState);
         masterThief.setActiveAssaultParties(min(masterThief.getActiveAssaultParties(), numberPartiesInSite()));
+        logger(masterThief, "Setting active Assault Parties to: " + masterThief.getActiveAssaultParties());
 
         // wake up thief
         appraisedThief = nextThiefID;

@@ -63,7 +63,10 @@ public class ConcentrationSite {
         OrdinaryThief thief = (OrdinaryThief) Thread.currentThread();
         thief.setThiefState(OrdinaryThiefStates.CONCENTRATION_SITE);
 
-        if (endHeist) return false;
+        if (endHeist) {
+            notifyAll();
+            return false;
+        }
 
         // register in concentration site
         inside[thief.getThiefID()] = true;
@@ -99,11 +102,12 @@ public class ConcentrationSite {
             try { wait(); } catch (InterruptedException e) {e.printStackTrace();}
         }
 
+        int currentPartyID = nextPartyID;
         // setup nextPartyID
         nextPartyID = (nextPartyID + 1) % N_ASSAULT_PARTIES;
 
         // if thieves are ready
-        return nextPartyID;
+        return currentPartyID;
     }
     public synchronized void prepareExcursion() {
         OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
@@ -114,7 +118,10 @@ public class ConcentrationSite {
             try { wait(); } catch (InterruptedException e) {e.printStackTrace();}
         }
 
-        if (endHeist) return;
+        if (endHeist) {
+            notifyAll();
+            return;
+        }
 
         // setup nextPartyID
         GenericIO.writelnString("NEXT PARTY ID: "+nextPartyID);
