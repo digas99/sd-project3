@@ -19,6 +19,7 @@ public class AssaultParty {
    private boolean begin;
    private int nextThiefID;
    private int inRoom;
+   private int leftMuseum;
    private Mapping[] thieves;
    private Museum.Room room;
 
@@ -63,6 +64,7 @@ public class AssaultParty {
    public void resetAssaultParty() {
       begin = false;
       room = null;
+      leftMuseum = 0;
       nextThiefID = -1;
       for (int i = 0; i < N_THIEVES_PER_PARTY; i++)
          thieves[i] = null;
@@ -126,7 +128,7 @@ public class AssaultParty {
       } while(crawl(ordinaryThief, 0, room.getDistance()));
 
       ordinaryThief.setThiefState(OrdinaryThiefStates.AT_A_ROOM);
-      loggerCrawl(ordinaryThief, "ARRIVED AT ROOM");
+      loggerCrawl(ordinaryThief, "ARRIVED AT " + room);
    }
 
    public synchronized void crawlOut() {
@@ -144,13 +146,15 @@ public class AssaultParty {
       } while(crawl(ordinaryThief, room.getDistance(), 0));
 
       inRoom--;
+      leftMuseum++;
       getThief(thiefID).isAtGoal(false);
       ordinaryThief.setThiefState(OrdinaryThiefStates.COLLECTION_SITE);
       loggerCrawl(ordinaryThief, "ARRIVED AT COLLECTION SITE");
 
-      // if last thief (all at goal), then reset
-      if (allAtGoal())
+      /*
+      if (leftMuseum == N_THIEVES_PER_PARTY)
          resetAssaultParty();
+       */
    }
 
    private boolean crawl(OrdinaryThief ordinaryThief, int beginning, int goal) {
@@ -308,8 +312,8 @@ public class AssaultParty {
    }
 
    private Mapping getThief(int thiefID) {
-      for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
-         if (thieves[i].getThiefID() == thiefID)
+      for (int i = 0; i < thieves.length; i++) {
+         if (thieves[i] != null && thieves[i].getThiefID() == thiefID)
             return thieves[i];
       }
       return null;

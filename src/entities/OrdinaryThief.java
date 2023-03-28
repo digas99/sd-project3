@@ -62,12 +62,13 @@ public class OrdinaryThief extends Thief {
     @Override
     public void run() {
         while (concentrationSite.amINeeded()) {
-            concentrationSite.prepareExcursion();
-            party.crawlIn();
-            museum.rollACanvas(party.getID());
-            party.reverseDirection();
-            party.crawlOut();
-            collectionSite.handACanvas();
+            if (concentrationSite.prepareExcursion()) {
+                party.crawlIn();
+                museum.rollACanvas(party.getID());
+                party.reverseDirection();
+                party.crawlOut();
+                collectionSite.handACanvas();
+            } else break;
         }
     }
 }

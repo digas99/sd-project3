@@ -109,7 +109,7 @@ public class ConcentrationSite {
         // if thieves are ready
         return currentPartyID;
     }
-    public synchronized void prepareExcursion() {
+    public synchronized boolean prepareExcursion() {
         OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
         ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_INWARDS);
 
@@ -120,7 +120,7 @@ public class ConcentrationSite {
 
         if (endHeist) {
             notifyAll();
-            return;
+            return false;
         }
 
         // setup nextPartyID
@@ -131,14 +131,22 @@ public class ConcentrationSite {
 
         // if last thief joining, reset variables and wakeup master
         if (joinedParty == N_THIEVES_PER_PARTY) {
-            ordinaryThief.setRoomOfParty(getFreeRoom());
             makeParty = false;
             joinedParty = 0;
             notifyAll();
+
+            int roomID = getFreeRoom();
+            if (roomID == -1)
+                return false;
+
+            ordinaryThief.setRoomOfParty(roomID);
         }
 
         // leave concentration site
         inside[ordinaryThief.getThiefID()] = false;
         logger(ordinaryThief, "Left concentration site. Concentration Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
+
+        return true;
     }
+
 }

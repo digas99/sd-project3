@@ -79,11 +79,11 @@ public class CollectionSite {
             return END_HEIST;
         }
 
+        /*
         logger(masterThief, "Appraising situation. Concentration Site Occupancy: " + masterThief.getConcentrationSite().occupancy() + "/" + N_THIEVES_ORDINARY);
-        logger(masterThief, "Appraising situation. Registered Thieves: " + registeredThieves());
-        logger(masterThief, "Appraising situation. Number Parties in Site: " + numberPartiesInSite() + "/" + N_ASSAULT_PARTIES);
         logger(masterThief, "Appraising situation. Active Assault Parties: " + masterThief.getActiveAssaultParties() + "/" + N_ASSAULT_PARTIES);
         logger(masterThief, "Appraising situation. Thief Queue Size: " + thiefQueue.size() + "/" + N_ASSAULT_PARTIES);
+         */
         if ((masterThief.getActiveAssaultParties() > 0
                 && masterThief.getConcentrationSite().occupancy() < N_THIEVES_PER_PARTY)
                     || thiefQueue.size() > 0)
@@ -118,14 +118,13 @@ public class CollectionSite {
         // leave collection site
         inside[ordinaryThief.getThiefID()] = false;
 
-        // if last thief of party
         int[] thievesOfParty = ordinaryThief.getParty().getThieves();
         int nThievesFromParty = 0;
         for (int thiefFromParty : thievesOfParty) {
             if (registeredThieves[thiefFromParty])
                 nThievesFromParty++;
         }
-
+        // if last thief of party
         if (nThievesFromParty == N_THIEVES_PER_PARTY) {
             logger(ordinaryThief, "Last thief from party leaving Collection Site.");
             // clear registered thieves from his party
@@ -133,6 +132,7 @@ public class CollectionSite {
             for (int thiefFromParty : thievesOfParty)
                 registeredThieves[thiefFromParty] = false;
             ordinaryThief.getConcentrationSite().setRoomState(ordinaryThief.getRoomID(), ordinaryThief.hasCanvas() ? FREE_ROOM : EMPTY_ROOM);
+            ordinaryThief.getParty().resetAssaultParty();
         }
 
         // wake up master thief
