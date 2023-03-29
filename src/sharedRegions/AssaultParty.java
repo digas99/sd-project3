@@ -107,6 +107,14 @@ public class AssaultParty {
    }
 
    private boolean sleep(int thiefID) {
+      boolean atGoal;
+      try {
+         atGoal = getThief(thiefID).isAtGoal();
+      } catch (NullPointerException e) {
+         e.printStackTrace();
+         GenericIO.writelnString("ERROR: "+ this + " Ordinary_" + thiefID + " thieves " + Arrays.toString(thieves));
+         System.exit(1);
+      }
       return !getThief(thiefID).isAtGoal() && (!begin || nextThiefID != thiefID || size(thieves) < N_THIEVES_PER_PARTY);
    }
 

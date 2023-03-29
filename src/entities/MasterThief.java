@@ -57,5 +57,6 @@ public class MasterThief extends Thief {
                     break lifecycle;
             }
         }
+        concentrationSite.endOperations();
     }
 }

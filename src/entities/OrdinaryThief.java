@@ -15,8 +15,9 @@ public class OrdinaryThief extends Thief {
     private boolean hasCanvas;
     private Museum.Room[] rooms;
 
-    public void setAssaultParty(int partyID) {
+    public void setAssaultParty(int partyID, boolean reset) {
         party = assaultParties[partyID];
+        if (reset) party.resetAssaultParty();
     }
 
     public void setRoomOfParty(int roomID) {

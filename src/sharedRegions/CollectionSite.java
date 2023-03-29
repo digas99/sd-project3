@@ -4,6 +4,7 @@ import entities.MasterThief;
 import entities.MasterThiefStates;
 import entities.OrdinaryThief;
 import entities.OrdinaryThiefStates;
+import genclass.GenericIO;
 import utils.MemException;
 import utils.MemFIFO;
 
@@ -23,10 +24,32 @@ public class CollectionSite {
     private int appraisedThief;
     private final boolean[] partiesInSite;
     private final boolean[] registeredThieves;
+    private boolean closingParty;
 
     @Override
     public String toString() {
         return "Collection Site";
+    }
+
+    public void printRoomState() {
+        String print = "Room State:\n";
+        for (int i = 0; i < N_ROOMS; i++) {
+            int state = roomState[i];
+            print += i+": ";
+            switch (state) {
+                case FREE_ROOM:
+                    print += "FREE, ";
+                    break;
+                case BUSY_ROOM:
+                    print += "BUSY, ";
+                    break;
+                case EMPTY_ROOM:
+                    print += "EMPTY, ";
+                    break;
+            }
+        }
+        print += "\n";
+        GenericIO.writelnString(print);
     }
 
     public int occupancy() {
@@ -54,6 +77,7 @@ public class CollectionSite {
     public CollectionSite(GeneralRepos repos) {
         canvas = 0;
         appraisedThief = -1;
+        closingParty = false;
         registeredThieves = new boolean[N_THIEVES_ORDINARY];
         inside = new boolean[N_THIEVES_ORDINARY];
         roomState = new int[N_ROOMS];
@@ -104,19 +128,24 @@ public class CollectionSite {
     public synchronized void handACanvas() {
         OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
         ordinaryThief.setThiefState(OrdinaryThiefStates.COLLECTION_SITE);
-        try { thiefQueue.write(ordinaryThief.getThiefID()); } catch (MemException e) {e.printStackTrace();}
+        try {
+            thiefQueue.write(ordinaryThief.getThiefID());
+        } catch (MemException e) {
+            e.printStackTrace();
+        }
         inside[ordinaryThief.getThiefID()] = true;
         registeredThieves[ordinaryThief.getThiefID()] = true;
         partiesInSite[ordinaryThief.getParty().getID()] = true;
-        logger(ordinaryThief, "Entered collection site. Collection Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
+        //logger(ordinaryThief, "Entered collection site. Collection Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
 
         // register canvas
         thiefCanvasState[ordinaryThief.getThiefID()] = ordinaryThief.hasCanvas() ? WITH_CANVAS : WITHOUT_CANVAS;
-        if (thiefCanvasState[ordinaryThief.getThiefID()] == WITHOUT_CANVAS)
-            roomState[ordinaryThief.getRoomID()] = EMPTY_ROOM;
 
-        // leave collection site
-        inside[ordinaryThief.getThiefID()] = false;
+        if (ordinaryThief.getConcentrationSite().getRoomState(ordinaryThief.getRoomID()) != EMPTY_ROOM)
+            ordinaryThief.getConcentrationSite().setRoomState(ordinaryThief.getRoomID(), ordinaryThief.hasCanvas() ? FREE_ROOM : EMPTY_ROOM);
+
+        if (roomState[ordinaryThief.getRoomID()] != EMPTY_ROOM)
+            roomState[ordinaryThief.getRoomID()] = ordinaryThief.hasCanvas() ? FREE_ROOM : EMPTY_ROOM;
 
         int[] thievesOfParty = ordinaryThief.getParty().getThieves();
         int nThievesFromParty = 0;
@@ -126,13 +155,13 @@ public class CollectionSite {
         }
         // if last thief of party
         if (nThievesFromParty == N_THIEVES_PER_PARTY) {
-            logger(ordinaryThief, "Last thief from party leaving Collection Site.");
+            //logger(ordinaryThief, "Last thief from party leaving Collection Site.");
             // clear registered thieves from his party
             partiesInSite[ordinaryThief.getParty().getID()] = false;
             for (int thiefFromParty : thievesOfParty)
                 registeredThieves[thiefFromParty] = false;
-            ordinaryThief.getConcentrationSite().setRoomState(ordinaryThief.getRoomID(), ordinaryThief.hasCanvas() ? FREE_ROOM : EMPTY_ROOM);
-            ordinaryThief.getParty().resetAssaultParty();
+            printRoomState();
+            closingParty = true;
         }
 
         // wake up master thief
@@ -143,7 +172,9 @@ public class CollectionSite {
             try { wait(); } catch (InterruptedException e) {e.printStackTrace();}
         }
 
-        logger(ordinaryThief, "Left collection site. Collection Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
+        // leave collection site
+        inside[ordinaryThief.getThiefID()] = false;
+        //logger(ordinaryThief, "Left collection site. Collection Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
 
     }
 
@@ -169,8 +200,8 @@ public class CollectionSite {
         thiefCanvasState[nextThiefID] = UNKNOWN;
         endHeist = Arrays.stream(roomState).allMatch(roomState -> roomState == EMPTY_ROOM);
         masterThief.setRoomState(roomState);
-        masterThief.setActiveAssaultParties(min(masterThief.getActiveAssaultParties(), numberPartiesInSite()));
-        logger(masterThief, "Setting active Assault Parties to: " + masterThief.getActiveAssaultParties());
+        masterThief.getConcentrationSite().setRoomState(roomState);
+        logger(masterThief, "Parties in site: " + numberPartiesInSite());
 
         // wake up thief
         appraisedThief = nextThiefID;
@@ -181,6 +212,12 @@ public class CollectionSite {
         if (thiefQueue.size() == 0)
             appraisedThief = -1;
 
+        if (closingParty) {
+            closingParty = false;
+            masterThief.setActiveAssaultParties(masterThief.getActiveAssaultParties() - 1);
+        }
+
+
         masterThief.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
     }
 
@@ -188,6 +225,6 @@ public class CollectionSite {
         MasterThief masterThief = (MasterThief) Thread.currentThread();
         masterThief.setThiefState(MasterThiefStates.PRESENTING_REPORT);
 
-        logger(this, "The heist is over! Were collected " + canvas + " canvases.");
+        logger(this, "The heist is over! Were collected " + canvas + " canvas.");
     }
 }

@@ -7,6 +7,8 @@ import genclass.GenericIO;
 import sharedRegions.*;
 import utils.MemException;
 
+import java.util.concurrent.TimeUnit;
+
 import static utils.Parameters.*;
 import static utils.Utils.logger;
 
@@ -14,6 +16,10 @@ public class Assault {
 
     public static void main(String[] args) throws MemException {
         GenericIO.writelnString("Starting program with " + N_THIEVES_ORDINARY + " Ordinary Thieves");
+
+        // check proportions
+        if (N_THIEVES_ORDINARY % N_ASSAULT_PARTIES != 0)
+            throw new IllegalArgumentException("N_THIEVES_ORDINARY must be a multiple of N_ASSAULT_PARTIES");
 
         MasterThief masters[];
         OrdinaryThief thieves[];
@@ -61,6 +67,9 @@ public class Assault {
         for (int i = 0; i < N_THIEVES_ORDINARY; i++)
             thieves[i] = new OrdinaryThief("Ordinary_" + i, i, museum, concentrationSite, collectionSite, assaultParties);
 
+        // start counting elapsed time
+        long start = System.currentTimeMillis();
+
         // start threads
         for (int i = 0; i < N_THIEVES_MASTER; i++)
             masters[i].start();
@@ -71,14 +80,22 @@ public class Assault {
         for (int i = 0; i < N_THIEVES_MASTER; i++) {
             try {
                 masters[i].join();
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {e.printStackTrace();}
             logger(masters[i], "has terminated!");
         }
         for (int i = 0; i < N_THIEVES_ORDINARY; i++) {
             try {
                 thieves[i].join();
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {e.printStackTrace();}
             logger(thieves[i], "has terminated!");
         }
+
+        // end counting elapsed time
+        long end = System.currentTimeMillis();
+        long elapsedTime = end - start;
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(elapsedTime); // get the number of seconds
+        long millis = elapsedTime % 1000; // get the number of milliseconds (mod 1000 to get the remainder)
+        String readable = String.format("%d.%ds", seconds, millis);
+        GenericIO.writelnString("The Heist took " + readable + " to complete.");
     }
 }
