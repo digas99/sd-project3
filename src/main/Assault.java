@@ -35,16 +35,18 @@ public class Assault {
 
         GenericIO.writelnString ("\n" + "      Heist to the Museum\n");
         do { GenericIO.writeString ("Logging file name? ");
-            logFile = GenericIO.readlnString ();
+            logFile = args.length == 0 ? GenericIO.readlnString () : args[0];
             if (FileOp.exists ("./logs/", logFile)){
-                do {
-                GenericIO.writeString ("There is already a file with this name. Delete it (y - yes; n - no)? ");
-                opt = GenericIO.readlnChar ();
-            } while ((opt != 'y') && (opt != 'n'));
-                if (opt == 'y')
-                    success = true;
+                if (args.length == 0) {
+                    do {
+                        GenericIO.writeString ("There is already a file with this name. Delete it (y - yes; n - no)? ");
+                        opt = GenericIO.readlnChar ();
+                    } while ((opt != 'y') && (opt != 'n'));
+                    if (opt == 'y')
+                        success = true;
 
-                else success = false;
+                    else success = false;
+                } else success = true;
             }
             else success = true;
         } while (!success);

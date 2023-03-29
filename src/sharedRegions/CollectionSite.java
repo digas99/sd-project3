@@ -173,8 +173,8 @@ public class CollectionSite {
 
         // leave collection site
         inside[ordinaryThief.getThiefID()] = false;
+        notifyAll();
         //logger(ordinaryThief, "Left collection site. Collection Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
-
     }
 
     public synchronized void collectACanvas() {
