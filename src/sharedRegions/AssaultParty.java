@@ -13,16 +13,25 @@ import static utils.Parameters.MAX_SEPARATION_LIMIT;
 import static utils.Parameters.N_THIEVES_PER_PARTY;
 import static utils.Utils.*;
 
+/**
+ * Shared Region with methods used by the Master Thief and the Ordinary Thieves.
+ * This class is responsible for the management of the Assault Parties and the crawling movements of its thieves.
+ */
+
 public class AssaultParty {
    private int id;
    private final GeneralRepos repos;
    private boolean begin;
    private int nextThiefID;
    private int inRoom;
-   private int leftMuseum;
    private Mapping[] thieves;
    private Museum.Room room;
 
+   /**
+    * Get Array of thieves IDs in the Assalt Party.
+    *
+    * @return Array of thieves IDs
+    */
    public int[] getThieves() {
         int[] thieves = new int[N_THIEVES_PER_PARTY];
         for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
@@ -30,14 +39,23 @@ public class AssaultParty {
         }
         return thieves;
    }
+
+   /**
+    * Get the ID of the Assault Party.
+    *
+    * @return ID of the Assault Party
+    */
    public int getID() {
       return id;
    }
 
-   public void setID(int id) {
-      this.id = id;
-   }
-
+   /**
+    * Add a thief to the Assault Party.
+    * This method adds a thief to the thieves array, in the first empty position.
+    * The thief is added as a Mapping.
+    *
+    * @param thiefID ID of the thief to be added
+    */
    public void addThief(int thiefID) {
       for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
          if (thieves[i] == null) {
@@ -48,10 +66,22 @@ public class AssaultParty {
       }
    }
 
+   /**
+    * Get the room assigned to the Assault Party.
+    *
+    * @return Room object
+    */
    public Museum.Room getRoom() {
       return room;
    }
 
+   /**
+    * Assign a room to the Assault Party.
+    * This method assigns a room to the Assault Party, and sets the Assault Party ID in the room.
+    *
+    * @param museum Museum object
+    * @param room Room object
+    */
    public void setRoom(Museum museum, Museum.Room room) {
       logger(this, "Was given room " + room);
       GenericIO.writelnString(room + " has distance " + room.getDistance() + " and paintings " + room.getPaintings());
@@ -61,16 +91,26 @@ public class AssaultParty {
       inRoom = 0;
    }
 
+   /**
+    * Reset the Assault Party.
+    * This method resets the Assault Party, setting all the variables to their initial values.
+    */
    public void resetAssaultParty() {
       begin = false;
       room = null;
-      leftMuseum = 0;
       nextThiefID = -1;
       for (int i = 0; i < N_THIEVES_PER_PARTY; i++)
          thieves[i] = null;
       logger(this, "RESETED!");
    }
 
+   /**
+    * Assault Party initialization.
+    * An id is given to the Assault Party, the array of thieves is initialized, and all the variables are set to their initial values.
+    *
+    * @param id ID of the Assault Party
+    * @param repos GeneralRepos object for logging
+    */
    public AssaultParty(int id, GeneralRepos repos) {
       this.id = id;
       this.repos = repos;
@@ -83,6 +123,11 @@ public class AssaultParty {
       return "AssaultParty_"+id;
    }
 
+   /**
+    * Send an Assault Party.
+    * This method is called by the Master Thief, and tells the Ordinary Thieves to start crawling.
+    * The Master Thief goes to the DECIDING_WHAT_TO_DO state.
+    */
    public synchronized void sendAssaultParty() {
       MasterThief masterThief = (MasterThief) Thread.currentThread();
       masterThief.setActiveAssaultParties(masterThief.getActiveAssaultParties() + 1);
@@ -93,6 +138,11 @@ public class AssaultParty {
       masterThief.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
    }
 
+   /**
+    * Reverse the direction of the crawling.
+    * This method is called by the Ordinary Thieves and, when called by the last thief, it triggers the crawling out movement.
+    * The Ordinary Thief goes to the CRAWLING_OUTWARDS state.
+    */
    public synchronized void reverseDirection() {
       OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
       ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
@@ -107,17 +157,24 @@ public class AssaultParty {
    }
 
    private boolean sleep(int thiefID) {
-      boolean atGoal;
+      // \/\/  DEBUGING PURPOSES ONLY \/\/
       try {
-         atGoal = getThief(thiefID).isAtGoal();
+         getThief(thiefID).isAtGoal();
       } catch (NullPointerException e) {
          e.printStackTrace();
          GenericIO.writelnString("ERROR: "+ this + " Ordinary_" + thiefID + " thieves " + Arrays.toString(thieves));
          System.exit(1);
       }
+      // /\/\ DEBUGING PURPOSES ONLY /\/\
+
       return !getThief(thiefID).isAtGoal() && (!begin || nextThiefID != thiefID || size(thieves) < N_THIEVES_PER_PARTY);
    }
 
+   /**
+    * Crawl towards the room of the Museum.
+    * This method is called by the Ordinary Thieves, and makes them crawl from position 0 to the room's distance.
+    * The Ordinary Thief goes to the CRAWLING_INWARDS state.
+    */
    public synchronized void crawlIn() {
       OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
       ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_INWARDS);
@@ -139,6 +196,11 @@ public class AssaultParty {
       loggerCrawl(ordinaryThief, "ARRIVED AT " + room);
    }
 
+   /**
+    * Crawl towards the Collection Site and leave the Museum.
+    * This method is called by the Ordinary Thieves, and makes them crawl from the room's distance to position 0.
+    * The Ordinary Thief goes to the CRAWLING_OUTWARDS state.
+    */
    public synchronized void crawlOut() {
       OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
       ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
@@ -154,15 +216,9 @@ public class AssaultParty {
       } while(crawl(ordinaryThief, room.getDistance(), 0));
 
       inRoom--;
-      leftMuseum++;
       getThief(thiefID).isAtGoal(false);
       ordinaryThief.setThiefState(OrdinaryThiefStates.COLLECTION_SITE);
       loggerCrawl(ordinaryThief, "ARRIVED AT COLLECTION SITE");
-
-      /*
-      if (leftMuseum == N_THIEVES_PER_PARTY)
-         resetAssaultParty();
-       */
    }
 
    private boolean crawl(OrdinaryThief ordinaryThief, int beginning, int goal) {
@@ -212,13 +268,6 @@ public class AssaultParty {
 
       } while (!validMove);
 
-      return true;
-   }
-
-   private boolean allAtGoal() {
-      for (Mapping thief : thieves) {
-         if (!thief.isAtGoal()) return false;
-      }
       return true;
    }
 
@@ -327,11 +376,22 @@ public class AssaultParty {
       return null;
    }
 
+   /**
+    * Data structure to help mapping thieves to their positions.
+    * Each object has a thiefID, a position and a boolean to check if the thief is at the goal.
+    */
    class Mapping {
       private int thiefID;
       private int position;
       private boolean isAtGoal;
 
+      /**
+       * Mapping initialization.
+       * The variable isAtGoal is initialized to false.
+       *
+       * @param thiefID Thief ID
+       * @param position Thief position
+       */
       public Mapping(int thiefID, int position) {
          this.thiefID = thiefID;
          this.position = position;
@@ -348,9 +408,6 @@ public class AssaultParty {
       }
       public int getPosition() {
           return position;
-      }
-      public void setThiefID(int thiefID) {
-          this.thiefID = thiefID;
       }
       public void setPosition(int position) {
           this.position = position;

@@ -153,6 +153,14 @@ public class MemFIFO<R> extends MemObject<R>
        return false;
    }
 
+    /**
+     * FIFO peek.
+     * Returns the first element in the FIFO, without removing it from the FIFO.
+     *
+     * @return first element in the FIFO.
+     * @throws MemException when the FIFO is empty.
+     */
+
    public R peek() throws MemException {
        if (empty) throw new MemException("Fifo empty!");
        return mem[outPnt];

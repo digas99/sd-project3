@@ -12,7 +12,6 @@ import java.util.Arrays;
 
 import static utils.Parameters.*;
 import static utils.Utils.logger;
-import static utils.Utils.min;
 
 public class CollectionSite {
     private final boolean[] inside;
