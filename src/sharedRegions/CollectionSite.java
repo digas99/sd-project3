@@ -87,26 +87,12 @@ public class CollectionSite {
         try { thiefQueue = new MemFIFO<>(new Integer[N_THIEVES_ORDINARY]); } catch (MemException e) {e.printStackTrace();}
     }
 
-    public int registeredThieves() {
-        int count = 0;
-        for (int i = 0; i < N_THIEVES_ORDINARY; i++)
-            if (registeredThieves[i]) count++;
-        return count;
-    }
-
     public synchronized int appraiseSit() {
         MasterThief masterThief = (MasterThief) Thread.currentThread();
 
-        if (endHeist && occupancy() == 0 && masterThief.getConcentrationSite().occupancy() == N_THIEVES_ORDINARY) {
-            masterThief.getConcentrationSite().endHeist(true);
+        if (endHeist && occupancy() == 0)
             return END_HEIST;
-        }
 
-        /*
-        logger(masterThief, "Appraising situation. Concentration Site Occupancy: " + masterThief.getConcentrationSite().occupancy() + "/" + N_THIEVES_ORDINARY);
-        logger(masterThief, "Appraising situation. Active Assault Parties: " + masterThief.getActiveAssaultParties() + "/" + N_ASSAULT_PARTIES);
-        logger(masterThief, "Appraising situation. Thief Queue Size: " + thiefQueue.size() + "/" + N_ASSAULT_PARTIES);
-         */
         if ((masterThief.getActiveAssaultParties() > 0)
                     || thiefQueue.size() > 0)
             return WAIT_FOR_CANVAS;
@@ -142,9 +128,6 @@ public class CollectionSite {
 
         // register canvas
         thiefCanvasState[ordinaryThief.getThiefID()] = ordinaryThief.hasCanvas() ? WITH_CANVAS : WITHOUT_CANVAS;
-
-        if (ordinaryThief.getConcentrationSite().getRoomState(ordinaryThief.getRoomID()) != EMPTY_ROOM)
-            ordinaryThief.getConcentrationSite().setRoomState(ordinaryThief.getRoomID(), ordinaryThief.hasCanvas() ? FREE_ROOM : EMPTY_ROOM);
 
         if (roomState[ordinaryThief.getRoomID()] != EMPTY_ROOM)
             roomState[ordinaryThief.getRoomID()] = ordinaryThief.hasCanvas() ? FREE_ROOM : EMPTY_ROOM;
@@ -202,7 +185,6 @@ public class CollectionSite {
         thiefCanvasState[nextThiefID] = UNKNOWN;
         endHeist = Arrays.stream(roomState).allMatch(roomState -> roomState == EMPTY_ROOM);
         masterThief.setRoomState(roomState);
-        masterThief.getConcentrationSite().setRoomState(roomState);
         logger(masterThief, "Parties in site: " + numberPartiesInSite());
 
         // wake up thief

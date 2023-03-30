@@ -32,28 +32,12 @@ public class ConcentrationSite {
         return roomID;
     }
 
-    public void setRoomState(int[] roomState) {
-        this.roomState = roomState;
-    }
-
-    public void setRoomState(int roomID, int state) {
-        roomState[roomID] = state;
-    }
-
-    public int getRoomState(int roomID) {
-        return roomState[roomID];
-    }
-
     public int occupancy() {
         int count = 0;
         for (int i = 0; i < N_THIEVES_ORDINARY; i++) {
             if (inside[i]) count++;
         }
         return count;
-    }
-
-    public void endHeist(boolean endHeist) {
-        this.endHeist = endHeist;
     }
 
     public ConcentrationSite(GeneralRepos repos) throws MemException {
@@ -180,7 +164,7 @@ public class ConcentrationSite {
     }
 
     public synchronized void endOperations() {
-        notifyAll();
         endHeist = true;
+        notifyAll();
     }
 }

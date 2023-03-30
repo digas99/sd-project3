@@ -49,7 +49,7 @@ TIMEFORMAT="Run $REPS repetitions of the program with success in %R seconds"
 
 time {
   for i in $(seq 1 $REPS); do
-    # run the program in src/main/
+    echo "Iteration $i of the program"
     java -cp $CLASSPATH main.Assault $LOGGING
   done
 }
