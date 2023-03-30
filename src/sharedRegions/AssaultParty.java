@@ -86,7 +86,6 @@ public class AssaultParty {
       logger(this, "Was given room " + room);
       GenericIO.writelnString(room + " has distance " + room.getDistance() + " and paintings " + room.getPaintings());
       this.room = room;
-      museum.clearRooms(id);
       room.setAssaultPartyID(id);
       inRoom = 0;
    }
@@ -97,7 +96,6 @@ public class AssaultParty {
     */
    public void resetAssaultParty() {
       begin = false;
-      room = null;
       nextThiefID = -1;
       for (int i = 0; i < N_THIEVES_PER_PARTY; i++)
          thieves[i] = null;
@@ -179,9 +177,13 @@ public class AssaultParty {
       OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
       ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_INWARDS);
       int thiefID = ordinaryThief.getThiefID();
-      addThief(thiefID);
 
-      if (nextThiefID == -1) nextThiefID = thiefID;
+      if (nextThiefID == -1) {
+         resetAssaultParty();
+         nextThiefID = thiefID;
+      }
+
+      addThief(thiefID);
 
       do {
          // wait until master says to begin
@@ -281,10 +283,13 @@ public class AssaultParty {
    private boolean wrongSeparation(boolean backwards) {
       orderThieves(backwards);
 
-      boolean valid0 = Math.abs(thieves[0].getPosition() - thieves[1].getPosition()) <= MAX_SEPARATION_LIMIT;
-      boolean valid1 = Math.abs(thieves[1].getPosition() - thieves[2].getPosition()) <= MAX_SEPARATION_LIMIT;
-      //if (!valid0 || !valid1) GenericIO.writelnString("WRONG SEPARATION");
-      return !valid0 || !valid1;
+      for (int i = 0; i < N_THIEVES_PER_PARTY-1; i++) {
+            int currentPos = thieves[i].getPosition();
+            int nextPos = thieves[i+1].getPosition();
+            if (Math.abs(currentPos - nextPos) > MAX_SEPARATION_LIMIT)
+               return true;
+      }
+      return false;
    }
 
    // make sure thieves are not overlapping

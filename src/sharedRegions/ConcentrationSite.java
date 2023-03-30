@@ -40,6 +40,10 @@ public class ConcentrationSite {
         return count;
     }
 
+    public void endHeist(boolean endHeist) {
+        this.endHeist = endHeist;
+    }
+
     public ConcentrationSite(GeneralRepos repos) throws MemException {
         endHeist = makeParty = false;
         inside = new boolean[N_THIEVES_ORDINARY];

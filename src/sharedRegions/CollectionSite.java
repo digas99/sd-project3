@@ -90,10 +90,17 @@ public class CollectionSite {
     public synchronized int appraiseSit() {
         MasterThief masterThief = (MasterThief) Thread.currentThread();
 
-        if (endHeist && occupancy() == 0)
+        masterThief.setRoomState(roomState);
+
+        if (endHeist && occupancy() == 0 && masterThief.getConcentrationSite().occupancy() == N_THIEVES_ORDINARY)
             return END_HEIST;
 
-        if ((masterThief.getActiveAssaultParties() > 0)
+        /*
+        logger(masterThief, "Appraising situation. Concentration Site Occupancy: " + masterThief.getConcentrationSite().occupancy() + "/" + N_THIEVES_ORDINARY);
+        logger(masterThief, "Appraising situation. Active Assault Parties: " + masterThief.getActiveAssaultParties() + "/" + N_ASSAULT_PARTIES);
+        logger(masterThief, "Appraising situation. Thief Queue Size: " + thiefQueue.size() + "/" + N_ASSAULT_PARTIES);
+         */
+        if ((masterThief.getActiveAssaultParties() > 0 && masterThief.getConcentrationSite().occupancy() < N_THIEVES_PER_PARTY)
                     || thiefQueue.size() > 0)
             return WAIT_FOR_CANVAS;
 
