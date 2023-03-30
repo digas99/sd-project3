@@ -250,13 +250,11 @@ public class AssaultParty {
          move = min(move, distanceToGoal);
 
          updateThiefPosition(thiefID, move, backwards);
-         //loggerCrawl(ordinaryThief, "MOVE " + (backwards ? "-" : "+") + move + " TO POS " + getThiefPosition(thiefID));
 
          // check thieves separation from each other
          validMove = !wrongSeparation(backwards) && !checkOverlay(beginning, goal);
          if (!validMove) {
             updateThiefPosition(thiefID, move, !backwards);
-            //loggerCrawl(ordinaryThief, "REVERTED TO POS "+getThiefPosition(thiefID));
             move--;
          } else {
             if (getThiefPosition(thiefID) == goal) {

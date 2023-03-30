@@ -40,14 +40,21 @@ public class OrdinaryThief extends Thief {
         this.hasCanvas = hasCanvas;
     }
 
-    public AssaultParty getParty() {
-        return party;
-    }
-
     public void setParty(AssaultParty party) {
         this.party = party;
     }
 
+    public AssaultParty getParty() {
+        return party;
+    }
+
+    public int getPartyID() {
+        return party.getID();
+    }
+
+    public int[] getThievesFromParty() {
+        return party.getThieves();
+    }
     public int getRoomID() {
         return party.getRoom().getID();
     }

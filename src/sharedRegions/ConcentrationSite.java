@@ -102,8 +102,10 @@ public class ConcentrationSite {
         // update rooms state
         roomState = master.getRoomState();
 
-        if (peekFreeRoom() == -1)
+        if (peekFreeRoom() == -1) {
+            notifyAll();
             return -1;
+        }
 
         // wait until there are enough thieves to make a party
         while (occupancy() < N_THIEVES_PER_PARTY && !endHeist ) {
@@ -132,8 +134,6 @@ public class ConcentrationSite {
     public synchronized boolean prepareExcursion() {
         OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
         ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_INWARDS);
-
-        notifyAll();
 
         // wait until master says to prepare excursion
         while (!endHeist && (!makeParty || joinedParty >= N_THIEVES_PER_PARTY)) {

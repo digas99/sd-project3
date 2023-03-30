@@ -109,6 +109,7 @@ public class CollectionSite {
     public synchronized void takeARest() {
         MasterThief masterThief = (MasterThief) Thread.currentThread();
         masterThief.setThiefState(MasterThiefStates.WAITING_ARRIVAL);
+
         // sleep until an ordinary thief reaches the collection site and hands a canvas
         while (canvasToCollect() == 0) {
             try { wait(); } catch (InterruptedException e) {e.printStackTrace();}
@@ -125,7 +126,7 @@ public class CollectionSite {
         }
         inside[ordinaryThief.getThiefID()] = true;
         registeredThieves[ordinaryThief.getThiefID()] = true;
-        partiesInSite[ordinaryThief.getParty().getID()] = true;
+        partiesInSite[ordinaryThief.getPartyID()] = true;
         //logger(ordinaryThief, "Entered collection site. Collection Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
 
         // register canvas
@@ -134,7 +135,7 @@ public class CollectionSite {
         if (roomState[ordinaryThief.getRoomID()] != EMPTY_ROOM)
             roomState[ordinaryThief.getRoomID()] = ordinaryThief.hasCanvas() ? FREE_ROOM : EMPTY_ROOM;
 
-        int[] thievesOfParty = ordinaryThief.getParty().getThieves();
+        int[] thievesOfParty = ordinaryThief.getThievesFromParty();
         int nThievesFromParty = 0;
         for (int thiefFromParty : thievesOfParty) {
             if (registeredThieves[thiefFromParty])
@@ -144,7 +145,7 @@ public class CollectionSite {
         if (nThievesFromParty == N_THIEVES_PER_PARTY) {
             //logger(ordinaryThief, "Last thief from party leaving Collection Site.");
             // clear registered thieves from his party
-            partiesInSite[ordinaryThief.getParty().getID()] = false;
+            partiesInSite[ordinaryThief.getPartyID()] = false;
             for (int thiefFromParty : thievesOfParty)
                 registeredThieves[thiefFromParty] = false;
             printRoomState();
@@ -193,16 +194,16 @@ public class CollectionSite {
         appraisedThief = nextThiefID;
 
         logger(masterThief, "Waking up Ordinary " + nextThiefID + " to leave the collection site.");
-        notifyAll();
 
-        if (thiefQueue.size() == 0)
-            appraisedThief = -1;
+        notifyAll();
 
         if (closingParty) {
             closingParty = false;
             masterThief.setActiveAssaultParties(masterThief.getActiveAssaultParties() - 1);
         }
 
+        if (thiefQueue.size() == 0)
+            appraisedThief = -1;
 
         masterThief.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
     }

@@ -46,8 +46,8 @@ public class MasterThief extends Thief {
                 case CREATE_ASSAULT_PARTY:
                     logger(this, "CREATE_ASSAULT_PARTY");
                     int assaultPartyID = concentrationSite.prepareAssaultParty();
-                    if (assaultPartyID == -1) break;
-                    assaultParties[assaultPartyID].sendAssaultParty();
+                    if (assaultPartyID >= 0)
+                        assaultParties[assaultPartyID].sendAssaultParty();
                     break;
                 case WAIT_FOR_CANVAS:
                     logger(this, "WAIT_FOR_CANVAS");
