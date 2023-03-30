@@ -97,7 +97,7 @@ public class CollectionSite {
     public synchronized int appraiseSit() {
         MasterThief masterThief = (MasterThief) Thread.currentThread();
 
-        if (endHeist && occupancy() == 0) {
+        if (endHeist && occupancy() == 0 && masterThief.getConcentrationSite().occupancy() == N_THIEVES_ORDINARY) {
             masterThief.getConcentrationSite().endHeist(true);
             return END_HEIST;
         }
@@ -107,10 +107,13 @@ public class CollectionSite {
         logger(masterThief, "Appraising situation. Active Assault Parties: " + masterThief.getActiveAssaultParties() + "/" + N_ASSAULT_PARTIES);
         logger(masterThief, "Appraising situation. Thief Queue Size: " + thiefQueue.size() + "/" + N_ASSAULT_PARTIES);
          */
-        if ((masterThief.getActiveAssaultParties() > 0
-                && masterThief.getConcentrationSite().occupancy() < N_THIEVES_PER_PARTY)
+        if ((masterThief.getActiveAssaultParties() > 0)
                     || thiefQueue.size() > 0)
             return WAIT_FOR_CANVAS;
+
+        while (occupancy() > 0) {
+            try { wait(); } catch (InterruptedException e) {e.printStackTrace();}
+        }
 
         return CREATE_ASSAULT_PARTY;
     }
@@ -224,6 +227,7 @@ public class CollectionSite {
         MasterThief masterThief = (MasterThief) Thread.currentThread();
         masterThief.setThiefState(MasterThiefStates.PRESENTING_REPORT);
 
+        notifyAll();
         logger(this, "The heist is over! Were collected " + canvas + " canvas.");
     }
 }

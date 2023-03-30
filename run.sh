@@ -45,9 +45,11 @@ for file in lib/*; do
   CLASSPATH=$CLASSPATH:$PWD/$file:
 done
 
-for i in $(seq 1 $REPS); do
-  # run the program in src/main/
-  java -cp $CLASSPATH main.Assault $LOGGING
-done
+TIMEFORMAT="Run $REPS repetitions of the program with success in %R seconds"
 
-echo "Run $REPS repetitions of the program with success."
+time {
+  for i in $(seq 1 $REPS); do
+    # run the program in src/main/
+    java -cp $CLASSPATH main.Assault $LOGGING
+  done
+}
