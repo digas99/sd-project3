@@ -38,9 +38,11 @@ public class MasterThief extends Thief {
 
     @Override
     public void run() {
+        int concentrationSiteOccupancy;
         concentrationSite.startOperations();
         lifecycle: while(true) {
-            switch (collectionSite.appraiseSit()) {
+            concentrationSiteOccupancy = concentrationSite.getOccupancy();
+            switch (collectionSite.appraiseSit(concentrationSiteOccupancy)) {
                 case CREATE_ASSAULT_PARTY:
                     logger(this, "CREATE_ASSAULT_PARTY");
                     int assaultPartyID = concentrationSite.prepareAssaultParty();

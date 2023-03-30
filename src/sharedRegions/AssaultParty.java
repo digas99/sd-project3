@@ -28,7 +28,7 @@ public class AssaultParty {
    private Museum.Room room;
 
    /**
-    * Get Array of thieves IDs in the Assalt Party.
+    * Get Array of thieves IDs in the Assault Party.
     *
     * @return Array of thieves IDs
     */
@@ -79,10 +79,9 @@ public class AssaultParty {
     * Assign a room to the Assault Party.
     * This method assigns a room to the Assault Party, and sets the Assault Party ID in the room.
     *
-    * @param museum Museum object
     * @param room Room object
     */
-   public void setRoom(Museum museum, Museum.Room room) {
+   public void setRoom(Museum.Room room) {
       logger(this, "Was given room " + room);
       GenericIO.writelnString(room + " has distance " + room.getDistance() + " and paintings " + room.getPaintings());
       this.room = room;

@@ -32,12 +32,12 @@ public class Museum {
         return "Museum";
     }
 
-    public synchronized void rollACanvas(int assaultID) {
+    public synchronized void rollACanvas() {
         OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
         ordinaryThief.setThiefState(OrdinaryThiefStates.AT_A_ROOM);
         logger(ordinaryThief, "Rolling a canvas");
 
-        Room room = getRoom(assaultID);
+        Room room = getRoom(ordinaryThief.getRoomID());
         if (room.getPaintings() == 0) {
             logger(ordinaryThief, "Left empty handed from " + room);
             ordinaryThief.hasCanvas(false);
@@ -49,9 +49,9 @@ public class Museum {
         }
     }
 
-    public Room getRoom(int assaultID) {
+    public Room getRoom(int roomID) {
         for (Room room : rooms) {
-            if (room.getAssaultPartyID() == assaultID)
+            if (room.getID() == roomID)
                 return room;
         }
         return null;

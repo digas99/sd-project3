@@ -32,6 +32,14 @@ public class ConcentrationSite {
         return roomID;
     }
 
+    public void setRoomState(int roomID, int state) {
+        roomState[roomID] = state;
+    }
+
+    public int getRoomState(int roomID) {
+        return roomState[roomID];
+    }
+
     public int occupancy() {
         int count = 0;
         for (int i = 0; i < N_THIEVES_ORDINARY; i++) {
@@ -55,6 +63,10 @@ public class ConcentrationSite {
 
     public String toString() {
         return "Concentration Site";
+    }
+
+    public synchronized int getOccupancy() {
+        return occupancy();
     }
 
     public synchronized void startOperations() {

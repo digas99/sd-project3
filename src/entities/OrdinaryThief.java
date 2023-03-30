@@ -21,7 +21,7 @@ public class OrdinaryThief extends Thief {
     }
 
     public void setRoomOfParty(int roomID) {
-        party.setRoom(museum, rooms[roomID]);
+        party.setRoom(rooms[roomID]);
     }
 
     public int getDisplacement() {
@@ -65,7 +65,7 @@ public class OrdinaryThief extends Thief {
         while (concentrationSite.amINeeded()) {
             if (concentrationSite.prepareExcursion()) {
                 party.crawlIn();
-                museum.rollACanvas(party.getID());
+                museum.rollACanvas();
                 party.reverseDirection();
                 party.crawlOut();
                 collectionSite.handACanvas();
