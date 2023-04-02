@@ -8,33 +8,74 @@ import static utils.Utils.logger;
 
 public class MasterThief extends Thief {
 
+    /**
+     * Number of active assault parties
+     */
     private int activeAssaultParties;
+
+    /**
+     * Array of room states
+     */
     private int[] roomState;
 
-    public MasterThief(String threadName, int thiefID, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite, AssaultParty[] assaultParties) throws MemException {
-        super(threadName, thiefID, museum, concentrationSite, collectionSite, assaultParties);
+    /**
+     * General repository
+     */
+    private GeneralRepos repos;
+
+    /**
+     * MasterThief constructor
+     * @param threadName Thread name
+     * @param thiefID Thief ID
+     * @param museum Museum
+     * @param concentrationSite ConcentrationSite
+     * @param collectionSite CollectionSite
+     * @param assaultParties AssaultParty array
+     * @param repos GeneralRepos
+     */
+
+    public MasterThief(String threadName, int thiefID, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite, AssaultParty[] assaultParties, GeneralRepos repos) throws MemException {
+        super(threadName, thiefID, museum, concentrationSite, collectionSite, assaultParties,repos);
         setThiefState(MasterThiefStates.PLANNING_HEIST);
         activeAssaultParties = 0;
         roomState = new int[N_ROOMS];
         for (int i = 0; i < N_ROOMS; i++)
             roomState[i] = FREE_ROOM;
+        this.repos = repos;
     }
 
+    /**
+     * Get the number of active assault parties
+     * @return Number of active assault parties
+     */
     public int getActiveAssaultParties() {
         return activeAssaultParties;
     }
 
+    /**
+     * Set the number of active assault parties
+     * @param activeAssaultParties Number of active assault parties
+     */
     public void setActiveAssaultParties(int activeAssaultParties) {
         this.activeAssaultParties = activeAssaultParties;
     }
 
+    /**
+     * Get the room state
+     * @return Room state
+     */
     public int[] getRoomState() {
         return roomState;
     }
 
+    /**
+     * Set the room state
+     * @param roomState Room state
+     */
     public void setRoomState(int[] roomState) {
         this.roomState = roomState;
     }
+
 
     @Override
     public void run() {
@@ -45,17 +86,20 @@ public class MasterThief extends Thief {
             switch (collectionSite.appraiseSit(concentrationSiteOccupancy)) {
                 case CREATE_ASSAULT_PARTY:
                     logger(this, "CREATE_ASSAULT_PARTY");
+                    repos.updateMasterThiefState(MasterThiefStates.PLANNING_HEIST);
                     int assaultPartyID = concentrationSite.prepareAssaultParty();
                     if (assaultPartyID >= 0)
                         assaultParties[assaultPartyID].sendAssaultParty();
                     break;
                 case WAIT_FOR_CANVAS:
                     logger(this, "WAIT_FOR_CANVAS");
+                    repos.updateMasterThiefState(MasterThiefStates.WAITING_ARRIVAL);
                     collectionSite.takeARest();
                     collectionSite.collectACanvas();
                     break;
                 case END_HEIST:
                     logger(this, "END_HEIST");
+                    repos.updateMasterThiefState(MasterThiefStates.PRESENTING_REPORT);
                     collectionSite.sumUpResults();
                     break lifecycle;
             }

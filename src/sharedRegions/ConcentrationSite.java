@@ -17,6 +17,12 @@ public class ConcentrationSite {
     private int joinedParty;
     private int[] roomState;
 
+    private GeneralRepos repos;
+
+    /**
+     * Function to peek the next free room
+     * @return roomID or -1 if no free room
+     */
     public int peekFreeRoom() {
         for (int i = 0; i < N_ROOMS; i++) {
             if (roomState[i] == FREE_ROOM)
@@ -25,6 +31,11 @@ public class ConcentrationSite {
         return -1;
     }
 
+    /**
+     * Get the next free room and set it to busy state
+     * if roomID == -1, no free room was found
+     * @return roomID
+     */
     public int getFreeRoom() {
         int roomID = peekFreeRoom();
         if (roomID != -1)
@@ -32,13 +43,10 @@ public class ConcentrationSite {
         return roomID;
     }
 
-    public void setRoomState(int roomID, int state) {
-        roomState[roomID] = state;
-    }
-
-    public int getRoomState(int roomID) {
-        return roomState[roomID];
-    }
+    /**
+     * Function to get the occupancy of the concentration site
+     * @return number of thieves inside the concentration site
+     */
 
     public int occupancy() {
         int count = 0;
@@ -48,10 +56,11 @@ public class ConcentrationSite {
         return count;
     }
 
-    public void endHeist(boolean endHeist) {
-        this.endHeist = endHeist;
-    }
-
+   /**
+     * ConcentrationSite constructor
+     * @param repos General Repository
+     * @throws MemException
+     */
     public ConcentrationSite(GeneralRepos repos) throws MemException {
         endHeist = makeParty = false;
         inside = new boolean[N_THIEVES_ORDINARY];
@@ -65,18 +74,27 @@ public class ConcentrationSite {
         return "Concentration Site";
     }
 
+    /**
+     * Returns the number of thieves inside the Concentration Site
+     */
     public synchronized int getOccupancy() {
         return occupancy();
     }
 
+    /**
+     * Functiom to be called by the Master Thief to start the operations
+     */
     public synchronized void startOperations() {
         MasterThief master = (MasterThief) Thread.currentThread();
         master.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
+        //repos.updateMasterThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
     }
+
 
     public synchronized boolean amINeeded() {
         OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
         ordinaryThief.setThiefState(OrdinaryThiefStates.CONCENTRATION_SITE);
+
 
         ordinaryThief.setParty(null);
 
@@ -95,9 +113,15 @@ public class ConcentrationSite {
         return true;
     }
 
+    /**
+     * Function to be called by the Master Thief to prepare a party
+     * @return the party ID or -1 if there are no more rooms available
+     *
+     */
     public synchronized int prepareAssaultParty() {
         MasterThief master = (MasterThief) Thread.currentThread();
         master.setThiefState(MasterThiefStates.ASSEMBLING_GROUP);
+        //repos.updateMasterThiefState(MasterThiefStates.ASSEMBLING_GROUP);
 
         // update rooms state
         roomState = master.getRoomState();
@@ -131,6 +155,10 @@ public class ConcentrationSite {
         // if thieves are ready
         return currentPartyID;
     }
+
+    /**
+     * Function to be called by the Master Thief to prepare an Excursion
+     */
     public synchronized boolean prepareExcursion() {
         OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
         ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_INWARDS);
@@ -150,6 +178,7 @@ public class ConcentrationSite {
         }
 
         // setup nextPartyID
+        //GenericIO.writelnString("NEXT PARTY ID: "+nextPartyID);
         //GenericIO.writelnString("NEXT PARTY ID: "+nextPartyID);
         joinedParty++;
         ordinaryThief.setAssaultParty(nextPartyID, joinedParty == 1);
@@ -179,6 +208,9 @@ public class ConcentrationSite {
         return true;
     }
 
+    /**
+     * Function to be called by the Master Thief to end the operations
+     */
     public synchronized void endOperations() {
         endHeist = true;
         notifyAll();

@@ -15,16 +15,16 @@ import static utils.Utils.logger;
 public class Assault {
 
     public static void main(String[] args) throws MemException {
-        GenericIO.writelnString("Starting program with " + N_THIEVES_ORDINARY + " Ordinary Thieves");
+        //GenericIO.writelnString("Starting program with " + N_THIEVES_ORDINARY + " Ordinary Thieves");
 
         // check proportions
         if (N_THIEVES_ORDINARY % N_ASSAULT_PARTIES != 0)
             throw new IllegalArgumentException("N_THIEVES_ORDINARY must be a multiple of N_ASSAULT_PARTIES");
 
-        MasterThief masters[];
-        OrdinaryThief thieves[];
+        MasterThief[] masters;
+        OrdinaryThief[] thieves;
 
-        AssaultParty assaultParties[];
+        AssaultParty[] assaultParties;
         CollectionSite collectionSite;
         ConcentrationSite concentrationSite;
         Museum museum;
@@ -33,7 +33,7 @@ public class Assault {
         char opt;
         boolean success;
 
-        GenericIO.writelnString ("\n" + "      Heist to the Museum\n");
+        //GenericIO.writelnString ("\n" + "      Heist to the Museum\n");
         do { GenericIO.writeString ("Logging file name? ");
             logFile = args.length == 0 ? GenericIO.readlnString () : args[0];
             if (FileOp.exists ("./logs/", logFile)){
@@ -65,9 +65,9 @@ public class Assault {
         masters = new MasterThief[N_THIEVES_MASTER];
         thieves = new OrdinaryThief[N_THIEVES_ORDINARY];
         for (int i = 0; i < N_THIEVES_MASTER; i++)
-            masters[i] = new MasterThief("Master_" + i, i, museum, concentrationSite, collectionSite, assaultParties) ;
+            masters[i] = new MasterThief("Master_" + i, i, museum, concentrationSite, collectionSite, assaultParties,repos) ;
         for (int i = 0; i < N_THIEVES_ORDINARY; i++)
-            thieves[i] = new OrdinaryThief("Ordinary_" + i, i, museum, concentrationSite, collectionSite, assaultParties);
+            thieves[i] = new OrdinaryThief("Ordinary_" + i, i, museum, concentrationSite, collectionSite, assaultParties,repos);
 
         // start counting elapsed time
         long start = System.currentTimeMillis();
@@ -101,3 +101,4 @@ public class Assault {
         GenericIO.writelnString("The Heist took " + readable + " to complete.");
     }
 }
+
