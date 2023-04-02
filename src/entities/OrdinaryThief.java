@@ -39,6 +39,7 @@ public class OrdinaryThief extends Thief {
      * @param reset True if the party should be reset
      */
     public void setAssaultParty(int partyID, boolean reset) {
+        logger(this, "Assault Party: "+partyID);
         party = assaultParties[partyID];
         if (reset) party.resetAssaultParty();
     }

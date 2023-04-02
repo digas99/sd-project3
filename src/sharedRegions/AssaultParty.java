@@ -129,7 +129,8 @@ public class AssaultParty {
    public synchronized void sendAssaultParty() {
       MasterThief masterThief = (MasterThief) Thread.currentThread();
       masterThief.setActiveAssaultParties(masterThief.getActiveAssaultParties() + 1);
-      //logger(this, "PARTY SENT");
+      masterThief.setPartyActive(id, true);
+      logger(this, "PARTY SENT");
       begin = true;
       notifyAll();
 
@@ -198,11 +199,11 @@ public class AssaultParty {
             } catch (InterruptedException e) {e.printStackTrace();}
 
          }
-         GenericIO.writelnString(getThiefPosition(thiefID)+"is the position of thief "+thiefID);
+         //GenericIO.writelnString(getThiefPosition(thiefID)+"is the position of thief "+thiefID);
       } while(crawl(ordinaryThief, 0, room.getDistance()));
 
       ordinaryThief.setThiefState(OrdinaryThiefStates.AT_A_ROOM);
-      GenericIO.writelnString(getThiefPosition(ordinaryThief.getThiefID())+"is the position of thief "+ordinaryThief.getThiefID());
+      //GenericIO.writelnString(getThiefPosition(ordinaryThief.getThiefID())+"is the position of thief "+ordinaryThief.getThiefID());
       repos.setOrdinaryThiefState(thiefID, OrdinaryThiefStates.AT_A_ROOM);
       //repos.setOrdinaryThiefRoomID(thiefID, room.getID());
       loggerCrawl(ordinaryThief, "ARRIVED AT " + room);
@@ -283,7 +284,6 @@ public class AssaultParty {
          move = min(move, distanceToGoal);
 
          updateThiefPosition(thiefID, move, backwards);
-         repos.setOrdinaryThiefPosition(thiefID, move);
 
          // check thieves separation from each other
          validMove = !wrongSeparation(backwards) && !checkOverlay(beginning, goal);
@@ -313,6 +313,7 @@ public class AssaultParty {
    private void updateThiefPosition(int thiefID, int move, boolean backwards) {
       int thiefPos = getThiefPosition(thiefID);
       int newPos = !backwards ? thiefPos + move : thiefPos - move;
+      repos.setOrdinaryThiefPosition(thiefID, newPos);
       setThiefPosition(thiefID, newPos);
    }
 

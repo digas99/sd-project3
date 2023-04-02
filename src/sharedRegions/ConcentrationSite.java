@@ -142,18 +142,17 @@ public class ConcentrationSite {
 
         // wakeup thieves to prepare excursion
         notifyAll();
+        nextPartyID = master.getFreeParty();
 
         // wait until thieves are ready
         while (makeParty) {
             try { wait(); } catch (InterruptedException e) {e.printStackTrace();}
         }
 
-        int currentPartyID = nextPartyID;
-        // setup nextPartyID
-        nextPartyID = (nextPartyID + 1) % N_ASSAULT_PARTIES;
+        master.setPartyActive(nextPartyID, true);
 
         // if thieves are ready
-        return currentPartyID;
+        return nextPartyID;
     }
 
     /**

@@ -63,7 +63,7 @@ public class CollectionSite {
     /**
      * Boolean to signal the closing of the party
      */
-    private boolean closingParty;
+    private int closingParty;
 
     /**
      * General Repository
@@ -136,8 +136,7 @@ public class CollectionSite {
      */
     public CollectionSite(GeneralRepos repos) {
         canvas = 0;
-        appraisedThief = -1;
-        closingParty = false;
+        appraisedThief = closingParty = -1;
         registeredThieves = new boolean[N_THIEVES_ORDINARY];
         inside = new boolean[N_THIEVES_ORDINARY];
         roomState = new int[N_ROOMS];
@@ -160,9 +159,11 @@ public class CollectionSite {
         if (endHeist && occupancy() == 0 && concentrationSiteOccupancy == N_THIEVES_ORDINARY)
             return END_HEIST;
 
-        logger(this, "Active Parties: "+masterThief.getActiveAssaultParties()+", Concentration Occupancy: "+concentrationSiteOccupancy+", Parties in Site: "+numberPartiesInSite()+", Thief Queue: "+thiefQueue.size());
-        if (masterThief.getActiveAssaultParties() > 0 || (concentrationSiteOccupancy < N_THIEVES_PER_PARTY && numberPartiesInSite() > 0)
-                    || thiefQueue.size() > 0)
+        //logger(this, "Active Parties: "+masterThief.getActiveAssaultParties()+", Concentration Occupancy: "+concentrationSiteOccupancy+", Parties in Site: "+numberPartiesInSite()+", Thief Queue: "+thiefQueue.size());
+        //logger(this, "Free Party: "+masterThief.getFreeParty());
+        if ((masterThief.getActiveAssaultParties() > 0 && concentrationSiteOccupancy < N_THIEVES_PER_PARTY && numberPartiesInSite() > 0)
+                    || thiefQueue.size() > 0
+                    || masterThief.getFreeParty() == -1)
             return WAIT_FOR_CANVAS;
 
         while (occupancy() > 0) {
@@ -229,7 +230,7 @@ public class CollectionSite {
             for (int thiefFromParty : thievesOfParty)
                 registeredThieves[thiefFromParty] = false;
             printRoomState();
-            closingParty = true;
+            closingParty = ordinaryThief.getPartyID();
             if (roomState[ordinaryThief.getRoomID()] == BUSY_ROOM)
                 roomState[ordinaryThief.getRoomID()] = FREE_ROOM;
         }
@@ -268,15 +269,16 @@ public class CollectionSite {
 
         logger(masterThief, "Waking up Ordinary " + nextThief.thiefID + " to leave the collection site.");
 
-        notifyAll();
-
-        if (closingParty) {
-            closingParty = false;
+        if (closingParty != -1) {
             masterThief.setActiveAssaultParties(masterThief.getActiveAssaultParties() - 1);
+            masterThief.setPartyActive(closingParty, false);
+            closingParty = -1;
         }
 
         if (thiefQueue.size() == 0)
             appraisedThief = -1;
+
+        notifyAll();
 
         masterThief.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
         //repos.updateMasterThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);

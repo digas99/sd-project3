@@ -12,6 +12,7 @@ public class MasterThief extends Thief {
      * Number of active assault parties
      */
     private int activeAssaultParties;
+    private boolean[] partyActive;
 
     /**
      * Array of room states
@@ -42,6 +43,7 @@ public class MasterThief extends Thief {
         for (int i = 0; i < N_ROOMS; i++)
             roomState[i] = FREE_ROOM;
         this.repos = repos;
+        partyActive = new boolean[N_ASSAULT_PARTIES];
     }
 
     /**
@@ -58,6 +60,26 @@ public class MasterThief extends Thief {
      */
     public void setActiveAssaultParties(int activeAssaultParties) {
         this.activeAssaultParties = activeAssaultParties;
+    }
+
+    public void setPartyActive(int partyID, boolean active) {
+        partyActive[partyID] = active;
+    }
+
+    public boolean getPartyActive(int partyID) {
+        return partyActive[partyID];
+    }
+
+    public boolean[] getPartyActive() {
+        return partyActive;
+    }
+
+    public int getFreeParty() {
+        for (int i = 0; i < N_ASSAULT_PARTIES; i++) {
+            if (!partyActive[i])
+                return i;
+        }
+        return -1;
     }
 
     /**

@@ -50,16 +50,16 @@ public class Museum {
     public synchronized void rollACanvas() {
         OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
         ordinaryThief.setThiefState(OrdinaryThiefStates.AT_A_ROOM);
-        //logger(ordinaryThief, "Rolling a canvas");
+        logger(ordinaryThief, "Rolling a canvas");
 
         Room room = getRoom(ordinaryThief.getRoomID());
         if (room.getPaintings() == 0) {
-            //logger(ordinaryThief, "Left empty handed from " + room);
+            logger(ordinaryThief, "Left empty handed from " + room);
             ordinaryThief.hasCanvas(false);
         }
         else {
             room.setPaintings(room.getPaintings() - 1);
-            //logger(ordinaryThief, "Rolled a canvas from " + room + ". " + room.getPaintings() + "/"+ room.getTotalPaintings() +" left");
+            logger(ordinaryThief, "Rolled a canvas from " + room + ". " + room.getPaintings() + "/"+ room.getTotalPaintings() +" left");
             ordinaryThief.hasCanvas(true);
         }
     }
