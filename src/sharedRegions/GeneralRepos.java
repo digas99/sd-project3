@@ -37,24 +37,49 @@ public class GeneralRepos {
      */
     private int[] ids;
 
+    /**
+     * Ordinary Thief situation
+     * P if he is in a party
+     * W if he is waiting for a party
+     */
+
     private char[] ordinaryThiefSituation;
 
+    /**
+     * ID of the assault party that the thief is in.
+     */
     private int [] ordinaryThiefAssaultPartyID;
 
+    /**
+     * ID of the room that the thief is in.
+     */
     private int [] ordinaryThiefRoomID;
 
+
+    /**
+     * Position of the ordinary thief .
+     */
     private int [] ordinaryThiefPosition;
 
+    /**
+     * If the ordinary thief has a canvas
+     */
     private int[] ordinaryThiefCanvas;
 
+    /**
+     * Number of paintings collected
+     */
     private int sumUpCanvas;
 
+    /**
+     * Displacement of the thief
+     */
     private int [] thiefDisplacement;
 
+    /**
+     * Distance to the room
+     */
     int [] distanceToRoom;
-
-
-
 
     /**
      * Distance to the concentration site.
@@ -72,20 +97,23 @@ public class GeneralRepos {
     private int roomID;
 
     /**
-     * Number of canvas in the room.
+     * True if the thief has a canvas.
      */
-    private int canvas;
+    private boolean hasCanvas;
 
     /**
      * Number of paintings in the room.
      */
     private int [] paintings;
 
-    private String sumUp = "My friends, tonight's effort produced";
+    private int sumUp;
 
     private int displacement;
 
     private String s = "P";
+    private int n_canvas;
+
+    private int[] apRId;
 
     /**
      * General Repos constructor.
@@ -102,17 +130,21 @@ public class GeneralRepos {
         paintings = new int[N_THIEVES_ORDINARY];
         thiefDisplacement = new int[N_THIEVES_ORDINARY];
         distanceToRoom = new int[N_ROOMS];
+        apRId = new int[N_ASSAULT_PARTIES];
+        for (int i = 0; i < N_ASSAULT_PARTIES; i++) {
+            apRId[i] = -1;
+        }
 
         if ((logFile == null) || Objects.equals(logFile, ""))
             this.logFile = "logging";
         else this.logFile = logFile;
         ids = new int[N_THIEVES_ORDINARY];
         for (int i = 0; i < N_THIEVES_ORDINARY; i++) {
-            ordinaryThiefStates[i] = OrdinaryThiefStates.CRAWLING_INWARDS;
+            ordinaryThiefStates[i] = OrdinaryThiefStates.CONCENTRATION_SITE;
             ids[i] = -1;
-            ordinaryThiefSituation[i] = 'P';
-            ordinaryThiefPosition[i] = -1;
-            ordinaryThiefCanvas[i] = -1;
+            ordinaryThiefSituation[i] = 'W';
+            ordinaryThiefPosition[i] = 0;
+            ordinaryThiefCanvas[i] = 0;
             paintings[i] = 0;
             thiefDisplacement[i] = 0;
             ordinaryThiefAssaultPartyID[i] = -1;
@@ -121,7 +153,7 @@ public class GeneralRepos {
             ordinaryThiefRoomID[i] = -1;
         }
         for(int i = 0; i < N_ROOMS; i++){
-            distanceToRoom[i] = -1;
+            distanceToRoom[i] = 0;
         }
 
         masterThiefStates = MasterThiefStates.PLANNING_HEIST;
@@ -129,10 +161,10 @@ public class GeneralRepos {
         distance = 0;
         position = 0;
         roomID = 0;
-        canvas = 0;
+        hasCanvas = false;
         displacement = 0;
         sumUpCanvas = 0;
-
+        n_canvas = 0;
         reportInitialStatus();
 
 
@@ -238,7 +270,11 @@ public class GeneralRepos {
         }
 
             for (int i = 0; i < 6; i++) {
-                if(i ==  0 || i == 3) lineTwo += "     "+String.format("%2d", ordinaryThiefRoomID[0]) + "   ";
+                if(i == 0 ){
+                    lineTwo += "     "+String.format("%2d", apRId[0]) + "   ";
+                }else if(i == 3){
+                    lineTwo += "     "+String.format("%2d", apRId[1]) + "  ";
+                }
                 lineTwo += String.format("%2d", i) + "  ";
                 lineTwo += String.format("%2d", ordinaryThiefPosition[i]) + "  ";
                 lineTwo += String.format("%2d", ordinaryThiefCanvas[i]) + "     ";
@@ -302,79 +338,115 @@ public class GeneralRepos {
         }
     }
 
-
-    public synchronized void setOrdinaryThiefStatus(int id, int state, char situation, int assaultPartyID, int position, int canvas){
-        ordinaryThiefStates[id] = state;
-        ordinaryThiefSituation[id] = situation;
-        ordinaryThiefAssaultPartyID[id] = assaultPartyID;
-        ordinaryThiefPosition[id] = position;
-        ordinaryThiefCanvas[id] = canvas;
-        reportStatus();
-    }
-
+    /**
+     * Set the ordinary thief displacement
+     * @param id the thief id
+     * @param displacement the displacement
+     */
     public synchronized void setOrdinaryThiefDisplacement(int id, int displacement){
         thiefDisplacement[id] = displacement;
         reportStatus();
     }
-    public synchronized void setMasterThiefState(int state) {
-        masterThiefStates = state;
+
+    public synchronized void setApRId(int id, int rId){
+        apRId[id] = rId;
         reportStatus();
     }
 
+    /**
+     * Set the ordinary thief state
+     * @param id the thief id
+     * @param state the state
+     */
     public synchronized void setOrdinaryThiefState(int id, int state){
         ordinaryThiefStates[id] = state;
         reportStatus();
     }
 
-    public synchronized void setOrdinaryThiefSituation(int id, char situation){
-        ordinaryThiefSituation[id] = situation;
+    /**
+     * Set ordinary thief situation
+     * if thief is waiting to join a party put 'W'
+     * if thief is in a party put 'P'
+     * @param id the thief id
+     * @param situation boolean true if thief is in a party
+     */
+    public synchronized void setOrdinaryThiefSituation(int id, boolean situation){
+        if(situation) ordinaryThiefSituation[id] = 'P';
+        else ordinaryThiefSituation[id] = 'W';
         reportStatus();
     }
 
+    /**
+     * Set ordinary thief party id
+     * @param id the thief id
+     * @param assaultPartyID the party id
+     */
     public synchronized void setOrdinaryThiefAssaultPartyID(int id, int assaultPartyID){
         ordinaryThiefAssaultPartyID[id] = assaultPartyID;
         reportStatus();
     }
 
+    /**
+     * Set ordinary thief room id
+     * @param id the thief id
+     * @param roomID the room id
+     */
     public synchronized void setOrdinaryThiefRoomID(int id, int roomID){
         ordinaryThiefRoomID[id] = roomID;
         reportStatus();
+
     }
 
+    /**
+     * Set Distance to room
+     * @param roomID the room id
+     * @param distance the distance to the room
+     */
     public synchronized void setDistanceToRoom(int roomID, int distance){
         distanceToRoom[roomID] = distance;
         reportStatus();
     }
 
+    /**
+     * Set the ordinary thief position
+     * @param id the thief id
+     * @param position the position of the thief
+     */
     public synchronized void setOrdinaryThiefPosition(int id, int position) {
         ordinaryThiefPosition[id] = position;
         reportStatus();
     }
 
-    public synchronized int getOrdinaryThiefPosition(int id) {
-        for (int i = 0; i < ordinaryThiefPosition.length; i++) {
-            if (ordinaryThiefPosition[i] == position) {
-                return i;
-            }
-        }
-        return -1;
-    }
 
-    public synchronized void setOrdinaryThiefCanvas(int id, int canvas,int roomID) {
-        ordinaryThiefCanvas[id] = canvas;
-        if(canvas== 0)
-            paintings[roomID] = 0;
+    /**
+     * Set the ordinary thief canvas
+     * if thief has canvas set 1
+     * if thief doesn't have canvas set 0
+     * @param id the thief id
+     * @param hasCanvas boolean true if thief has canvas
+     */
+    public synchronized void setOrdinaryThiefCanvas(int id, boolean hasCanvas){
+        if(hasCanvas)
+            ordinaryThiefCanvas[id] = 1;
         else
-            paintings[roomID]--;
-        this.sumUpCanvas++;
+            ordinaryThiefCanvas[id] = 0;
         reportStatus();
     }
 
+    /**
+     * Set the number of paintings in a room
+     * @param roomID the room id
+     * @param nPaintings the number of paintings
+     */
     public synchronized void setnPaintings(int roomID,int nPaintings) {
         paintings[roomID] = nPaintings;
         reportStatus();
     }
 
+    /**
+     * Set the room distance
+     * @param distance the distance
+     */
     public synchronized void setDistance(int distance) {
         this.distance = distance;
     }
@@ -383,26 +455,36 @@ public class GeneralRepos {
         this.nRooms = nRooms;
     }
 
-    public synchronized void getCanvas(int canvas) {
-        this.canvas = canvas;
-        reportStatus();
-    }
-
+    /**
+     * Set assault party id
+     * @param id room id
+     */
     public synchronized void setAssaultPartyID(int id) {
         this.roomID = id;
         reportStatus();
     }
 
+    /**
+     * Set the total number of paintings collected
+     * @param n_canvas
+     */
+    public synchronized void setnCanvas(int n_canvas) {
+        this.n_canvas = n_canvas;
+    }
+
+    /**
+     * Print the sum up
+     */
     public void printSumUp()
     {
         TextFile log = new TextFile ();
 
-        if (!log.openForAppending (".", logFile))
+        if (!log.openForAppending ("./logs/", logFile))
         { GenericIO.writelnString ("The operation of opening for appending the file " + logFile + " failed!");
             System.exit (1);
         }
 
-        log.writelnString("\n" + sumUp + ".");
+        log.writelnString("My friends, tonight's effort produced "+ n_canvas + " priceless paintings.");
 
         if (!log.close ())
         { GenericIO.writelnString ("The operation of closing the file " + logFile + " failed!");

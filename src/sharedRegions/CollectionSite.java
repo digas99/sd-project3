@@ -153,6 +153,7 @@ public class CollectionSite {
         partiesInSite = new boolean[N_ASSAULT_PARTIES];
         thiefCanvasState = new int[N_THIEVES_ORDINARY];
         try { thiefQueue = new MemFIFO<>(new AppraisedThief[N_THIEVES_ORDINARY]); } catch (MemException e) {e.printStackTrace();}
+        this.repos = repos;
     }
 
     /**
@@ -202,6 +203,7 @@ public class CollectionSite {
     public synchronized void handACanvas() {
         OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
         ordinaryThief.setThiefState(OrdinaryThiefStates.COLLECTION_SITE);
+
         AppraisedThief thief = new AppraisedThief(ordinaryThief.getThiefID(), ordinaryThief.getRoomID(), ordinaryThief.getPartyID(), ordinaryThief.hasCanvas());
         try {
             thiefQueue.write(thief);
@@ -298,9 +300,11 @@ public class CollectionSite {
         MasterThief masterThief = (MasterThief) Thread.currentThread();
         masterThief.setThiefState(MasterThiefStates.PRESENTING_REPORT);
        // repos.updateMasterThiefState(MasterThiefStates.PRESENTING_REPORT);
-
         notifyAll();
+
         logger(this, "The heist is over! Were collected " + canvas + " canvas.");
+        repos.setnCanvas(canvas);
+        repos.printSumUp();
     }
 
     /**

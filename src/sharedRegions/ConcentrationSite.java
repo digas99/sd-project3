@@ -193,6 +193,8 @@ public class ConcentrationSite {
         // setup nextPartyID
         //GenericIO.writelnString("NEXT PARTY ID: "+nextPartyID);
         //GenericIO.writelnString("NEXT PARTY ID: "+nextPartyID);
+
+
         joinedParty++;
         ordinaryThief.setAssaultParty(nextPartyID, joinedParty == 1);
         logger(ordinaryThief, "Joined Party " + nextPartyID + ". Party Occupancy: " + joinedParty + "/" + N_THIEVES_PER_PARTY);
@@ -215,7 +217,6 @@ public class ConcentrationSite {
 
         // leave concentration site
         inside[ordinaryThief.getThiefID()] = false;
-        //logger(ordinaryThief, "Left concentration site. Concentration Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
         notifyAll();
 
         return true;

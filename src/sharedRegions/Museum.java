@@ -42,6 +42,10 @@ public class Museum {
             rooms[i] = new Room(i);
         }
         this.repos = repos;
+        for (int i = 0; i < rooms.length; i++) {
+            repos.setnPaintings(i, rooms[i].getTotalPaintings());
+        }
+
     }
 
     @Override
@@ -58,15 +62,19 @@ public class Museum {
         logger(ordinaryThief, "Rolling a canvas");
 
         Room room = getRoom(ordinaryThief.getRoomID());
+
+
         if (room.getPaintings() == 0) {
             logger(ordinaryThief, "Left empty handed from " + room);
             ordinaryThief.hasCanvas(false);
+
         }
         else {
             room.setPaintings(room.getPaintings() - 1);
             logger(ordinaryThief, "Rolled a canvas from " + room + ". " + room.getPaintings() + "/"+ room.getTotalPaintings() +" left");
             ordinaryThief.hasCanvas(true);
         }
+        repos.setOrdinaryThiefCanvas(ordinaryThief.getThiefID(), ordinaryThief.hasCanvas());
     }
 
     /**
@@ -93,6 +101,7 @@ public class Museum {
         private int paintings;
         private int totalPaintings;
         private int assaultPartyID;
+
 
         /**
          * Get the distance of the room
@@ -179,5 +188,7 @@ public class Museum {
         public String toString() {
             return "Room_"+id;
         }
+
+
     }
 }

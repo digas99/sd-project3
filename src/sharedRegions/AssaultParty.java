@@ -60,10 +60,11 @@ public class AssaultParty {
       for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
          if (thieves[i] == null) {
             thieves[i] = new Mapping(thiefID, 0);
-            //logger(this, "Added Ordinary " + thiefID);
             break;
          }
       }
+
+
    }
 
    /**
@@ -82,11 +83,11 @@ public class AssaultParty {
     * @param room Room object
     */
    public void setRoom(Museum.Room room) {
-      logger(this, "Was given room " + room);
-      //GenericIO.writelnString(room + " has distance " + room.getDistance() + " and paintings " + room.getPaintings());
       this.room = room;
       room.setAssaultPartyID(id);
       inRoom = 0;
+      repos.setDistanceToRoom(room.getID(), room.getDistance());
+
 
    }
 
@@ -99,7 +100,7 @@ public class AssaultParty {
       nextThiefID = -1;
       for (int i = 0; i < N_THIEVES_PER_PARTY; i++)
          thieves[i] = null;
-      //logger(this, "RESETED!");
+
    }
 
    /**
@@ -130,7 +131,6 @@ public class AssaultParty {
       MasterThief masterThief = (MasterThief) Thread.currentThread();
       masterThief.setActiveAssaultParties(masterThief.getActiveAssaultParties() + 1);
       masterThief.setPartyActive(id, true);
-      logger(this, "PARTY SENT");
       begin = true;
       notifyAll();
 
@@ -182,6 +182,7 @@ public class AssaultParty {
    public synchronized void crawlIn() {
       OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
       ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_INWARDS);
+      repos.setOrdinaryThiefState(ordinaryThief.getThiefID(), OrdinaryThiefStates.CRAWLING_INWARDS);
       int thiefID = ordinaryThief.getThiefID();
 
       if (nextThiefID == -1) {
@@ -202,13 +203,10 @@ public class AssaultParty {
          //GenericIO.writelnString(getThiefPosition(thiefID)+"is the position of thief "+thiefID);
       } while(crawl(ordinaryThief, 0, room.getDistance()));
 
+      repos.setDistance(room.getDistance());
       ordinaryThief.setThiefState(OrdinaryThiefStates.AT_A_ROOM);
-      //GenericIO.writelnString(getThiefPosition(ordinaryThief.getThiefID())+"is the position of thief "+ordinaryThief.getThiefID());
       repos.setOrdinaryThiefState(thiefID, OrdinaryThiefStates.AT_A_ROOM);
-      //repos.setOrdinaryThiefRoomID(thiefID, room.getID());
-      loggerCrawl(ordinaryThief, "ARRIVED AT " + room);
-      //repos.setAssaultPartyID(id);
-      //repos.setOrdinaryThiefAssaultPartyID(thiefID, id);
+      repos.setOrdinaryThiefAssaultPartyID(thiefID, id);
    }
 
    /**
@@ -235,7 +233,6 @@ public class AssaultParty {
       getThief(thiefID).isAtGoal(false);
       ordinaryThief.setThiefState(OrdinaryThiefStates.COLLECTION_SITE);
       repos.setOrdinaryThiefState(thiefID, OrdinaryThiefStates.COLLECTION_SITE);
-      loggerCrawl(ordinaryThief, "ARRIVED AT COLLECTION SITE");
    }
 
    /**
@@ -256,7 +253,7 @@ public class AssaultParty {
 
       // wake up next thief
       nextThiefID = getNextThief(thiefID, backwards);
-      //GenericIO.writelnString("Next Thief: " + nextThiefID);
+
 
       notifyAll();
 
@@ -315,6 +312,7 @@ public class AssaultParty {
       int newPos = !backwards ? thiefPos + move : thiefPos - move;
       repos.setOrdinaryThiefPosition(thiefID, newPos);
       setThiefPosition(thiefID, newPos);
+      repos.setOrdinaryThiefPosition(thiefID, newPos);
    }
 
    /**
@@ -347,7 +345,6 @@ public class AssaultParty {
             int currentPos = thieves[i].getPosition();
             int nextPos = thieves[j].getPosition();
             if (currentPos != beginning && currentPos != goal && currentPos == nextPos) {
-               //GenericIO.writelnString("OVERLAY");
                return true;
             }
          }
@@ -443,7 +440,6 @@ public class AssaultParty {
       for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
          print.append(thieves[i].getPosition()).append(" ");
       }
-      //GenericIO.writelnString(print);
    }
 
    /**

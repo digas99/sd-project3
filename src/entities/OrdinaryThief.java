@@ -27,6 +27,11 @@ public class OrdinaryThief extends Thief {
     private boolean hasCanvas;
 
     /**
+     * True if ordinary thief is in a party
+     */
+    private boolean inParty;
+
+    /**
      * Array of Museum Rooms
      */
     private Museum.Room[] rooms;
@@ -45,7 +50,12 @@ public class OrdinaryThief extends Thief {
     public void setAssaultParty(int partyID, boolean reset) {
         logger(this, "Assault Party: "+partyID);
         party = assaultParties[partyID];
-        if (reset) party.resetAssaultParty();
+        inParty = true;
+        repos.setOrdinaryThiefSituation(getThiefID(), isInParty());
+        if (reset){
+            party.resetAssaultParty();
+
+        }
     }
 
     /**
@@ -54,6 +64,7 @@ public class OrdinaryThief extends Thief {
      */
     public void setRoomOfParty(int roomID) {
         party.setRoom(rooms[roomID]);
+        repos.setApRId(getPartyID(), roomID);
     }
 
     /**
@@ -63,6 +74,23 @@ public class OrdinaryThief extends Thief {
     public int getDisplacement() {
         return displacement;
     }
+
+    /**
+     * Get thief in party
+     * @return True if the thief is in a party
+     */
+    public boolean isInParty() {
+        return inParty;
+    }
+
+    /**
+     * Set thief in party
+     * @param inParty True if the thief is in a party
+     */
+    public void setInParty(boolean inParty) {
+        this.inParty = inParty;
+    }
+
 
     /**
      * Get the room of the thief
@@ -136,8 +164,10 @@ public class OrdinaryThief extends Thief {
         thiefState = OrdinaryThiefStates.CONCENTRATION_SITE;
         displacement = random(MIN_DISPLACEMENT, MAX_DISPLACEMENT);
         hasCanvas = false;
+        inParty = false;
         rooms = museum.getRooms();
         this.repos = repos;
+        repos.setOrdinaryThiefDisplacement(thiefID, displacement);
     }
 
     /**
@@ -152,6 +182,8 @@ public class OrdinaryThief extends Thief {
                 party.reverseDirection();
                 party.crawlOut();
                 collectionSite.handACanvas();
+                setInParty(false);
+                repos.setOrdinaryThiefSituation(getThiefID(), isInParty());
             } else break;
         }
     }
