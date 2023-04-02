@@ -6,6 +6,10 @@ import utils.MemException;
 import static utils.Parameters.*;
 import static utils.Utils.logger;
 
+/**
+ * Thread that represents the Master Thief
+ */
+
 public class MasterThief extends Thief {
 
     /**
@@ -62,18 +66,19 @@ public class MasterThief extends Thief {
         this.activeAssaultParties = activeAssaultParties;
     }
 
+    /**
+     * Set a party as active or inactive
+     * @param partyID
+     * @param active
+     */
     public void setPartyActive(int partyID, boolean active) {
         partyActive[partyID] = active;
     }
 
-    public boolean getPartyActive(int partyID) {
-        return partyActive[partyID];
-    }
-
-    public boolean[] getPartyActive() {
-        return partyActive;
-    }
-
+    /**
+     * Get the first free party
+     * @return Free party ID
+     */
     public int getFreeParty() {
         for (int i = 0; i < N_ASSAULT_PARTIES; i++) {
             if (!partyActive[i])
@@ -99,6 +104,9 @@ public class MasterThief extends Thief {
     }
 
 
+    /**
+     * Life cycle of the Master Thief
+     */
     @Override
     public void run() {
         int concentrationSiteOccupancy;

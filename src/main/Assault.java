@@ -36,6 +36,9 @@ public class Assault {
         //GenericIO.writelnString ("\n" + "      Heist to the Museum\n");
         do { GenericIO.writeString ("Logging file name? ");
             logFile = args.length == 0 ? GenericIO.readlnString () : args[0];
+            if (!FileOp.exists(".", "logs"))
+                FileOp.makeDirectory(".", "logs");
+
             if (FileOp.exists ("./logs/", logFile)){
                 if (args.length == 0) {
                     do {

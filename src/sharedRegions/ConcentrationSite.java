@@ -9,6 +9,12 @@ import java.util.Arrays;
 import static utils.Parameters.*;
 import static utils.Utils.logger;
 
+
+/**
+ * Shared Region with methods used by the Master Thief and the Ordinary Thieves.
+ * This class is responsible for gathering thieves and sending them to an Assault Party.
+ */
+
 public class ConcentrationSite {
     private final boolean[] inside;
     private boolean endHeist;
@@ -57,11 +63,12 @@ public class ConcentrationSite {
     }
 
    /**
-     * ConcentrationSite constructor
-     * @param repos General Repository
-     * @throws MemException
-     */
-    public ConcentrationSite(GeneralRepos repos) throws MemException {
+    * ConcentrationSite constructor
+    * No relevant parameters are passed to the constructor but many of the variables are initialized
+    *
+    * @param repos General Repository
+    */
+    public ConcentrationSite(GeneralRepos repos) {
         endHeist = makeParty = false;
         inside = new boolean[N_THIEVES_ORDINARY];
         roomState = new int[N_ROOMS];
@@ -76,13 +83,14 @@ public class ConcentrationSite {
 
     /**
      * Returns the number of thieves inside the Concentration Site
+     * @return number of thieves inside the Concentration Site
      */
     public synchronized int getOccupancy() {
         return occupancy();
     }
 
     /**
-     * Functiom to be called by the Master Thief to start the operations
+     * Function to be called by the Master Thief to start the operations
      */
     public synchronized void startOperations() {
         MasterThief master = (MasterThief) Thread.currentThread();
@@ -90,6 +98,11 @@ public class ConcentrationSite {
         //repos.updateMasterThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
     }
 
+    /**
+     * Checks if the Ordinary Thief that called it is still needed
+     *
+     * @return true if the thief is still needed, false if the heist is over
+     */
 
     public synchronized boolean amINeeded() {
         OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
@@ -157,6 +170,7 @@ public class ConcentrationSite {
 
     /**
      * Function to be called by the Master Thief to prepare an Excursion
+     * @return false if there are no more rooms available or if the heist is over
      */
     public synchronized boolean prepareExcursion() {
         OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
@@ -208,7 +222,7 @@ public class ConcentrationSite {
     }
 
     /**
-     * Function to be called by the Master Thief to end the operations
+     * Function to be called by the Master Thief to end the heist and wake up all thieves
      */
     public synchronized void endOperations() {
         endHeist = true;

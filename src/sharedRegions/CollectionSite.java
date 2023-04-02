@@ -13,6 +13,11 @@ import java.util.Arrays;
 import static utils.Parameters.*;
 import static utils.Utils.logger;
 
+/**
+ * Shared Region with methods used by the Master Thief and the Ordinary Thieves.
+ * This class is responsible for gathering canvas and shaping the lifecycle of the Master Thief.
+ */
+
 public class CollectionSite {
 
     /**
@@ -101,6 +106,7 @@ public class CollectionSite {
 
     /**
      * Returns the number of thieves inside the Collection Site
+     * @return number of thieves inside the Collection Site
      */
     public int occupancy() {
         int count = 0;
@@ -112,6 +118,7 @@ public class CollectionSite {
 
     /**
      * Returns the number of canvas to collect
+     * @return number of canvas to collect
      */
     private int canvasToCollect() {
         int count = 0;
@@ -122,6 +129,7 @@ public class CollectionSite {
 
     /**
      * Returns the number of parties in the Collection Site
+     * @return number of parties in the Collection Site
      */
     private int numberPartiesInSite() {
         int count = 0;
@@ -174,8 +182,7 @@ public class CollectionSite {
     }
 
     /**
-     * Master Thief takes a rest
-     * @return Action to be taken
+     * Master Thief takes a rest while waiting for an ordinary thief to hand a canvas
      */
 
     public synchronized void takeARest() {
@@ -190,7 +197,7 @@ public class CollectionSite {
     }
 
     /**
-     * Thief hands a canvas
+     * Ordinary Thief hands a canvas and waits for the master thief to appraise the situation
      */
     public synchronized void handACanvas() {
         OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
@@ -242,7 +249,7 @@ public class CollectionSite {
     }
 
     /**
-     *
+     * Master Thief collects a canvas from an ordinary thief
      */
     public synchronized void collectACanvas() {
         MasterThief masterThief = (MasterThief) Thread.currentThread();
@@ -284,6 +291,9 @@ public class CollectionSite {
         //repos.updateMasterThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
     }
 
+    /**
+     * Master Thief presents the report of the heist
+     */
     public synchronized void sumUpResults() {
         MasterThief masterThief = (MasterThief) Thread.currentThread();
         masterThief.setThiefState(MasterThiefStates.PRESENTING_REPORT);
@@ -291,15 +301,26 @@ public class CollectionSite {
 
         notifyAll();
         logger(this, "The heist is over! Were collected " + canvas + " canvas.");
-
-
     }
 
+    /**
+     * Helper class to store information about the ordinary thieves being appraised
+     */
     class AppraisedThief {
         int thiefID;
         int roomID;
         int partyID;
         boolean hasCanvas;
+
+        /**
+         * Constructor of the AppraisedThief class
+         * All class attributes are initialized with the values passed as parameters
+         *
+         * @param thiefID ID of the Ordinary Thief
+         * @param roomID ID of the room that was being targeted by the party
+         * @param partyID ID of the party assigned to the Ordinary Thief
+         * @param hasCanvas boolean value indicating if the Ordinary Thief has a canvas
+         */
 
         public AppraisedThief(int thiefID, int roomID, int partyID, boolean hasCanvas) {
             this.thiefID = thiefID;

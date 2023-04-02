@@ -6,10 +6,16 @@ import entities.OrdinaryThiefStates;
 import static utils.Parameters.*;
 import static utils.Utils.*;
 
+/**
+ * Shared Region with a method used by the Ordinary Thieves.
+ * This class is responsible for keeping track of the paintings in the museum.
+ */
+
+
 public class Museum {
 
     /**
-     * Array of rooms in the museumS
+     * Array of rooms in the museum
      */
     private final Room[] rooms = new Room[N_ROOMS];
 
@@ -44,8 +50,7 @@ public class Museum {
     }
 
     /**
-     * Roll a canvas from a room and add it to the thief's canvas
-     *
+     * Method used by the Ordinary Thieves to roll a canvas from a room
      */
     public synchronized void rollACanvas() {
         OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
@@ -76,6 +81,10 @@ public class Museum {
         }
         return null;
     }
+
+    /**
+     * Helper class to represent a room in the museum
+     */
 
     public class Room {
 
@@ -129,12 +138,12 @@ public class Museum {
             this.assaultPartyID = assaultPartyID;
         }
 
+        /**
+         * Get the total number of paintings in the room
+         * @return Total number of paintings
+         */
         public int getTotalPaintings() {
             return totalPaintings;
-        }
-
-        public void setTotalPaintings(int totalPaintings) {
-            this.totalPaintings = totalPaintings;
         }
 
         /**
@@ -145,12 +154,18 @@ public class Museum {
             return id;
         }
 
+        /**
+         * Set the ID of the room
+         * @param id
+         */
+
         public void setID(int id) {
             this.id = id;
         }
 
         /**
-         * Room constructor
+         * Room constructor that takes an ID to initialize the room
+         * It also initializes the distance and number of paintings in the room randomly
          * @param id Room ID
          */
         public Room(int id) {
@@ -158,9 +173,6 @@ public class Museum {
             distance = random(MIN_DISTANCE, MAX_DISTANCE);
             paintings = totalPaintings = random(MIN_PAINTINGS, MAX_PAINTINGS);
             assaultPartyID = -1;
-
-
-
         }
 
         @Override

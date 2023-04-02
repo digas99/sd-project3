@@ -266,7 +266,7 @@ public class AssaultParty {
       return true;
    }
    /**
-    * Move the thief to the goal.
+    * Calculate the next move of the thief towards the goal.
     * @param ordinaryThief thief to move
     * @param beginning position to start from
     * @param goal position to move to
@@ -316,8 +316,6 @@ public class AssaultParty {
       repos.setOrdinaryThiefPosition(thiefID, newPos);
       setThiefPosition(thiefID, newPos);
    }
-
-
 
    /**
     * Check if the thieves are separated by more than MAX_SEPARATION_LIMIT

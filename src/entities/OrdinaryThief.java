@@ -5,6 +5,10 @@ import sharedRegions.*;
 import static utils.Parameters.*;
 import static utils.Utils.*;
 
+/**
+ * Thread that represents the Ordinary Thief
+ */
+
 public class OrdinaryThief extends Thief {
 
     /**
@@ -46,7 +50,7 @@ public class OrdinaryThief extends Thief {
 
     /**
      * Set the room of the party
-     * @param roomID
+     * @param roomID Room ID
      */
     public void setRoomOfParty(int roomID) {
         party.setRoom(rooms[roomID]);
@@ -58,10 +62,6 @@ public class OrdinaryThief extends Thief {
      */
     public int getDisplacement() {
         return displacement;
-    }
-
-    public void setDisplacement(int displacement) {
-        this.displacement = displacement;
     }
 
     /**
@@ -140,6 +140,9 @@ public class OrdinaryThief extends Thief {
         this.repos = repos;
     }
 
+    /**
+     * Life cycle of the Ordinary Thief
+     */
     @Override
     public void run() {
         while (concentrationSite.amINeeded()) {

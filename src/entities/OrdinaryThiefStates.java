@@ -1,5 +1,9 @@
 package entities;
 
+/**
+ * Class that contains the states of the Ordinary Thief
+ */
+
 public class OrdinaryThiefStates {
     public static final int CONCENTRATION_SITE = 0;
     public static final int CRAWLING_INWARDS = 1;
