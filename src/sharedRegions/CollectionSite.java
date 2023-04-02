@@ -94,7 +94,8 @@ public class CollectionSite {
         if (endHeist && occupancy() == 0 && concentrationSiteOccupancy == N_THIEVES_ORDINARY)
             return END_HEIST;
 
-        if ((masterThief.getActiveAssaultParties() > 0 && concentrationSiteOccupancy < N_THIEVES_PER_PARTY)
+        logger(this, "Active Parties: "+masterThief.getActiveAssaultParties()+", Concentration Occupancy: "+concentrationSiteOccupancy+", Parties in Site: "+numberPartiesInSite()+", Thief Queue: "+thiefQueue.size());
+        if (masterThief.getActiveAssaultParties() > 0 || (concentrationSiteOccupancy < N_THIEVES_PER_PARTY && numberPartiesInSite() > 0)
                     || thiefQueue.size() > 0)
             return WAIT_FOR_CANVAS;
 
