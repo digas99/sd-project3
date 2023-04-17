@@ -177,19 +177,19 @@ public class GeneralRepos {
     public synchronized void updateMasterThiefState(int state) {
         switch (state){
             case MasterThiefStates.PLANNING_HEIST:
-                GenericIO.writelnString("Master Thief is planning the heist");
+                //GenericIO.writelnString("Master Thief is planning the heist");
                 break;
             case MasterThiefStates.DECIDING_WHAT_TO_DO:
-                GenericIO.writelnString("Master Thief is deciding what to do");
+                //GenericIO.writelnString("Master Thief is deciding what to do");
                 break;
             case MasterThiefStates.ASSEMBLING_GROUP:
-                GenericIO.writelnString("Master Thief is assembling a group");
+                //GenericIO.writelnString("Master Thief is assembling a group");
                 break;
             case MasterThiefStates.WAITING_ARRIVAL:
-                GenericIO.writelnString("Master Thief is waiting for the group to arrive");
+                //GenericIO.writelnString("Master Thief is waiting for the group to arrive");
                 break;
             case MasterThiefStates.PRESENTING_REPORT:
-                GenericIO.writelnString("Master Thief is presenting the report");
+                //GenericIO.writelnString("Master Thief is presenting the report");
                 break;
         }
         masterThiefStates = state;

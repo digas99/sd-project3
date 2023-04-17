@@ -54,7 +54,8 @@ public class Museum {
     }
 
     /**
-     * Method used by the Ordinary Thieves to roll a canvas from a room
+     * Method used by the setnPaintings
+     * Ordinary Thieves to roll a canvas from a room
      */
     public synchronized void rollACanvas() {
         OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();

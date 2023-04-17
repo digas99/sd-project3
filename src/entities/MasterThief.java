@@ -115,14 +115,14 @@ public class MasterThief extends Thief {
             concentrationSiteOccupancy = concentrationSite.getOccupancy();
             switch (collectionSite.appraiseSit(concentrationSiteOccupancy)) {
                 case CREATE_ASSAULT_PARTY:
-                    logger(this, "CREATE_ASSAULT_PARTY");
+                    //logger(this, "CREATE_ASSAULT_PARTY");
                     repos.updateMasterThiefState(MasterThiefStates.PLANNING_HEIST);
                     int assaultPartyID = concentrationSite.prepareAssaultParty();
                     if (assaultPartyID >= 0)
                         assaultParties[assaultPartyID].sendAssaultParty();
                     break;
                 case WAIT_FOR_CANVAS:
-                    logger(this, "WAIT_FOR_CANVAS");
+                    //logger(this, "WAIT_FOR_CANVAS");
                     repos.updateMasterThiefState(MasterThiefStates.WAITING_ARRIVAL);
                     collectionSite.takeARest();
                     collectionSite.collectACanvas();

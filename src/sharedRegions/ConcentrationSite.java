@@ -190,11 +190,6 @@ public class ConcentrationSite {
             return false;
         }
 
-        // setup nextPartyID
-        //GenericIO.writelnString("NEXT PARTY ID: "+nextPartyID);
-        //GenericIO.writelnString("NEXT PARTY ID: "+nextPartyID);
-
-
         joinedParty++;
         ordinaryThief.setAssaultParty(nextPartyID, joinedParty == 1);
         logger(ordinaryThief, "Joined Party " + nextPartyID + ". Party Occupancy: " + joinedParty + "/" + N_THIEVES_PER_PARTY);
