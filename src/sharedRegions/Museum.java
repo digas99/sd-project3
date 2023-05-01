@@ -25,15 +25,6 @@ public class Museum {
     GeneralRepos repos;
 
     /**
-     * Get the rooms of the museum
-     * @return Rooms
-     */
-    public Room[] getRooms() {
-        return rooms;
-    }
-
-
-    /**
      * Museum constructor
      * @param repos GeneralRepos
      */
@@ -98,7 +89,7 @@ public class Museum {
         private int id;
         private int distance;
         private int paintings;
-        private int totalPaintings;
+        private final int totalPaintings;
         private int assaultPartyID;
 
 

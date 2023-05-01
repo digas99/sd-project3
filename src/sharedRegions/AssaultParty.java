@@ -63,8 +63,6 @@ public class AssaultParty {
             break;
          }
       }
-
-
    }
 
    /**
@@ -160,6 +158,7 @@ public class AssaultParty {
        int thiefID = ordinaryThief.getThiefID();
 
        if (nextThiefID == -1) {
+           logger(this, "Reset");
            resetAssaultParty();
            nextThiefID = thiefID;
        }
@@ -188,25 +187,27 @@ public class AssaultParty {
     * The Ordinary Thief goes to the CRAWLING_OUTWARDS state.
     */
    public synchronized void crawlOut(int roomDistance, int displacement) {
-      OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
-      ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
-      int thiefID = ordinaryThief.getThiefID();
-      repos.setOrdinaryThiefState(thiefID, OrdinaryThiefStates.CRAWLING_OUTWARDS);
+       OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
+       ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
+       int thiefID = ordinaryThief.getThiefID();
+       repos.setOrdinaryThiefState(thiefID, OrdinaryThiefStates.CRAWLING_OUTWARDS);
 
-      do {
-         // wait until master says to begin
-         while (sleep(thiefID)){
-            try {
-                  wait();
-            } catch (InterruptedException e) {
-               e.printStackTrace();
-            }
-         }} while(crawl(ordinaryThief.getThiefID(), displacement, roomDistance, 0));
+       do {
+           // wait until master says to begin
+           while (sleep(thiefID)){
+               try {
+                   wait();
+               } catch (InterruptedException e) {
+                   e.printStackTrace();
+               }
+           }
+       } while(crawl(ordinaryThief.getThiefID(), displacement, roomDistance, 0));
 
-      inRoom--;
-      getThief(thiefID).isAtGoal(false);
-      ordinaryThief.setThiefState(OrdinaryThiefStates.COLLECTION_SITE);
-      repos.setOrdinaryThiefState(thiefID, OrdinaryThiefStates.COLLECTION_SITE);
+       inRoom--;
+       getThief(thiefID).isAtGoal(false);
+
+       ordinaryThief.setThiefState(OrdinaryThiefStates.COLLECTION_SITE);
+       repos.setOrdinaryThiefState(thiefID, OrdinaryThiefStates.COLLECTION_SITE);
    }
 
    /**

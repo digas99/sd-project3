@@ -4,6 +4,7 @@ import entities.*;
 import genclass.GenericIO;
 
 import static utils.Parameters.*;
+import static utils.Utils.count;
 import static utils.Utils.logger;
 
 /**
@@ -26,11 +27,7 @@ public class ConcentrationSite {
      * @return the number of thieves
      */
     public int occupancy() {
-        int count = 0;
-        for (boolean thief : thieves) {
-            if (thief) count++;
-        }
-        return count;
+        return count(thieves);
     }
 
     /**
@@ -89,14 +86,6 @@ public class ConcentrationSite {
     }
 
     /**
-     * Get the list of parties active state
-     * @return list of parties states
-     */
-    public boolean[] partiesActiveState() {
-        return partyActive;
-    }
-
-    /**
      * Set the active state of a party
      * @param partyID ID of the party
      * @param state state to set
@@ -111,11 +100,7 @@ public class ConcentrationSite {
      * @return number of parties
      */
     public int nActiveParties() {
-        int count = 0;
-        for (boolean party : partyActive) {
-            if (party) count++;
-        }
-        return count;
+        return count(partyActive);
     }
 
    /**

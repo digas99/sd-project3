@@ -1,6 +1,5 @@
 package utils;
 
-import entities.OrdinaryThief;
 import genclass.GenericIO;
 
 /**
@@ -105,5 +104,19 @@ public class Utils {
         for (boolean b : array)
             if (!b) return false;
         return true;
+    }
+
+    /**
+     * Count
+     * Count the number of true elements in an array
+     *
+     * @param array array of booleans
+     * @return number of true elements
+     */
+    public static int count(boolean[] array) {
+        int count = 0;
+        for (boolean b : array)
+            if (b) count++;
+        return count;
     }
 }

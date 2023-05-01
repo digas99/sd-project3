@@ -59,13 +59,19 @@ public class MasterThief extends Thief {
                     int partyID = partyState[0];
                     int roomID = partyState[1];
                     int roomState = partyState[2];
+                    boolean lastThief = partyState[3] == 1;
 
-                    if (roomState != BUSY_ROOM)
+                    if (lastThief) {
                         concentrationSite.setPartyActive(partyID, false);
+                        assaultParties[partyID].resetAssaultParty();
+                    }
 
-                    // only need to update room state if it's not empty already
-                    if (concentrationSite.getRoomState(roomID) != EMPTY_ROOM)
-                        concentrationSite.setRoomState(roomID, roomState);
+                    // must only update if room not busy
+                    if (roomState != BUSY_ROOM) {
+                        // only need to update room state if it's not empty already
+                        if (concentrationSite.getRoomState(roomID) != EMPTY_ROOM)
+                            concentrationSite.setRoomState(roomID, roomState);
+                    }
 
                     break;
                 case END_HEIST:

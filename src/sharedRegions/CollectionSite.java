@@ -11,7 +11,7 @@ import utils.MemFIFO;
 import java.util.Arrays;
 
 import static utils.Parameters.*;
-import static utils.Utils.logger;
+import static utils.Utils.*;
 
 /**
  * Shared Region with methods used by the Master Thief and the Ordinary Thieves.
@@ -37,6 +37,10 @@ public class CollectionSite {
      */
     private final boolean[] partiesInSite;
     /**
+     * Number of emptied rooms
+     */
+    private final boolean[] emptiedRooms;
+    /**
      * State of the canvas of each thief
      */
     private final int[] thiefCanvasState;
@@ -57,20 +61,11 @@ public class CollectionSite {
      */
     private int closingParty;
     /**
-     * Number of emptied rooms
-     */
-    private int emptiedRooms;
-
-    /**
      * Checks the number of thieves inside the collection site
      * @return the number of thieves
      */
     public int occupancy() {
-        int count = 0;
-        for (boolean thief : thieves) {
-            if (thief) count++;
-        }
-        return count;
+        return count(thieves);
     }
 
     /**
@@ -78,10 +73,7 @@ public class CollectionSite {
      * @return number of parties in the Collection Site
      */
     private int numberOfPartiesInSite() {
-        int count = 0;
-        for (int i = 0; i < N_ASSAULT_PARTIES; i++)
-            if (partiesInSite[i]) count++;
-        return count;
+        return count(partiesInSite);
     }
 
     /**
@@ -108,9 +100,10 @@ public class CollectionSite {
         this.repos = repos;
         thieves = new boolean[N_THIEVES_ORDINARY];
         partiesInSite = new boolean[N_ASSAULT_PARTIES];
+        emptiedRooms = new boolean[N_ROOMS];
         thiefCanvasState = new int[N_THIEVES_ORDINARY];
         registeredThievesPerParty = new int[N_ASSAULT_PARTIES];
-        canvas = emptiedRooms = 0;
+        canvas = 0;
         appraisedThief = closingParty = -1;
         try {
             thiefQueue = new MemFIFO<>(new AppraisedThief[N_THIEVES_ORDINARY]);
@@ -125,7 +118,8 @@ public class CollectionSite {
      */
     public synchronized int appraiseSit(int concentrationSiteOccupancy, int activeAssaultParties, int freeParty) {
         // end heist if all rooms are empty, if no thieves left in collection site and they are all in concentration site
-        if (emptiedRooms == N_ROOMS
+        logger(this, "Emptied Rooms: " + count(emptiedRooms) + " Occupancy: " + occupancy() + " Concentration Site Occupancy: " + concentrationSiteOccupancy);
+        if (all(emptiedRooms)
             && occupancy() == 0
             && concentrationSiteOccupancy == N_THIEVES_ORDINARY)
             return END_HEIST;
@@ -190,15 +184,11 @@ public class CollectionSite {
         registeredThievesPerParty[partyID]++;
         partiesInSite[partyID] = true;
         thiefCanvasState[ordinaryThiefID] = hasCanvas ? WITH_CANVAS : WITHOUT_CANVAS;
-        logger(ordinaryThief, "Entered collection site. Collection Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
+        //logger(ordinaryThief, "Entered collection site. Collection Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
 
         // if last thief of party
-        if (registeredThievesPerParty[partyID] == N_THIEVES_PER_PARTY) {
-            logger(ordinaryThief, "Last thief from party leaving Collection Site.");
-            partiesInSite[partyID] = false;
-            registeredThievesPerParty[partyID] = 0;
+        if (registeredThievesPerParty[partyID] == N_THIEVES_PER_PARTY)
             closingParty = partyID;
-        }
 
         // wake up master thief
         notifyAll();
@@ -212,10 +202,17 @@ public class CollectionSite {
             }
         }
 
+        // if last thief of party
+        if (registeredThievesPerParty[partyID] == N_THIEVES_PER_PARTY) {
+            logger(ordinaryThief, "Last thief from party leaving Collection Site.");
+            partiesInSite[partyID] = false;
+            registeredThievesPerParty[partyID] = 0;
+        }
+
         // leave collection site
         thieves[ordinaryThiefID] = false;
         notifyAll();
-        logger(ordinaryThief, "Left collection site. Collection Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
+        //logger(ordinaryThief, "Left collection site. Collection Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
     }
 
     /**
@@ -241,28 +238,42 @@ public class CollectionSite {
         }
         else {
             roomState = EMPTY_ROOM;
-            emptiedRooms++;
+            emptiedRooms[nextThief.roomID] = true;
             logger(masterThief, "Ordinary " + nextThief.thiefID + " had no canvas to collect.");
         }
 
         thiefCanvasState[nextThief.thiefID] = UNKNOWN;
 
-        if (closingParty != -1 && nextThief.partyID == closingParty) {
-            if (roomState != EMPTY_ROOM)
+        boolean lastThief = closingParty != -1 && nextThief.partyID == closingParty;
+        if (lastThief) {
+            logger(this, "Last thief of party " + closingParty + " is " + nextThief.thiefID);
+            if (!emptiedRooms[nextThief.roomID])
                 roomState = FREE_ROOM;
+
             closingParty = -1;
         }
 
-        logger(masterThief, "Parties in site: " + numberOfPartiesInSite());
+        //logger(masterThief, "Parties in site: " + numberOfPartiesInSite());
 
-        logger(nextThief, "Room state: " + roomState);
+        logger( nextThief, " Room " + nextThief.roomID);
+        switch (roomState) {
+            case BUSY_ROOM:
+                GenericIO.writelnString("BUSY");
+                break;
+            case FREE_ROOM:
+                GenericIO.writelnString("FREE");
+                break;
+            case EMPTY_ROOM:
+                GenericIO.writelnString("EMPTY");
+                break;
+        }
 
         // wake up next thief
         appraisedThief = nextThief.thiefID;
-        logger(masterThief, "Waking up Ordinary " + nextThief.thiefID + " to leave the collection site.");
+        //logger(masterThief, "Waking up Ordinary " + nextThief.thiefID + " to leave the collection site.");
         notifyAll();
 
-        return new int[]{nextThief.partyID, nextThief.roomID, roomState};
+        return new int[]{nextThief.partyID, nextThief.roomID, roomState, lastThief ? 1 : 0};
     }
 
     /**

@@ -15,7 +15,7 @@ public class OrdinaryThief extends Thief {
     /**
      * Displacement of the thief
      */
-    private int displacement;
+    private final int displacement;
 
     /**
      * General repository
@@ -59,8 +59,8 @@ public class OrdinaryThief extends Thief {
                 roomID = assaultData[1];
                 Museum.Room room = museum.getRoom(roomID);
                 AssaultParty party = assaultParties[partyID];
-                party.crawlIn(room.getDistance(), displacement);
 
+                party.crawlIn(room.getDistance(), displacement);
                 boolean hasCanvas = museum.rollACanvas(room.getID());
                 if (hasCanvas)
                     room.setPaintings(room.getPaintings() - 1);
