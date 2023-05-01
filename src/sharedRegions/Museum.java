@@ -57,25 +57,23 @@ public class Museum {
      * Method used by the setnPaintings
      * Ordinary Thieves to roll a canvas from a room
      */
-    public synchronized void rollACanvas() {
+    public synchronized boolean rollACanvas(int roomID) {
         OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
         ordinaryThief.setThiefState(OrdinaryThiefStates.AT_A_ROOM);
         logger(ordinaryThief, "Rolling a canvas");
+        Room room = getRoom(roomID);
 
-        Room room = getRoom(ordinaryThief.getRoomID());
+        boolean hasCanvas = room.getPaintings() > 0;
 
 
-        if (room.getPaintings() == 0) {
+        if (room.getPaintings() == 0)
             logger(ordinaryThief, "Left empty handed from " + room);
-            ordinaryThief.hasCanvas(false);
-
-        }
-        else {
-            room.setPaintings(room.getPaintings() - 1);
+        else
             logger(ordinaryThief, "Rolled a canvas from " + room + ". " + room.getPaintings() + "/"+ room.getTotalPaintings() +" left");
-            ordinaryThief.hasCanvas(true);
-        }
-        repos.setOrdinaryThiefCanvas(ordinaryThief.getThiefID(), ordinaryThief.hasCanvas());
+
+        repos.setOrdinaryThiefCanvas(ordinaryThief.getThiefID(), hasCanvas);
+
+        return hasCanvas;
     }
 
     /**

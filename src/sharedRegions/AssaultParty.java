@@ -25,7 +25,6 @@ public class AssaultParty {
    private int nextThiefID;
    private int inRoom;
    private Mapping[] thieves;
-   private Museum.Room room;
 
    /**
     * Get Array of thieves IDs in the Assault Party.
@@ -55,38 +54,15 @@ public class AssaultParty {
     * The thief is added as a Mapping.
     *
     * @param thiefID ID of the thief to be added
+    * @param displacement Displacement of the thief to be added
     */
-   public void addThief(int thiefID) {
+   public void addThief(int thiefID, int displacement) {
       for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
          if (thieves[i] == null) {
-            thieves[i] = new Mapping(thiefID, 0);
+            thieves[i] = new Mapping(thiefID, 0, displacement);
             break;
          }
       }
-
-
-   }
-
-   /**
-    * Get the room assigned to the Assault Party.
-    *
-    * @return Room object
-    */
-   public Museum.Room getRoom() {
-      return room;
-   }
-
-   /**
-    * Assign a room to the Assault Party.
-    * This method assigns a room to the Assault Party, and sets the Assault Party ID in the room.
-    *
-    * @param room Room object
-    */
-   public void setRoom(Museum.Room room) {
-      this.room = room;
-      room.setAssaultPartyID(id);
-      inRoom = 0;
-      repos.setDistanceToRoom(room.getID(), room.getDistance());
 
 
    }
@@ -129,8 +105,6 @@ public class AssaultParty {
     */
    public synchronized void sendAssaultParty() {
       MasterThief masterThief = (MasterThief) Thread.currentThread();
-      masterThief.setActiveAssaultParties(masterThief.getActiveAssaultParties() + 1);
-      masterThief.setPartyActive(id, true);
       begin = true;
       notifyAll();
 
@@ -179,34 +153,33 @@ public class AssaultParty {
     * The Ordinary Thief goes to the CRAWLING_INW repos.setAssaultPartyID(id);
       repos.setOrdinaryThiefAssaultPartyID(thiefID, id);ARDS state.
     */
-   public synchronized void crawlIn() {
-      OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
-      ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_INWARDS);
-      repos.setOrdinaryThiefState(ordinaryThief.getThiefID(), OrdinaryThiefStates.CRAWLING_INWARDS);
-      int thiefID = ordinaryThief.getThiefID();
+   public synchronized void crawlIn(int roomDistance, int displacement) {
+       OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
+       ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_INWARDS);
+       repos.setOrdinaryThiefState(ordinaryThief.getThiefID(), OrdinaryThiefStates.CRAWLING_INWARDS);
+       int thiefID = ordinaryThief.getThiefID();
 
-      if (nextThiefID == -1) {
-         resetAssaultParty();
-         nextThiefID = thiefID;
-      }
+       if (nextThiefID == -1) {
+           resetAssaultParty();
+           nextThiefID = thiefID;
+       }
 
-      addThief(thiefID);
+       addThief(thiefID, displacement);
 
-      do {
-         // wait until master says to begin
-         while (sleep(thiefID)) {
-            try {
-               wait();
-            } catch (InterruptedException e) {e.printStackTrace();}
+       do {
+           // wait until master says to begin
+           while (sleep(thiefID)) {
+               try {
+                   wait();
+               } catch (InterruptedException e) {e.printStackTrace();}
+           }
+           //GenericIO.writelnString(getThiefPosition(thiefID)+"is the position of thief "+thiefID);
+       } while(crawl(ordinaryThief.getThiefID(), displacement, 0, roomDistance));
 
-         }
-         //GenericIO.writelnString(getThiefPosition(thiefID)+"is the position of thief "+thiefID);
-      } while(crawl(ordinaryThief, 0, room.getDistance()));
-
-      repos.setDistance(room.getDistance());
-      ordinaryThief.setThiefState(OrdinaryThiefStates.AT_A_ROOM);
-      repos.setOrdinaryThiefState(thiefID, OrdinaryThiefStates.AT_A_ROOM);
-      repos.setOrdinaryThiefAssaultPartyID(thiefID, id);
+       repos.setDistance(roomDistance);
+       ordinaryThief.setThiefState(OrdinaryThiefStates.AT_A_ROOM);
+       repos.setOrdinaryThiefState(thiefID, OrdinaryThiefStates.AT_A_ROOM);
+       repos.setOrdinaryThiefAssaultPartyID(thiefID, id);
    }
 
    /**
@@ -214,20 +187,21 @@ public class AssaultParty {
     * This method is called by the Ordinary Thieves, and makes them crawl from the room's distance to position 0.
     * The Ordinary Thief goes to the CRAWLING_OUTWARDS state.
     */
-   public synchronized void crawlOut() {
+   public synchronized void crawlOut(int roomDistance, int displacement) {
       OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
       ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
       int thiefID = ordinaryThief.getThiefID();
       repos.setOrdinaryThiefState(thiefID, OrdinaryThiefStates.CRAWLING_OUTWARDS);
 
       do {
-
          // wait until master says to begin
          while (sleep(thiefID)){
             try {
                   wait();
-            } catch (InterruptedException e) {e.printStackTrace();}
-         }} while(crawl(ordinaryThief, room.getDistance(), 0));
+            } catch (InterruptedException e) {
+               e.printStackTrace();
+            }
+         }} while(crawl(ordinaryThief.getThiefID(), displacement, roomDistance, 0));
 
       inRoom--;
       getThief(thiefID).isAtGoal(false);
@@ -237,45 +211,35 @@ public class AssaultParty {
 
    /**
     * Crawl the thief to the goal.
-    * @param ordinaryThief thief to crawl
+    * @param thiefID thief id
     * @param beginning position to start from
     * @param goal position to crawl to
     * @return false if the thief has reached the goal
     */
-   private boolean crawl(OrdinaryThief ordinaryThief, int beginning, int goal) {
-      //printPositions();
-
-      int thiefID = ordinaryThief.getThiefID();
+   private boolean crawl(int thiefID, int displacement, int beginning, int goal) {
       boolean backwards = goal < beginning;
 
-      while(move(ordinaryThief, beginning, goal, backwards));
-
+      while(move(thiefID, displacement, beginning, goal, backwards));
 
       // wake up next thief
       nextThiefID = getNextThief(thiefID, backwards);
-
-
       notifyAll();
 
-      if (getThief(thiefID).isAtGoal()) return false;
-
-
-      return true;
+      return !getThief(thiefID).isAtGoal();
    }
    /**
     * Calculate the next move of the thief towards the goal.
-    * @param ordinaryThief thief to move
+    * @param thiefID thief id
     * @param beginning position to start from
     * @param goal position to move to
     * @param backwards true if the thief is moving backwards
     * @return true if the thief has reached the goal
     */
 
-   private boolean move(OrdinaryThief ordinaryThief, int beginning, int goal, boolean backwards) {
+   private boolean move(int thiefID, int displacement, int beginning, int goal, boolean backwards) {
       boolean validMove;
       int distanceToGoal;
-      int thiefID = ordinaryThief.getThiefID();
-      int move = ordinaryThief.getDisplacement();
+      int move = displacement;
       do {
          distanceToGoal = Math.abs(goal - getThiefPosition(thiefID));
          move = min(move, distanceToGoal);
@@ -462,6 +426,7 @@ public class AssaultParty {
    class Mapping {
       private int thiefID;
       private int position;
+      private int displacement;
       private boolean isAtGoal;
 
       /**
@@ -471,9 +436,10 @@ public class AssaultParty {
        * @param thiefID Thief ID
        * @param position Thief position
        */
-      public Mapping(int thiefID, int position) {
+      public Mapping(int thiefID, int position, int displacement) {
          this.thiefID = thiefID;
          this.position = position;
+         this.displacement = displacement;
          this.isAtGoal = false;
       }
 

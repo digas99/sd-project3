@@ -21,98 +21,66 @@ import static utils.Utils.logger;
 public class CollectionSite {
 
     /**
-     * Boolean array to signal if a thief is inside the concentration site
-     */
-    private final boolean[] inside;
-
-    /**
-     * Number of canvas in the room
-     */
-    private int canvas;
-
-    /**
-     * Boolean to signal the end of the heist
-     */
-    private boolean endHeist;
-
-    /**
-     * Array to store the state of the rooms
-     */
-    private final int[] roomState;
-
-    /**
-     * Array to store the state of the canvas of the thieves
-     */
-    private final int[] thiefCanvasState;
-
-    /**
-     * FIFO to store the thieves that are waiting to be appraised
-     */
-    private MemFIFO<AppraisedThief> thiefQueue;
-
-    /**
-     * Number of thieves that are waiting to be appraised
-     */
-    private int appraisedThief;
-
-    /**
-     * Number of parties in the concentration site
-     */
-    private final boolean[] partiesInSite;
-
-    /**
-     * Boolean array to signal if a thief is registered in the concentration site
-     */
-    private final boolean[] registeredThieves;
-
-    /**
-     * Boolean to signal the closing of the party
-     */
-    private int closingParty;
-
-    /**
      * General Repository
      */
     private GeneralRepos repos;
-
-    @Override
-    public String toString() {
-        return "Collection Site";
-    }
-
     /**
-     * Function to print the state of the rooms
+     * Queue of thieves waiting to be appraised
      */
-    public void printRoomState() {
-        StringBuilder print = new StringBuilder("Room State:\n");
-        for (int i = 0; i < N_ROOMS; i++) {
-            int state = roomState[i];
-            print.append(i).append(": ");
-            switch (state) {
-                case FREE_ROOM:
-                    print.append("FREE, ");
-                    break;
-                case BUSY_ROOM:
-                    print.append("BUSY, ");
-                    break;
-                case EMPTY_ROOM:
-                    print.append("EMPTY, ");
-                    break;
-            }
-        }
-        print.append("\n");
-        GenericIO.writelnString(print.toString());
-    }
+    private MemFIFO<AppraisedThief> thiefQueue;
+    /**
+     * Thieves inside the collection site
+     */
+    private final boolean[] thieves;
+    /**
+     * Parties inside the collection site
+     */
+    private final boolean[] partiesInSite;
+    /**
+     * State of the canvas of each thief
+     */
+    private final int[] thiefCanvasState;
+    /**
+     * Number of thieves in the collection site for each party
+     */
+    private final int[] registeredThievesPerParty;
+    /**
+     * Number of canvas collected so far
+     */
+    private int canvas;
+    /**
+     * Thief that is being appraised
+     */
+    private int appraisedThief;
+    /**
+     * Party that is ending a run
+     */
+    private int closingParty;
+    /**
+     * Number of emptied rooms
+     */
+    private int emptiedRooms;
 
     /**
-     * Returns the number of thieves inside the Collection Site
-     * @return number of thieves inside the Collection Site
+     * Checks the number of thieves inside the collection site
+     * @return the number of thieves
      */
     public int occupancy() {
         int count = 0;
-        for (int i = 0; i < N_THIEVES_ORDINARY; i++) {
-            if (inside[i]) count++;
+        for (boolean thief : thieves) {
+            if (thief) count++;
         }
+        return count;
+    }
+
+    /**
+     * Returns the number of parties in the Collection Site
+     * @return number of parties in the Collection Site
+     */
+    private int numberOfPartiesInSite() {
+        int count = 0;
+        for (int i = 0; i < N_ASSAULT_PARTIES; i++)
+            if (partiesInSite[i]) count++;
         return count;
     }
 
@@ -127,15 +95,9 @@ public class CollectionSite {
         return count;
     }
 
-    /**
-     * Returns the number of parties in the Collection Site
-     * @return number of parties in the Collection Site
-     */
-    private int numberPartiesInSite() {
-        int count = 0;
-        for (int i = 0; i < N_ASSAULT_PARTIES; i++)
-            if (partiesInSite[i]) count++;
-        return count;
+    @Override
+    public String toString() {
+        return "Collection Site";
     }
 
     /**
@@ -143,40 +105,49 @@ public class CollectionSite {
      * @param repos General Repository
      */
     public CollectionSite(GeneralRepos repos) {
-        canvas = 0;
-        appraisedThief = closingParty = -1;
-        registeredThieves = new boolean[N_THIEVES_ORDINARY];
-        inside = new boolean[N_THIEVES_ORDINARY];
-        roomState = new int[N_ROOMS];
-        for (int i = 0; i < N_ROOMS; i++)
-            roomState[i] = FREE_ROOM;
+        this.repos = repos;
+        thieves = new boolean[N_THIEVES_ORDINARY];
         partiesInSite = new boolean[N_ASSAULT_PARTIES];
         thiefCanvasState = new int[N_THIEVES_ORDINARY];
-        try { thiefQueue = new MemFIFO<>(new AppraisedThief[N_THIEVES_ORDINARY]); } catch (MemException e) {e.printStackTrace();}
-        this.repos = repos;
+        registeredThievesPerParty = new int[N_ASSAULT_PARTIES];
+        canvas = emptiedRooms = 0;
+        appraisedThief = closingParty = -1;
+        try {
+            thiefQueue = new MemFIFO<>(new AppraisedThief[N_THIEVES_ORDINARY]);
+        } catch(MemException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Master Thief Appraises the Situation
-     * @param concentrationSiteOccupancy Number of thieves in the Concentration Site
      * @return Action to be taken
      */
-    public synchronized int appraiseSit(int concentrationSiteOccupancy) {
-        MasterThief masterThief = (MasterThief) Thread.currentThread();
-
-
-        if (endHeist && occupancy() == 0 && concentrationSiteOccupancy == N_THIEVES_ORDINARY)
+    public synchronized int appraiseSit(int concentrationSiteOccupancy, int activeAssaultParties, int freeParty) {
+        // end heist if all rooms are empty, if no thieves left in collection site and they are all in concentration site
+        if (emptiedRooms == N_ROOMS
+            && occupancy() == 0
+            && concentrationSiteOccupancy == N_THIEVES_ORDINARY)
             return END_HEIST;
 
-        //logger(this, "Active Parties: "+masterThief.getActiveAssaultParties()+", Concentration Occupancy: "+concentrationSiteOccupancy+", Parties in Site: "+numberPartiesInSite()+", Thief Queue: "+thiefQueue.size());
-        //logger(this, "Free Party: "+masterThief.getFreeParty());
-        if ((masterThief.getActiveAssaultParties() > 0 && concentrationSiteOccupancy < N_THIEVES_PER_PARTY && numberPartiesInSite() > 0)
-                    || thiefQueue.size() > 0
-                    || masterThief.getFreeParty() == -1)
+        // wait for a canvas if there are parties active, if all thieves aren't in concentration site and if there are
+        // parties in the collection site
+        //logger("Master", "Active Assault Parties: " + activeAssaultParties + " Concentration Site Occupancy: " + concentrationSiteOccupancy + " Parties in Site: " + numberOfPartiesInSite() + "\nThief Queue Size: " + thiefQueue.size() + "\nFree Party: " + freeParty);
+        logger(this, "Active Assault Parties: " + activeAssaultParties);
+        if ((activeAssaultParties > 0
+                && concentrationSiteOccupancy < N_THIEVES_ORDINARY
+                && numberOfPartiesInSite() > 0)
+            || thiefQueue.size() > 0
+            || freeParty == -1)
             return WAIT_FOR_CANVAS;
 
-        while (occupancy() > 0) {
-            try { wait(); } catch (InterruptedException e) {e.printStackTrace();}
+        while(occupancy() > 0) {
+            try {
+                wait();
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         return CREATE_ASSAULT_PARTY;
@@ -189,108 +160,109 @@ public class CollectionSite {
     public synchronized void takeARest() {
         MasterThief masterThief = (MasterThief) Thread.currentThread();
         masterThief.setThiefState(MasterThiefStates.WAITING_ARRIVAL);
-        //repos.updateMasterThiefState(MasterThiefStates.WAITING_ARRIVAL);
 
         // sleep until an ordinary thief reaches the collection site and hands a canvas
         while (canvasToCollect() == 0) {
-            try { wait(); } catch (InterruptedException e) {e.printStackTrace();}
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     /**
      * Ordinary Thief hands a canvas and waits for the master thief to appraise the situation
      */
-    public synchronized void handACanvas() {
+    public synchronized void handACanvas(int partyID, int roomID, boolean hasCanvas) {
         OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
         ordinaryThief.setThiefState(OrdinaryThiefStates.COLLECTION_SITE);
+        int ordinaryThiefID = ordinaryThief.getThiefID();
 
-        AppraisedThief thief = new AppraisedThief(ordinaryThief.getThiefID(), ordinaryThief.getRoomID(), ordinaryThief.getPartyID(), ordinaryThief.hasCanvas());
+        AppraisedThief thief = new AppraisedThief(ordinaryThiefID, roomID, partyID, hasCanvas);
         try {
             thiefQueue.write(thief);
         } catch (MemException e) {
             e.printStackTrace();
         }
-        inside[ordinaryThief.getThiefID()] = true;
-        registeredThieves[ordinaryThief.getThiefID()] = true;
-        partiesInSite[ordinaryThief.getPartyID()] = true;
-        thiefCanvasState[ordinaryThief.getThiefID()] = ordinaryThief.hasCanvas() ? WITH_CANVAS : WITHOUT_CANVAS;
-        //logger(ordinaryThief, "Entered collection site. Collection Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
 
-        int[] thievesOfParty = ordinaryThief.getThievesFromParty();
-        int nThievesFromParty = 0;
-        for (int thiefFromParty : thievesOfParty) {
-            if (registeredThieves[thiefFromParty])
-                nThievesFromParty++;
+        thieves[ordinaryThiefID] = true;
+        registeredThievesPerParty[partyID]++;
+        partiesInSite[partyID] = true;
+        thiefCanvasState[ordinaryThiefID] = hasCanvas ? WITH_CANVAS : WITHOUT_CANVAS;
+        logger(ordinaryThief, "Entered collection site. Collection Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
+
+        // if last thief of party
+        if (registeredThievesPerParty[partyID] == N_THIEVES_PER_PARTY) {
+            logger(ordinaryThief, "Last thief from party leaving Collection Site.");
+            partiesInSite[partyID] = false;
+            registeredThievesPerParty[partyID] = 0;
+            closingParty = partyID;
         }
 
         // wake up master thief
         notifyAll();
 
-        // wait until master thief appraises the situation
-        while (appraisedThief != ordinaryThief.getThiefID() && thiefQueue.has(thief)) {
-            try { wait(); } catch (InterruptedException e) {e.printStackTrace();}
-        }
-
-        // if last thief of party
-        if (nThievesFromParty == N_THIEVES_PER_PARTY) {
-            //logger(ordinaryThief, "Last thief from party leaving Collection Site.");
-            // clear registered thieves from his party
-            partiesInSite[ordinaryThief.getPartyID()] = false;
-            for (int thiefFromParty : thievesOfParty)
-                registeredThieves[thiefFromParty] = false;
-            printRoomState();
-            closingParty = ordinaryThief.getPartyID();
-            if (roomState[ordinaryThief.getRoomID()] == BUSY_ROOM)
-                roomState[ordinaryThief.getRoomID()] = FREE_ROOM;
+        // wait until the master thief appraises the situation
+        while(appraisedThief != ordinaryThiefID) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         // leave collection site
-        inside[ordinaryThief.getThiefID()] = false;
+        thieves[ordinaryThiefID] = false;
         notifyAll();
-        //logger(ordinaryThief, "Left collection site. Collection Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
+        logger(ordinaryThief, "Left collection site. Collection Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
     }
 
     /**
      * Master Thief collects a canvas from an ordinary thief
+     * @return array with the room id and state
      */
-    public synchronized void collectACanvas() {
+    public synchronized int[] collectACanvas() {
         MasterThief masterThief = (MasterThief) Thread.currentThread();
+        masterThief.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
 
         AppraisedThief nextThief = null;
-        try { nextThief = thiefQueue.read(); } catch (MemException e) {e.printStackTrace();}
+        try {
+            nextThief = thiefQueue.read();
+        } catch (MemException e) {
+            e.printStackTrace();
+        }
+
+        int roomState = BUSY_ROOM;
 
         if (nextThief.hasCanvas) {
             canvas++;
             logger(masterThief, "Collected a canvas from Ordinary " + nextThief.thiefID + ". Total canvases collected so far: " + canvas);
         }
         else {
+            roomState = EMPTY_ROOM;
+            emptiedRooms++;
             logger(masterThief, "Ordinary " + nextThief.thiefID + " had no canvas to collect.");
-            roomState[nextThief.roomID] = EMPTY_ROOM;
         }
 
-        endHeist = Arrays.stream(roomState).allMatch(roomState -> roomState == EMPTY_ROOM);
-        masterThief.setRoomState(roomState);
-        logger(masterThief, "Parties in site: " + numberPartiesInSite());
         thiefCanvasState[nextThief.thiefID] = UNKNOWN;
 
-        // wake up thief
-        appraisedThief = nextThief.thiefID;
-
-        logger(masterThief, "Waking up Ordinary " + nextThief.thiefID + " to leave the collection site.");
-
-        if (closingParty != -1) {
-            masterThief.setActiveAssaultParties(masterThief.getActiveAssaultParties() - 1);
-            masterThief.setPartyActive(closingParty, false);
+        if (closingParty != -1 && nextThief.partyID == closingParty) {
+            if (roomState != EMPTY_ROOM)
+                roomState = FREE_ROOM;
             closingParty = -1;
         }
 
-        if (thiefQueue.size() == 0)
-            appraisedThief = -1;
+        logger(masterThief, "Parties in site: " + numberOfPartiesInSite());
 
+        logger(nextThief, "Room state: " + roomState);
+
+        // wake up next thief
+        appraisedThief = nextThief.thiefID;
+        logger(masterThief, "Waking up Ordinary " + nextThief.thiefID + " to leave the collection site.");
         notifyAll();
 
-        masterThief.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
-        //repos.updateMasterThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
+        return new int[]{nextThief.partyID, nextThief.roomID, roomState};
     }
 
     /**
@@ -299,10 +271,10 @@ public class CollectionSite {
     public synchronized void sumUpResults() {
         MasterThief masterThief = (MasterThief) Thread.currentThread();
         masterThief.setThiefState(MasterThiefStates.PRESENTING_REPORT);
-       // repos.updateMasterThiefState(MasterThiefStates.PRESENTING_REPORT);
-        notifyAll();
 
+        notifyAll();
         logger(this, "The heist is over! Were collected " + canvas + " canvas.");
+
         repos.setnCanvas(canvas);
         repos.printSumUp();
     }
@@ -315,6 +287,11 @@ public class CollectionSite {
         int roomID;
         int partyID;
         boolean hasCanvas;
+
+        @Override
+        public String toString() {
+            return "Appraised Thief " + thiefID + " [Room: " + roomID + ", Party: " + partyID + ", Has Canvas: " + hasCanvas + "]";
+        }
 
         /**
          * Constructor of the AppraisedThief class

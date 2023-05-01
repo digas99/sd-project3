@@ -65,11 +65,7 @@ public class Utils {
      */
 
     public static void logger(Object entity, String message) {
-        GenericIO.writelnString((entity instanceof OrdinaryThief ? "["+ ((OrdinaryThief) entity).getParty() +"]" : "")+"[" + entity + "]: " + message);
-    }
-
-    public static void loggerCrawl(Object entity, String message) {
-        GenericIO.writelnString("["+ ((OrdinaryThief) entity).getParty() +"]"+"[" + entity + "][" + ((OrdinaryThief) entity).getDisplacement() + "]: " + message);
+        GenericIO.writelnString("[" + entity + "]: " + message);
     }
 
     /**

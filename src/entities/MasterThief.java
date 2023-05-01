@@ -11,18 +11,6 @@ import static utils.Utils.logger;
  */
 
 public class MasterThief extends Thief {
-
-    /**
-     * Number of active assault parties
-     */
-    private int activeAssaultParties;
-    private boolean[] partyActive;
-
-    /**
-     * Array of room states
-     */
-    private int[] roomState;
-
     /**
      * General repository
      */
@@ -42,90 +30,43 @@ public class MasterThief extends Thief {
     public MasterThief(String threadName, int thiefID, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite, AssaultParty[] assaultParties, GeneralRepos repos) throws MemException {
         super(threadName, thiefID, museum, concentrationSite, collectionSite, assaultParties,repos);
         setThiefState(MasterThiefStates.PLANNING_HEIST);
-        activeAssaultParties = 0;
-        roomState = new int[N_ROOMS];
-        for (int i = 0; i < N_ROOMS; i++)
-            roomState[i] = FREE_ROOM;
         this.repos = repos;
-        partyActive = new boolean[N_ASSAULT_PARTIES];
     }
-
-    /**
-     * Get the number of active assault parties
-     * @return Number of active assault parties
-     */
-    public int getActiveAssaultParties() {
-        return activeAssaultParties;
-    }
-
-    /**
-     * Set the number of active assault parties
-     * @param activeAssaultParties Number of active assault parties
-     */
-    public void setActiveAssaultParties(int activeAssaultParties) {
-        this.activeAssaultParties = activeAssaultParties;
-    }
-
-    /**
-     * Set a party as active or inactive
-     * @param partyID
-     * @param active
-     */
-    public void setPartyActive(int partyID, boolean active) {
-        partyActive[partyID] = active;
-    }
-
-    /**
-     * Get the first free party
-     * @return Free party ID
-     */
-    public int getFreeParty() {
-        for (int i = 0; i < N_ASSAULT_PARTIES; i++) {
-            if (!partyActive[i])
-                return i;
-        }
-        return -1;
-    }
-
-    /**
-     * Get the room state
-     * @return Room state
-     */
-    public int[] getRoomState() {
-        return roomState;
-    }
-
-    /**
-     * Set the room state
-     * @param roomState Room state
-     */
-    public void setRoomState(int[] roomState) {
-        this.roomState = roomState;
-    }
-
 
     /**
      * Life cycle of the Master Thief
      */
     @Override
     public void run() {
-        int concentrationSiteOccupancy;
         concentrationSite.startOperations();
         lifecycle: while(true) {
-            concentrationSiteOccupancy = concentrationSite.getOccupancy();
-            switch (collectionSite.appraiseSit(concentrationSiteOccupancy)) {
+            switch (collectionSite.appraiseSit(concentrationSite.occupancy(), concentrationSite.nActiveParties(), concentrationSite.getFreeParty())) {
                 case CREATE_ASSAULT_PARTY:
-                    //logger(this, "CREATE_ASSAULT_PARTY");
+                    logger(this, "CREATE_ASSAULT_PARTY");
                     repos.updateMasterThiefState(MasterThiefStates.PLANNING_HEIST);
                     int assaultPartyID = concentrationSite.prepareAssaultParty();
-                    if (assaultPartyID >= 0)
+                    if (assaultPartyID >= 0) {
+                        concentrationSite.setPartyActive(assaultPartyID, true);
                         assaultParties[assaultPartyID].sendAssaultParty();
+                    }
                     break;
                 case WAIT_FOR_CANVAS:
-                    //logger(this, "WAIT_FOR_CANVAS");
+                    logger(this, "WAIT_FOR_CANVAS");
                     repos.updateMasterThiefState(MasterThiefStates.WAITING_ARRIVAL);
                     collectionSite.takeARest();
-                    collectionSite.collectACanvas();
+
+                    int[] partyState = collectionSite.collectACanvas();
+                    int partyID = partyState[0];
+                    int roomID = partyState[1];
+                    int roomState = partyState[2];
+
+                    if (roomState != BUSY_ROOM)
+                        concentrationSite.setPartyActive(partyID, false);
+
+                    // only need to update room state if it's not empty already
+                    if (concentrationSite.getRoomState(roomID) != EMPTY_ROOM)
+                        concentrationSite.setRoomState(roomID, roomState);
+
                     break;
                 case END_HEIST:
                     logger(this, "END_HEIST");

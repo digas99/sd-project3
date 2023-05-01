@@ -2,13 +2,9 @@ package sharedRegions;
 
 import entities.*;
 import genclass.GenericIO;
-import utils.*;
-
-import java.util.Arrays;
 
 import static utils.Parameters.*;
 import static utils.Utils.logger;
-
 
 /**
  * Shared Region with methods used by the Master Thief and the Ordinary Thieves.
@@ -16,20 +12,50 @@ import static utils.Utils.logger;
  */
 
 public class ConcentrationSite {
-    private final boolean[] inside;
-    private boolean endHeist;
-    private int nextPartyID;
-    private boolean makeParty;
-    private int joinedParty;
-    private int[] roomState;
-
     private GeneralRepos repos;
+    private final boolean[] thieves;
+    private final boolean[] partyActive;
+    private int[] roomState;
+    private boolean endHeist;
+    private boolean makingParty;
+    private int nJoinedParty;
+    private int nextParty;
+
+    /**
+     * Checks the number of thieves inside the concentration site
+     * @return the number of thieves
+     */
+    public int occupancy() {
+        int count = 0;
+        for (boolean thief : thieves) {
+            if (thief) count++;
+        }
+        return count;
+    }
+
+    /**
+     * Set the state of a room
+     * @param roomID id of the room
+     * @param state state of the room
+     */
+    public void setRoomState(int roomID, int state) {
+        roomState[roomID] = state;
+    }
+
+    /**
+     * Get the state of a room
+     * @param roomID id of the room
+     * @return state of the room
+     */
+    public int getRoomState(int roomID) {
+        return roomState[roomID];
+    }
 
     /**
      * Function to peek the next free room
      * @return roomID or -1 if no free room
      */
-    public int peekFreeRoom() {
+    private int peekFreeRoom() {
         for (int i = 0; i < N_ROOMS; i++) {
             if (roomState[i] == FREE_ROOM)
                 return i;
@@ -42,7 +68,7 @@ public class ConcentrationSite {
      * if roomID == -1, no free room was found
      * @return roomID
      */
-    public int getFreeRoom() {
+    private int getFreeRoom() {
         int roomID = peekFreeRoom();
         if (roomID != -1)
             roomState[roomID] = BUSY_ROOM;
@@ -50,14 +76,44 @@ public class ConcentrationSite {
     }
 
     /**
-     * Function to get the occupancy of the concentration site
-     * @return number of thieves inside the concentration site
+     * Searches for a party that is not active at the moment
+     * @return the index of the party that is free, -1 if all active
      */
+    public int getFreeParty() {
+        for (int i = 0; i < N_ASSAULT_PARTIES; i++) {
+            if (!partyActive[i]) {
+                return i;
+            }
+        }
+        return -1;
+    }
 
-    public int occupancy() {
+    /**
+     * Get the list of parties active state
+     * @return list of parties states
+     */
+    public boolean[] partiesActiveState() {
+        return partyActive;
+    }
+
+    /**
+     * Set the active state of a party
+     * @param partyID ID of the party
+     * @param state state to set
+     */
+    public void setPartyActive(int partyID, boolean state) {
+        GenericIO.writelnString("Party " + partyID + " is now " + (state ? "active" : "inactive"));
+        partyActive[partyID] = state;
+    }
+
+    /**
+     * Get the number of active parties
+     * @return number of parties
+     */
+    public int nActiveParties() {
         int count = 0;
-        for (int i = 0; i < N_THIEVES_ORDINARY; i++) {
-            if (inside[i]) count++;
+        for (boolean party : partyActive) {
+            if (party) count++;
         }
         return count;
     }
@@ -69,24 +125,17 @@ public class ConcentrationSite {
     * @param repos General Repository
     */
     public ConcentrationSite(GeneralRepos repos) {
-        endHeist = makeParty = false;
-        inside = new boolean[N_THIEVES_ORDINARY];
+        this.repos = repos;
+        thieves = new boolean[N_THIEVES_ORDINARY];
+        partyActive = new boolean[N_ASSAULT_PARTIES];
         roomState = new int[N_ROOMS];
-        for (int i = 0; i < N_ROOMS; i++)
-            roomState[i] = FREE_ROOM;
-        nextPartyID = joinedParty = 0;
+        endHeist = makingParty = false;
+        nextParty = nJoinedParty = 0;
     }
 
+    @Override
     public String toString() {
         return "Concentration Site";
-    }
-
-    /**
-     * Returns the number of thieves inside the Concentration Site
-     * @return number of thieves inside the Concentration Site
-     */
-    public synchronized int getOccupancy() {
-        return occupancy();
     }
 
     /**
@@ -108,19 +157,15 @@ public class ConcentrationSite {
         OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
         ordinaryThief.setThiefState(OrdinaryThiefStates.CONCENTRATION_SITE);
 
-
-        ordinaryThief.setParty(null);
-
         if (endHeist) {
             notifyAll();
             return false;
         }
 
-        // register in concentration site
-        inside[ordinaryThief.getThiefID()] = true;
+        thieves[ordinaryThief.getThiefID()] = true;
         logger(ordinaryThief, "Entered concentration site. Concentration Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
 
-        // wakeup master to check if there are enough thieves to make a party
+        // wake up master to check if there are enough thieves to form a party
         notifyAll();
 
         return true;
@@ -134,87 +179,90 @@ public class ConcentrationSite {
     public synchronized int prepareAssaultParty() {
         MasterThief master = (MasterThief) Thread.currentThread();
         master.setThiefState(MasterThiefStates.ASSEMBLING_GROUP);
-        //repos.updateMasterThiefState(MasterThiefStates.ASSEMBLING_GROUP);
 
-        // update rooms state
-        roomState = master.getRoomState();
-
+        // make sure there are free rooms
         if (peekFreeRoom() == -1) {
             notifyAll();
             return -1;
         }
 
-        // wait until there are enough thieves to make a party
-        while (occupancy() < N_THIEVES_PER_PARTY && !endHeist ) {
-            try { wait(); } catch (InterruptedException e) {e.printStackTrace();}
+        // wait until there are enough thieves to form a party
+        while (occupancy() < N_THIEVES_PER_PARTY && !endHeist) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
-        // if enough thieves
-        makeParty = true;
+        makingParty = true;
         logger(master, "Enough thieves to make a party. Preparing excursion");
-
-        // wakeup thieves to prepare excursion
+        nextParty = getFreeParty();
         notifyAll();
-        nextPartyID = master.getFreeParty();
 
-        // wait until thieves are ready
-        while (makeParty) {
-            try { wait(); } catch (InterruptedException e) {e.printStackTrace();}
+        // wait while thieves are being assigned to a party
+        while (makingParty) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
-        master.setPartyActive(nextPartyID, true);
-
-        // if thieves are ready
-        return nextPartyID;
+        // set the party as active
+        partyActive[nextParty] = true;
+        return nextParty;
     }
 
     /**
-     * Function to be called by the Master Thief to prepare an Excursion
-     * @return false if there are no more rooms available or if the heist is over
+     * Function to be called by the Ordinary Thief enroll in a party
+     * @return an array with the party ID and the room ID or null if there are no more rooms available
      */
-    public synchronized boolean prepareExcursion() {
+    public synchronized int[] prepareExcursion() {
         OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
         ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_INWARDS);
 
-        // wait until master says to prepare excursion
-        while (!endHeist && (!makeParty || joinedParty >= N_THIEVES_PER_PARTY)) {
-            //logger(ordinaryThief, "Waiting for master to prepare excursion");
-            try { wait(); } catch (InterruptedException e) {e.printStackTrace();}
-            /*GenericIO.writelnString("end heist: "+endHeist+", make party: "+makeParty+", joined party: "+joinedParty);*/
-        }
+        //logger(ordinaryThief, "End Heist: " + endHeist + ". Making Party: " + makingParty + ". N Joined Party: " + nJoinedParty);
 
-        if (endHeist || peekFreeRoom() == -1) {
-            inside[ordinaryThief.getThiefID()] = false;
-            makeParty = false;
-            notifyAll();
-            return false;
-        }
-
-        joinedParty++;
-        ordinaryThief.setAssaultParty(nextPartyID, joinedParty == 1);
-        logger(ordinaryThief, "Joined Party " + nextPartyID + ". Party Occupancy: " + joinedParty + "/" + N_THIEVES_PER_PARTY);
-        GenericIO.writelnString(Arrays.toString(roomState));
-
-        // if last thief joining, reset variables and wakeup master
-        if (joinedParty == N_THIEVES_PER_PARTY) {
-            makeParty = false;
-            joinedParty = 0;
-            notifyAll();
-
-            int roomID = getFreeRoom();
-            if (roomID == -1) {
-                GenericIO.writelnString("No more free rooms for " + ordinaryThief);
-                return false;
+        // wait until master says it's time to form a party
+        while (!endHeist && (!makingParty || nJoinedParty >= N_THIEVES_PER_PARTY)) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+        }
 
-            ordinaryThief.setRoomOfParty(roomID);
+        // leave concentration site if there are no more rooms available
+        if (endHeist || peekFreeRoom() == -1) {
+            thieves[ordinaryThief.getThiefID()] = false;
+            makingParty = false;
+            notifyAll();
+            return null;
+        }
+
+        // if rooms are available, join the party
+        nJoinedParty++;
+        int nextRoom = peekFreeRoom();
+        logger(ordinaryThief, "Joined Party " + nextParty + ". Party Occupancy: " + nJoinedParty + "/" + N_THIEVES_PER_PARTY);
+
+        // if last thief to join the party, reset variables and notify master
+        if (nJoinedParty == N_THIEVES_PER_PARTY) {
+            nJoinedParty = 0;
+            makingParty = false;
+            notifyAll();
+
+            // set room as busy
+            getFreeRoom();
         }
 
         // leave concentration site
-        inside[ordinaryThief.getThiefID()] = false;
+        thieves[ordinaryThief.getThiefID()] = false;
+
+        // wake up next thief
         notifyAll();
 
-        return true;
+        return new int[]{nextParty, nextRoom};
     }
 
     /**
