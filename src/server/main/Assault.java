@@ -1,10 +1,10 @@
-package main;
+package server.main;
 
-import entities.MasterThief;
-import entities.OrdinaryThief;
+import client.entities.MasterThief;
+import client.entities.OrdinaryThief;
 import genclass.FileOp;
 import genclass.GenericIO;
-import sharedRegions.*;
+import server.sharedRegions.*;
 import utils.MemException;
 
 import java.util.concurrent.TimeUnit;

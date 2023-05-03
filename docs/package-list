@@ -1,4 +1,4 @@
-entities
-main
-sharedRegions
+client.entities
+server.main
+server.sharedRegions
 utils

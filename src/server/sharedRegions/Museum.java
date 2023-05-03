@@ -1,7 +1,7 @@
-package sharedRegions;
+package server.sharedRegions;
 
-import entities.OrdinaryThief;
-import entities.OrdinaryThiefStates;
+import client.entities.OrdinaryThief;
+import client.entities.OrdinaryThiefStates;
 
 import static utils.Parameters.*;
 import static utils.Utils.*;

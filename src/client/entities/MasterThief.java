@@ -1,6 +1,6 @@
-package entities;
+package client.entities;
 
-import sharedRegions.*;
+import server.sharedRegions.*;
 import utils.MemException;
 
 import static utils.Parameters.*;

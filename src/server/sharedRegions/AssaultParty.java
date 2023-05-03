@@ -1,9 +1,9 @@
-package sharedRegions;
+package server.sharedRegions;
 
-import entities.MasterThief;
-import entities.MasterThiefStates;
-import entities.OrdinaryThief;
-import entities.OrdinaryThiefStates;
+import client.entities.MasterThief;
+import client.entities.MasterThiefStates;
+import client.entities.OrdinaryThief;
+import client.entities.OrdinaryThiefStates;
 import genclass.GenericIO;
 
 import java.util.Arrays;

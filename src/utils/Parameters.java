@@ -1,7 +1,7 @@
 package utils;
 
 /**
- * Constants used all throughout the program, both on entities and on shared regions
+ * Constants used all throughout the program, both on client.entities and on shared regions
  */
 
 public final class Parameters {

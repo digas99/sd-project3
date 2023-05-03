@@ -1,14 +1,12 @@
-package sharedRegions;
+package server.sharedRegions;
 
-import entities.MasterThief;
-import entities.MasterThiefStates;
-import entities.OrdinaryThief;
-import entities.OrdinaryThiefStates;
+import client.entities.MasterThief;
+import client.entities.MasterThiefStates;
+import client.entities.OrdinaryThief;
+import client.entities.OrdinaryThiefStates;
 import genclass.GenericIO;
 import utils.MemException;
 import utils.MemFIFO;
-
-import java.util.Arrays;
 
 import static utils.Parameters.*;
 import static utils.Utils.*;

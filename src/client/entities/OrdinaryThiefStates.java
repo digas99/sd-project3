@@ -1,4 +1,4 @@
-package entities;
+package client.entities;
 
 /**
  * Class that contains the states of the Ordinary Thief

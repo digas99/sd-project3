@@ -1,6 +1,6 @@
-package entities;
+package client.entities;
 
-import sharedRegions.*;
+import server.sharedRegions.*;
 
 import static utils.Parameters.*;
 import static utils.Utils.*;

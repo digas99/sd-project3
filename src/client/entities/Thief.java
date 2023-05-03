@@ -1,6 +1,6 @@
-package entities;
+package client.entities;
 
-import sharedRegions.*;
+import server.sharedRegions.*;
 
 public abstract class Thief extends Thread {
 

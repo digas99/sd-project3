@@ -1,6 +1,6 @@
-package sharedRegions;
+package server.sharedRegions;
 
-import entities.*;
+import client.entities.*;
 import genclass.GenericIO;
 
 import static utils.Parameters.*;

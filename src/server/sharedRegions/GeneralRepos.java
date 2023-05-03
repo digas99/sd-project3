@@ -1,8 +1,8 @@
-package sharedRegions;
+package server.sharedRegions;
 import java.util.Objects;
 import genclass.GenericIO;
 import genclass.TextFile;
-import entities.*;
+import client.entities.*;
 import static utils.Parameters.*;
 
 public class GeneralRepos {
