@@ -40,7 +40,7 @@ public class MasterThief extends Thief {
     public void run() {
         concentrationSite.startOperations();
         lifecycle: while(true) {
-            switch (collectionSite.appraiseSit(concentrationSite.occupancy(), concentrationSite.nActiveParties(), concentrationSite.getFreeParty())) {
+            switch (collectionSite.appraiseSit(concentrationSite.occupancy(), concentrationSite.getFreeParty(), concentrationSite.peekFreeRoom())) {
                 case CREATE_ASSAULT_PARTY:
                     logger(this, "CREATE_ASSAULT_PARTY");
                     repos.updateMasterThiefState(MasterThiefStates.PLANNING_HEIST);

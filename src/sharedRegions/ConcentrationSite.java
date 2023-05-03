@@ -52,7 +52,7 @@ public class ConcentrationSite {
      * Function to peek the next free room
      * @return roomID or -1 if no free room
      */
-    private int peekFreeRoom() {
+    public int peekFreeRoom() {
         for (int i = 0; i < N_ROOMS; i++) {
             if (roomState[i] == FREE_ROOM)
                 return i;
