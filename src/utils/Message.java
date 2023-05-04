@@ -50,6 +50,10 @@ public class Message implements Serializable {
      */
     private int roomId = -1;
     /**
+     * Room distance
+     */
+    private int roomDistance = -1;
+    /**
      * Ordinary Thief displacement.
      */
     private int displacement = -1;
@@ -61,6 +65,12 @@ public class Message implements Serializable {
      */
     public Message (int type) {
         this.msgType = type;
+    }
+
+    public Message(int type, int id, int state) {
+        this.msgType = type;
+        this.masterThiefId = id;
+        this.masterThiefState = state;
     }
 
     // TODO: add more constructor forms
@@ -144,6 +154,24 @@ public class Message implements Serializable {
      */
     public int getDisplacement() {
         return (displacement);
+    }
+
+    /**
+     * Get room distance
+     *
+     * @return room distance
+     */
+    public int getRoomDistance() {
+        return roomDistance;
+    }
+
+    /**
+     * Set room distance
+     *
+     * @param roomDistance room distance
+     */
+    public void setRoomDistance(int roomDistance) {
+        this.roomDistance = roomDistance;
     }
 
     /**

@@ -73,6 +73,10 @@ public final class Parameters {
      * Number of Ordinary Thieves.
      */
     public static final int N_THIEVES_ORDINARY = 6;
+    /**
+     * Number of entities requesting shutdown.
+     */
+    public static final int N_ENTITIES_SHUTDOWN = 2;
 
 
     /**

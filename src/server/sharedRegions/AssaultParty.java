@@ -1,16 +1,15 @@
 package server.sharedRegions;
 
-import client.entities.MasterThief;
 import client.entities.MasterThiefStates;
-import client.entities.OrdinaryThief;
 import client.entities.OrdinaryThiefStates;
 import genclass.GenericIO;
+import server.entities.AssaultPartyClientProxy;
+import server.main.ServerAssaultParty;
 
 import java.util.Arrays;
 import java.util.Comparator;
 
-import static utils.Parameters.MAX_SEPARATION_LIMIT;
-import static utils.Parameters.N_THIEVES_PER_PARTY;
+import static utils.Parameters.*;
 import static utils.Utils.*;
 
 /**
@@ -19,25 +18,38 @@ import static utils.Utils.*;
  */
 
 public class AssaultParty {
-   private int id;
-   private final GeneralRepos repos;
-   private boolean begin;
-   private int nextThiefID;
-   private int inRoom;
-   private Mapping[] thieves;
-
    /**
-    * Get Array of thieves IDs in the Assault Party.
-    *
-    * @return Array of thieves IDs
+    * ID of the Assault Party
     */
-   public int[] getThieves() {
-        int[] thieves = new int[N_THIEVES_PER_PARTY];
-        for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
-            thieves[i] = this.thieves[i].getThiefID();
-        }
-        return thieves;
-   }
+   private int id;
+   /**
+    * Reference to Master Thief threads
+    */
+   private final AssaultPartyClientProxy[] master;
+   /**
+    * Reference to Ordinary Thief threads
+    */
+   private final AssaultPartyClientProxy[] ordinary;
+   /**
+    * Begin the crawl movement
+    */
+   private boolean begin;
+   /**
+    * Id of the next Thief to move
+    */
+   private int nextThiefID;
+   /**
+    * Party reached the room
+    */
+   private int inRoom;
+   /**
+    * Thieves progress in the Assault Party
+    */
+   private final Mapping[] thieves;
+   /**
+    * Number of entity groups requesting the shutdown
+    */
+   private int nEntities;
 
    /**
     * Get the ID of the Assault Party.
@@ -82,11 +94,15 @@ public class AssaultParty {
     * An id is given to the Assault Party, the array of thieves is initialized, and all the variables are set to their initial values.
     *
     * @param id ID of the Assault Party
-    * @param repos GeneralRepos object for logging
     */
-   public AssaultParty(int id, GeneralRepos repos) {
+   public AssaultParty(int id) {
       this.id = id;
-      this.repos = repos;
+      master = new AssaultPartyClientProxy[N_THIEVES_MASTER];
+      for (int i = 0; i < N_THIEVES_MASTER; i++)
+         master[i] = null;
+      ordinary = new AssaultPartyClientProxy[N_THIEVES_ORDINARY];
+      for (int i = 0; i < N_THIEVES_ORDINARY; i++)
+         ordinary[i] = null;
       thieves = new Mapping[N_THIEVES_PER_PARTY];
       resetAssaultParty();
    }
@@ -102,14 +118,13 @@ public class AssaultParty {
     * The Master Thief goes to the DECIDING_WHAT_TO_DO state.
     */
    public synchronized void sendAssaultParty() {
-      MasterThief masterThief = (MasterThief) Thread.currentThread();
+      int masterId;
+      masterId = ((AssaultPartyClientProxy) Thread.currentThread()).getMasterId();
+      master[masterId] = (AssaultPartyClientProxy) Thread.currentThread();
+      master[masterId].setMasterState(MasterThiefStates.DECIDING_WHAT_TO_DO);
+
       begin = true;
       notifyAll();
-
-      masterThief.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
-      repos.updateMasterThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
-      repos.setAssaultPartyID(id);
-
    }
 
    /**
@@ -118,10 +133,10 @@ public class AssaultParty {
     * The Ordinary Thief goes to the CRAWLING_OUTWARDS state.
     */
    public synchronized void reverseDirection() {
-      OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
-      ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
-      getThief(ordinaryThief.getThiefID()).isAtGoal(false);
-      repos.setOrdinaryThiefState(ordinaryThief.getThiefID(), OrdinaryThiefStates.CRAWLING_OUTWARDS);
+      int ordinaryId;
+      ordinaryId = ((AssaultPartyClientProxy) Thread.currentThread()).getOrdinaryId();
+      ordinary[ordinaryId].setOrdinaryState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
+      getThief(ordinaryId).isAtGoal(false);
       inRoom++;
 
       // if last thief reaching room, set begin to true and notify all
@@ -152,10 +167,10 @@ public class AssaultParty {
       repos.setOrdinaryThiefAssaultPartyID(thiefID, id);ARDS state.
     */
    public synchronized void crawlIn(int roomDistance, int displacement) {
-       OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
-       ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_INWARDS);
-       repos.setOrdinaryThiefState(ordinaryThief.getThiefID(), OrdinaryThiefStates.CRAWLING_INWARDS);
-       int thiefID = ordinaryThief.getThiefID();
+      int thiefID;
+      thiefID = ((AssaultPartyClientProxy) Thread.currentThread()).getOrdinaryId();
+      ordinary[thiefID] = (AssaultPartyClientProxy) Thread.currentThread();
+      ordinary[thiefID].setOrdinaryState(OrdinaryThiefStates.CRAWLING_INWARDS);
 
        if (nextThiefID == -1) {
            logger(this, "Reset");
@@ -173,12 +188,9 @@ public class AssaultParty {
                } catch (InterruptedException e) {e.printStackTrace();}
            }
            //GenericIO.writelnString(getThiefPosition(thiefID)+"is the position of thief "+thiefID);
-       } while(crawl(ordinaryThief.getThiefID(), displacement, 0, roomDistance));
+       } while(crawl(thiefID, displacement, 0, roomDistance));
 
-       repos.setDistance(roomDistance);
-       ordinaryThief.setThiefState(OrdinaryThiefStates.AT_A_ROOM);
-       repos.setOrdinaryThiefState(thiefID, OrdinaryThiefStates.AT_A_ROOM);
-       repos.setOrdinaryThiefAssaultPartyID(thiefID, id);
+       ordinary[thiefID].setOrdinaryState(OrdinaryThiefStates.AT_A_ROOM);
    }
 
    /**
@@ -187,10 +199,9 @@ public class AssaultParty {
     * The Ordinary Thief goes to the CRAWLING_OUTWARDS state.
     */
    public synchronized void crawlOut(int roomDistance, int displacement) {
-       OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
-       ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
-       int thiefID = ordinaryThief.getThiefID();
-       repos.setOrdinaryThiefState(thiefID, OrdinaryThiefStates.CRAWLING_OUTWARDS);
+      int thiefID;
+      thiefID = ((AssaultPartyClientProxy) Thread.currentThread()).getOrdinaryId();
+      ordinary[thiefID].setOrdinaryState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
 
        do {
            // wait until master says to begin
@@ -201,13 +212,12 @@ public class AssaultParty {
                    e.printStackTrace();
                }
            }
-       } while(crawl(ordinaryThief.getThiefID(), displacement, roomDistance, 0));
+       } while(crawl(thiefID, displacement, roomDistance, 0));
 
        inRoom--;
        getThief(thiefID).isAtGoal(false);
 
-       ordinaryThief.setThiefState(OrdinaryThiefStates.COLLECTION_SITE);
-       repos.setOrdinaryThiefState(thiefID, OrdinaryThiefStates.COLLECTION_SITE);
+       ordinary[thiefID].setOrdinaryState(OrdinaryThiefStates.COLLECTION_SITE);
    }
 
    /**
@@ -275,9 +285,7 @@ public class AssaultParty {
    private void updateThiefPosition(int thiefID, int move, boolean backwards) {
       int thiefPos = getThiefPosition(thiefID);
       int newPos = !backwards ? thiefPos + move : thiefPos - move;
-      repos.setOrdinaryThiefPosition(thiefID, newPos);
       setThiefPosition(thiefID, newPos);
-      repos.setOrdinaryThiefPosition(thiefID, newPos);
    }
 
    /**
@@ -381,7 +389,18 @@ public class AssaultParty {
          Arrays.sort(thieves, Comparator.comparingInt(Mapping::getPosition));
    }
 
-    /**
+   /**
+    * Operation server shutdown
+    */
+   public synchronized void shutdown() {
+      nEntities++;
+      if (nEntities >= N_ENTITIES_SHUTDOWN)
+         ServerAssaultParty.waitConnection = false;
+
+      notifyAll();
+   }
+
+   /**
      * Get the size of the party
      * @param thieves array of thieves
      * @return size of the party
