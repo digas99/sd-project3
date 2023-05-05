@@ -6,6 +6,8 @@ import client.entities.OrdinaryThief;
 import client.entities.OrdinaryThiefStates;
 import genclass.GenericIO;
 import server.entities.CollectionSiteClientProxy;
+import server.main.ServerAssaultParty;
+import server.main.ServerCollectionSite;
 import utils.MemException;
 import utils.MemFIFO;
 
@@ -290,6 +292,17 @@ public class CollectionSite {
 
         notifyAll();
         logger(this, "The heist is over! Were collected " + canvas + " canvas.");
+    }
+
+    /**
+     * Operation server shutdown
+     */
+    public synchronized void shutdown() {
+        nEntities++;
+        if (nEntities >= N_ENTITIES_SHUTDOWN)
+            ServerCollectionSite.waitConnection = false;
+
+        notifyAll();
     }
 
     /**

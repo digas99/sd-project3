@@ -13,8 +13,6 @@ public class Message implements Serializable {
      * Serialization key.
      */
     private static final long serialVersionUID = 2023L;
-    private int roomState = -1;
-    private boolean lastThief = false;
     /**
      * Message type.
      */
@@ -83,6 +81,18 @@ public class Message implements Serializable {
      * Collection Site occupancy
      */
     private int collectionSiteOccupancy = -1;
+    /**
+     * Ordinary thief is last thief
+     */
+    private boolean lastThief = false;
+    /**
+     * Ordinary thief room state
+     */
+    private int roomState = -1;
+    /**
+     * Party State
+     */
+    private boolean partyActive = false;
 
     /**
      * Message instantiation
@@ -91,18 +101,6 @@ public class Message implements Serializable {
      */
     public Message (int type) {
         this.msgType = type;
-    }
-
-    public Message(int type, int value) {
-        this.msgType = type;
-        switch (type) {
-            case MessageType.APGETIDDONE:
-                this.assaultPartyId = value;
-                break;
-            case MessageType.COLLSOCCDONE:
-                this.collectionSiteOccupancy = value;
-                break;
-        }
     }
 
     /**
@@ -121,30 +119,6 @@ public class Message implements Serializable {
         } else {
             this.ordinaryThiefId = id;
             this.ordinaryThiefState = state;
-        }
-    }
-
-    /**
-     * Message instantiation
-     * Used at CollectionSite's CollectACanvas
-     *
-     * @param type message type
-     * @param id master thief id
-     * @param state master thief state
-     * @param partyId party id
-     * @param roomId room id
-     * @param roomState room state
-     * @param isLastThief last thief flag
-     */
-    public Message(int type, int id, int state, int partyId, int roomId, int roomState, int isLastThief) {
-        if (type == MessageType.COLLECTACANVASDONE) {
-            this.msgType = type;
-            this.masterThiefId = id;
-            this.masterThiefState = state;
-            this.partyId = partyId;
-            this.roomId = roomId;
-            this.roomState = roomState;
-            this.lastThief = isLastThief == 1;
         }
     }
 
@@ -214,6 +188,15 @@ public class Message implements Serializable {
     public int getPartyId() {
         return (partyId);
     }
+
+    /**
+     * Set ordinary thief party id
+     *
+     * @param partyId party id
+     */
+    public void setPartyId(int partyId) {
+        this.partyId = partyId;
+    }
     /**
      * Get ordinary thief room id.
      *
@@ -221,6 +204,14 @@ public class Message implements Serializable {
      */
     public int getRoomId() {
         return (roomId);
+    }
+    /**
+     * Set ordinary thief room id
+     *
+     * @param roomId room id
+     */
+    public void setRoomId(int roomId) {
+        this.roomId = roomId;
     }
     /**
      * Get ordinary thief displacement.
@@ -295,6 +286,30 @@ public class Message implements Serializable {
 
     public void setCollectionSiteOccupancy(int collectionSiteOccupancy) {
         this.collectionSiteOccupancy = collectionSiteOccupancy;
+    }
+
+    public int getRoomState() {
+        return roomState;
+    }
+
+    public void setRoomState(int roomState) {
+        this.roomState = roomState;
+    }
+
+    public boolean lastThief() {
+        return lastThief;
+    }
+
+    public void lastThief(boolean lastThief) {
+        this.lastThief = lastThief;
+    }
+
+    public boolean isPartyActive() {
+        return partyActive;
+    }
+
+    public void setPartyActive(boolean partyActive) {
+        this.partyActive = partyActive;
     }
 
     /**

@@ -173,12 +173,84 @@ public class MessageType {
      * Setting acknowledged (reply)
      */
     public static final int SACK = 43;
+    /**
+     * Request to get assault party id (service request)
+     */
     public static final int APGETID = 44;
+    /**
+     * Assault party id was sent (reply)
+     */
     public static final int APGETIDDONE = 45;
+    /**
+     * Add thief to assault party (service request)
+     */
     public static final int ADDTHIEF = 46;
+    /**
+     * Thief was added to assault party (reply)
+     */
     public static final int ADDTHIEFDONE = 47;
+    /**
+     * Request to reset assault party (service request)
+     */
     public static final int APRESET = 48;
+    /**
+     * Assault party was reset (reply)
+     */
     public static final int APRESETDONE = 49;
+    /**
+     * Request CollectionSite occupancy (service request)
+     */
     public static final int COLLSOCC = 50;
+    /**
+     * CollectionSite occupancy was sent (reply)
+     */
     public static final int COLLSOCCDONE = 51;
+    /**
+     * Request ConcentrationSite occupancy (service request)
+     */
+    public static final int CONSOCC = 52;
+    /**
+     * ConcentrationSite occupancy was sent (reply)
+     */
+    public static final int CONSOCCDONE = 53;
+    /**
+     * ConcentrationSite set room state (service request)
+     */
+    public static final int CONSSETROOMSTATE = 54;
+    /**
+     * ConcentrationSite set room state was done (reply)
+     */
+    public static final int CONSSETROOMSTATEDONE = 55;
+    /**
+     * ConcentrationSite get room state (service request)
+     */
+    public static final int CONSGETROOMSTATE = 56;
+    /**
+     * ConcentrationSite get room state was done (reply)
+     */
+    public static final int CONSGETROOMSTATEDONE = 57;
+    /**
+     * ConcentrationSite peek free room (service request)
+     */
+    public static final int CONSFREEROOM = 58;
+    /**
+     * ConcentrationSite peek free room was done (reply)
+     */
+    public static final int CONSFREEROOMDONE = 59;
+    /**
+     * ConcentrationSite get free party (service request)
+     */
+    public static final int CONSFREEPARTY = 60;
+    /**
+     * ConcentrationSite get free party was done (reply)
+     */
+    public static final int CONSFREEPARTYDONE = 61;
+    /**
+     * ConcentrationSite set party active (service request)
+     */
+    public static final int CONSSETPARTYACTIVE = 62;
+    /**
+     * ConcentrationSite set party active was done (reply)
+     */
+    public static final int CONSSETPARTYACTIVEDONE = 63;
 }

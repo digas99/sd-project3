@@ -40,7 +40,7 @@ public class AssaultPartyInterface {
 
         /* validation of the incoming message */
         switch(inMessage.getMsgType()) {
-
+            // TODO: AssaultParty Interface validation of incoming messages
         }
 
         /* processing */
@@ -79,7 +79,8 @@ public class AssaultPartyInterface {
                 break;
             case MessageType.APGETID:
                 int id = party.getID();
-                outMessage = new Message(MessageType.APGETIDDONE, id);
+                outMessage = new Message(MessageType.APGETIDDONE);
+                outMessage.setPartyId(id);
                 break;
             case MessageType.ADDTHIEF:
                 party.addThief(inMessage.getOrdinaryThiefId(), inMessage.getDisplacement());

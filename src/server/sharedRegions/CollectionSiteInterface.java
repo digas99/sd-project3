@@ -40,7 +40,7 @@ public class CollectionSiteInterface {
 
         /* validation of the incoming message */
         switch (inMessage.getMsgType()) {
-
+            // TODO: CollectionSite Interface validation of incoming messages
         }
 
         /* processing */
@@ -80,10 +80,13 @@ public class CollectionSiteInterface {
                 ((CollectionSiteClientProxy) Thread.currentThread()).setMasterId(inMessage.getMasterThiefId());
                 ((CollectionSiteClientProxy) Thread.currentThread()).setMasterState(inMessage.getMasterThiefState());
                 int[] data = collectionSite.collectACanvas();
-                outMessage = new Message(MessageType.COLLECTACANVASDONE,
+                outMessage = new Message(MessageType.COLLECTACANVASDONE, true,
                         ((CollectionSiteClientProxy) Thread.currentThread()).getMasterId(),
-                        ((CollectionSiteClientProxy) Thread.currentThread()).getMasterState(),
-                        data[0], data[1], data[2], data[3]);
+                        ((CollectionSiteClientProxy) Thread.currentThread()).getMasterState());
+                outMessage.setPartyId(data[0]);
+                outMessage.setRoomId(data[1]);
+                outMessage.setRoomState(data[2]);
+                outMessage.lastThief(data[3] == 1);
                 break;
             case MessageType.SUMUPRES:
                 ((CollectionSiteClientProxy) Thread.currentThread()).setMasterId(inMessage.getMasterThiefId());
@@ -95,7 +98,9 @@ public class CollectionSiteInterface {
                 break;
             case MessageType.COLLSOCC:
                 int occupancy = collectionSite.occupancy();
-                outMessage = new Message(MessageType.COLLSOCCDONE , occupancy);
+                outMessage = new Message(MessageType.COLLSOCCDONE);
+                outMessage.setCollectionSiteOccupancy(occupancy);
+                break;
         }
 
         return (outMessage);

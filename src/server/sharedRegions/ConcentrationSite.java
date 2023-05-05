@@ -2,6 +2,8 @@ package server.sharedRegions;
 
 import client.entities.*;
 import genclass.GenericIO;
+import server.entities.ConcentrationSiteClientProxy;
+import server.main.ServerCollectionSite;
 
 import static utils.Parameters.*;
 import static utils.Utils.count;
@@ -13,7 +15,14 @@ import static utils.Utils.logger;
  */
 
 public class ConcentrationSite {
-    private GeneralRepos repos;
+    /**
+     * Reference to Master Thief threads
+     */
+    private final ConcentrationSiteClientProxy[] master;
+    /**
+     * Reference to Ordinary Thief threads
+     */
+    private final ConcentrationSiteClientProxy[] ordinary;
     private final boolean[] thieves;
     private final boolean[] partyActive;
     private int[] roomState;
@@ -21,6 +30,10 @@ public class ConcentrationSite {
     private boolean makingParty;
     private int nJoinedParty;
     private int nextParty;
+    /**
+     * Number of entity groups requesting the shutdown
+     */
+    private int nEntities;
 
     /**
      * Checks the number of thieves inside the concentration site
@@ -95,22 +108,17 @@ public class ConcentrationSite {
         partyActive[partyID] = state;
     }
 
-    /**
-     * Get the number of active parties
-     * @return number of parties
-     */
-    public int nActiveParties() {
-        return count(partyActive);
-    }
-
    /**
     * ConcentrationSite constructor
     * No relevant parameters are passed to the constructor but many of the variables are initialized
-    *
-    * @param repos General Repository
     */
-    public ConcentrationSite(GeneralRepos repos) {
-        this.repos = repos;
+    public ConcentrationSite() {
+        master = new ConcentrationSiteClientProxy[N_THIEVES_MASTER];
+        for (int i = 0; i < N_THIEVES_MASTER; i++)
+            master[i] = null;
+        ordinary = new ConcentrationSiteClientProxy[N_THIEVES_ORDINARY];
+        for (int i = 0; i < N_THIEVES_ORDINARY; i++)
+            ordinary[i] = null;
         thieves = new boolean[N_THIEVES_ORDINARY];
         partyActive = new boolean[N_ASSAULT_PARTIES];
         roomState = new int[N_ROOMS];
@@ -127,9 +135,10 @@ public class ConcentrationSite {
      * Function to be called by the Master Thief to start the operations
      */
     public synchronized void startOperations() {
-        MasterThief master = (MasterThief) Thread.currentThread();
-        master.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
-        //repos.updateMasterThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
+        int masterId;
+        masterId = ((ConcentrationSiteClientProxy) Thread.currentThread()).getMasterId();
+        master[masterId] = (ConcentrationSiteClientProxy) Thread.currentThread();
+        master[masterId].setMasterState(MasterThiefStates.DECIDING_WHAT_TO_DO);
     }
 
     /**
@@ -139,16 +148,18 @@ public class ConcentrationSite {
      */
 
     public synchronized boolean amINeeded() {
-        OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
-        ordinaryThief.setThiefState(OrdinaryThiefStates.CONCENTRATION_SITE);
+        int ordinaryId;
+        ordinaryId = ((ConcentrationSiteClientProxy) Thread.currentThread()).getOrdinaryId();
+        ordinary[ordinaryId] = (ConcentrationSiteClientProxy) Thread.currentThread();
+        ordinary[ordinaryId].setOrdinaryState(OrdinaryThiefStates.CONCENTRATION_SITE);
 
         if (endHeist) {
             notifyAll();
             return false;
         }
 
-        thieves[ordinaryThief.getThiefID()] = true;
-        logger(ordinaryThief, "Entered concentration site. Concentration Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
+        thieves[ordinaryId] = true;
+        logger(ordinary, "Entered concentration site. Concentration Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
 
         // wake up master to check if there are enough thieves to form a party
         notifyAll();
@@ -162,8 +173,9 @@ public class ConcentrationSite {
      *
      */
     public synchronized int prepareAssaultParty() {
-        MasterThief master = (MasterThief) Thread.currentThread();
-        master.setThiefState(MasterThiefStates.ASSEMBLING_GROUP);
+        int masterId;
+        masterId = ((ConcentrationSiteClientProxy) Thread.currentThread()).getMasterId();
+        master[masterId].setMasterState(MasterThiefStates.ASSEMBLING_GROUP);
 
         // make sure there are free rooms
         if (peekFreeRoom() == -1) {
@@ -204,8 +216,9 @@ public class ConcentrationSite {
      * @return an array with the party ID and the room ID or null if there are no more rooms available
      */
     public synchronized int[] prepareExcursion() {
-        OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
-        ordinaryThief.setThiefState(OrdinaryThiefStates.CRAWLING_INWARDS);
+        int ordinaryId;
+        ordinaryId = ((ConcentrationSiteClientProxy) Thread.currentThread()).getOrdinaryId();
+        ordinary[ordinaryId].setOrdinaryState(OrdinaryThiefStates.CRAWLING_INWARDS);
 
         //logger(ordinaryThief, "End Heist: " + endHeist + ". Making Party: " + makingParty + ". N Joined Party: " + nJoinedParty);
 
@@ -220,7 +233,7 @@ public class ConcentrationSite {
 
         // leave concentration site if there are no more rooms available
         if (endHeist || peekFreeRoom() == -1) {
-            thieves[ordinaryThief.getThiefID()] = false;
+            thieves[ordinaryId] = false;
             makingParty = false;
             notifyAll();
             return null;
@@ -229,7 +242,7 @@ public class ConcentrationSite {
         // if rooms are available, join the party
         nJoinedParty++;
         int nextRoom = peekFreeRoom();
-        logger(ordinaryThief, "Joined Party " + nextParty + ". Party Occupancy: " + nJoinedParty + "/" + N_THIEVES_PER_PARTY);
+        logger(ordinary, "Joined Party " + nextParty + ". Party Occupancy: " + nJoinedParty + "/" + N_THIEVES_PER_PARTY);
 
         // if last thief to join the party, reset variables and notify master
         if (nJoinedParty == N_THIEVES_PER_PARTY) {
@@ -242,7 +255,7 @@ public class ConcentrationSite {
         }
 
         // leave concentration site
-        thieves[ordinaryThief.getThiefID()] = false;
+        thieves[ordinaryId] = false;
 
         // wake up next thief
         notifyAll();
@@ -255,6 +268,17 @@ public class ConcentrationSite {
      */
     public synchronized void endOperations() {
         endHeist = true;
+        notifyAll();
+    }
+
+    /**
+     * Operation server shutdown
+     */
+    public synchronized void shutdown() {
+        nEntities++;
+        if (nEntities >= N_ENTITIES_SHUTDOWN)
+            ServerCollectionSite.waitConnection = false;
+
         notifyAll();
     }
 }
