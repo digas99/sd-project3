@@ -173,4 +173,12 @@ public class MessageType {
      * Setting acknowledged (reply)
      */
     public static final int SACK = 43;
+    public static final int APGETID = 44;
+    public static final int APGETIDDONE = 45;
+    public static final int ADDTHIEF = 46;
+    public static final int ADDTHIEFDONE = 47;
+    public static final int APRESET = 48;
+    public static final int APRESETDONE = 49;
+    public static final int COLLSOCC = 50;
+    public static final int COLLSOCCDONE = 51;
 }

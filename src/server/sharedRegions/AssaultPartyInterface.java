@@ -18,7 +18,7 @@ public class AssaultPartyInterface {
      */
     private final AssaultParty party;
 
-/**
+    /**
      * Instantiation of an interface to the Assault Party.
      * @param party reference to the Assault Party
      */
@@ -49,7 +49,7 @@ public class AssaultPartyInterface {
                 ((AssaultPartyClientProxy) Thread.currentThread()).setMasterId(inMessage.getMasterThiefId());
                 ((AssaultPartyClientProxy) Thread.currentThread()).setMasterState(inMessage.getMasterThiefState());
                 party.sendAssaultParty();
-                outMessage = new Message(MessageType.SENDPARTYDONE,
+                outMessage = new Message(MessageType.SENDPARTYDONE, true,
                         ((AssaultPartyClientProxy) Thread.currentThread()).getMasterId(),
                         ((AssaultPartyClientProxy) Thread.currentThread()).getMasterState());
                 break;
@@ -57,7 +57,7 @@ public class AssaultPartyInterface {
                 ((AssaultPartyClientProxy) Thread.currentThread()).setOrdinaryId(inMessage.getOrdinaryThiefId());
                 ((AssaultPartyClientProxy) Thread.currentThread()).setOrdinaryState(inMessage.getOrdinaryThiefState());
                 party.reverseDirection();
-                outMessage = new Message(MessageType.REVERSEDONE,
+                outMessage = new Message(MessageType.REVERSEDONE, false,
                         ((AssaultPartyClientProxy) Thread.currentThread()).getOrdinaryId(),
                         ((AssaultPartyClientProxy) Thread.currentThread()).getOrdinaryState());
                 break;
@@ -65,7 +65,7 @@ public class AssaultPartyInterface {
                 ((AssaultPartyClientProxy) Thread.currentThread()).setOrdinaryId(inMessage.getOrdinaryThiefId());
                 ((AssaultPartyClientProxy) Thread.currentThread()).setOrdinaryState(inMessage.getOrdinaryThiefState());
                 party.crawlIn(inMessage.getRoomDistance(), inMessage.getDisplacement());
-                outMessage = new Message(MessageType.CRAWLINDONE,
+                outMessage = new Message(MessageType.CRAWLINDONE, false,
                         ((AssaultPartyClientProxy) Thread.currentThread()).getOrdinaryId(),
                         ((AssaultPartyClientProxy) Thread.currentThread()).getOrdinaryState());
                 break;
@@ -73,21 +73,21 @@ public class AssaultPartyInterface {
                 ((AssaultPartyClientProxy) Thread.currentThread()).setOrdinaryId(inMessage.getOrdinaryThiefId());
                 ((AssaultPartyClientProxy) Thread.currentThread()).setOrdinaryState(inMessage.getOrdinaryThiefState());
                 party.crawlOut(inMessage.getRoomDistance(), inMessage.getDisplacement());
-                outMessage = new Message(MessageType.CRAWLOUTDONE,
+                outMessage = new Message(MessageType.CRAWLOUTDONE, false,
                         ((AssaultPartyClientProxy) Thread.currentThread()).getOrdinaryId(),
                         ((AssaultPartyClientProxy) Thread.currentThread()).getOrdinaryState());
                 break;
-            case MessageType.GETID:
+            case MessageType.APGETID:
                 int id = party.getID();
-                outMessage = new Message(MessageType.GETIDDONE, id);
+                outMessage = new Message(MessageType.APGETIDDONE, id);
                 break;
             case MessageType.ADDTHIEF:
                 party.addThief(inMessage.getOrdinaryThiefId(), inMessage.getDisplacement());
                 outMessage = new Message(MessageType.ADDTHIEFDONE);
                 break;
-            case MessageType.RESET:
+            case MessageType.APRESET:
                 party.resetAssaultParty();
-                outMessage = new Message(MessageType.RESETDONE);
+                outMessage = new Message(MessageType.APRESETDONE);
                 break;
         }
 

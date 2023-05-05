@@ -13,6 +13,8 @@ public class Message implements Serializable {
      * Serialization key.
      */
     private static final long serialVersionUID = 2023L;
+    private int roomState = -1;
+    private boolean lastThief = false;
     /**
      * Message type.
      */
@@ -57,9 +59,33 @@ public class Message implements Serializable {
      * Ordinary Thief displacement.
      */
     private int displacement = -1;
+    /**
+     * ConcentrationSite occupancy
+     */
+    private int concentrationSiteOccupancy = -1;
+    /**
+     * Free Party
+     */
+    private int freeParty = -1;
+    /**
+     * Free Room
+     */
+    private int freeRoom = -1;
+    /**
+     * Ordinary Thief has canvas
+     */
+    private boolean hasCanvas = false;
+    /**
+     * Assault Party id
+     */
+    private int assaultPartyId = -1;
+    /**
+     * Collection Site occupancy
+     */
+    private int collectionSiteOccupancy = -1;
 
     /**
-     * Message instantiation (form 1).
+     * Message instantiation
      *
      * @param type message type
      */
@@ -67,10 +93,59 @@ public class Message implements Serializable {
         this.msgType = type;
     }
 
-    public Message(int type, int id, int state) {
+    public Message(int type, int value) {
         this.msgType = type;
-        this.masterThiefId = id;
-        this.masterThiefState = state;
+        switch (type) {
+            case MessageType.APGETIDDONE:
+                this.assaultPartyId = value;
+                break;
+            case MessageType.COLLSOCCDONE:
+                this.collectionSiteOccupancy = value;
+                break;
+        }
+    }
+
+    /**
+     * Message instantiation
+     *
+     * @param type message type
+     * @param master master thief flag (true if master thief, false if ordinary thief)
+     * @param id thief id
+     * @param state thief state
+     */
+    public Message(int type, boolean master, int id, int state) {
+        this.msgType = type;
+        if (master) {
+            this.masterThiefId = id;
+            this.masterThiefState = state;
+        } else {
+            this.ordinaryThiefId = id;
+            this.ordinaryThiefState = state;
+        }
+    }
+
+    /**
+     * Message instantiation
+     * Used at CollectionSite's CollectACanvas
+     *
+     * @param type message type
+     * @param id master thief id
+     * @param state master thief state
+     * @param partyId party id
+     * @param roomId room id
+     * @param roomState room state
+     * @param isLastThief last thief flag
+     */
+    public Message(int type, int id, int state, int partyId, int roomId, int roomState, int isLastThief) {
+        if (type == MessageType.COLLECTACANVASDONE) {
+            this.msgType = type;
+            this.masterThiefId = id;
+            this.masterThiefState = state;
+            this.partyId = partyId;
+            this.roomId = roomId;
+            this.roomState = roomState;
+            this.lastThief = isLastThief == 1;
+        }
     }
 
     // TODO: add more constructor forms
@@ -174,6 +249,54 @@ public class Message implements Serializable {
         this.roomDistance = roomDistance;
     }
 
+    public int getConcentrationSiteOccupancy() {
+        return concentrationSiteOccupancy;
+    }
+
+    public void setConcentrationSiteOccupancy(int concentrationSiteOccupancy) {
+        this.concentrationSiteOccupancy = concentrationSiteOccupancy;
+    }
+
+    public int getFreeParty() {
+        return freeParty;
+    }
+
+    public void setFreeParty(int freeParty) {
+        this.freeParty = freeParty;
+    }
+
+    public int getFreeRoom() {
+        return freeRoom;
+    }
+
+    public void setFreeRoom(int freeRoom) {
+        this.freeRoom = freeRoom;
+    }
+
+    public boolean hasCanvas() {
+        return hasCanvas;
+    }
+
+    public void hasCanvas(boolean hasCanvas) {
+        this.hasCanvas = hasCanvas;
+    }
+
+    public int getAssaultPartyId() {
+        return assaultPartyId;
+    }
+
+    public void setAssaultPartyId(int assaultPartyId) {
+        this.assaultPartyId = assaultPartyId;
+    }
+
+    public int getCollectionSiteOccupancy() {
+        return collectionSiteOccupancy;
+    }
+
+    public void setCollectionSiteOccupancy(int collectionSiteOccupancy) {
+        this.collectionSiteOccupancy = collectionSiteOccupancy;
+    }
+
     /**
      * Printing the values of the internal fields.
      *
@@ -194,4 +317,5 @@ public class Message implements Serializable {
                 "Ordinary Thief Room Id = " + roomId + "\n" +
                 "Ordinary Thief Displacement = " + displacement + "\n");
     }
+
 }

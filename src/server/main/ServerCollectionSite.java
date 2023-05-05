@@ -2,16 +2,20 @@ package server.main;
 
 import genclass.GenericIO;
 import server.entities.AssaultPartyClientProxy;
+import server.entities.ClientProxy;
+import server.entities.CollectionSiteClientProxy;
 import server.sharedRegions.AssaultParty;
 import server.sharedRegions.AssaultPartyInterface;
+import server.sharedRegions.CollectionSite;
+import server.sharedRegions.CollectionSiteInterface;
 import utils.ServerCom;
 
 import java.net.SocketTimeoutException;
 
 /**
- * Server that instantiates the AssaultParty.
+ * Server that instantiates the CollectionSite.
  */
-public class ServerAssaultParty {
+public class ServerCollectionSite {
     /**
      * Flag signaling the service is active.
      */
@@ -26,8 +30,8 @@ public class ServerAssaultParty {
      *             args[2] - port nunber where the server for the general repository is listening to service requests
      */
     public static void main(String[] args) {
-        AssaultParty party;
-        AssaultPartyInterface partyInter;
+        CollectionSite collectionSite;
+        CollectionSiteInterface collectionSiteInter;
         // GeneralReposStub reposStub;
         ServerCom scon, sconi;
         int portNumber = -1;
@@ -61,24 +65,24 @@ public class ServerAssaultParty {
             System.exit(1);
         }
 
-        party = new AssaultParty(1);
-        partyInter = new AssaultPartyInterface(party);
+        collectionSite = new CollectionSite();
+        collectionSiteInter = new CollectionSiteInterface(collectionSite);
         scon = new ServerCom(portNumber);
         scon.start();
-        GenericIO.writelnString("Service AssaultParty has been established!");
+        GenericIO.writelnString("Service CollectionSite has been established!");
         GenericIO.writelnString("Server is listening or service requests.");
 
-        AssaultPartyClientProxy proxy;
+        CollectionSiteClientProxy proxy;
 
         waitConnection = true;
         while (waitConnection) {
             try {
                 sconi = scon.accept();
-                proxy = new AssaultPartyClientProxy(sconi, partyInter);
+                proxy = new CollectionSiteClientProxy(sconi, collectionSiteInter);
                 proxy.start();
             } catch (SocketTimeoutException e) {}
         }
         scon.end();
-        GenericIO.writelnString("Server AssaultParty was shutdown.");
+        GenericIO.writelnString("Server CollectionSite was shutdown.");
     }
 }

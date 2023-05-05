@@ -5,6 +5,7 @@ import client.entities.MasterThiefStates;
 import client.entities.OrdinaryThief;
 import client.entities.OrdinaryThiefStates;
 import genclass.GenericIO;
+import server.entities.CollectionSiteClientProxy;
 import utils.MemException;
 import utils.MemFIFO;
 
@@ -17,11 +18,14 @@ import static utils.Utils.*;
  */
 
 public class CollectionSite {
-
     /**
-     * General Repository
+     * Reference to Master Thief threads
      */
-    private GeneralRepos repos;
+    private final CollectionSiteClientProxy[] master;
+    /**
+     * Reference to Ordinary Thief threads
+     */
+    private final CollectionSiteClientProxy[] ordinary;
     /**
      * Queue of thieves waiting to be appraised
      */
@@ -59,6 +63,11 @@ public class CollectionSite {
      */
     private boolean[] closingParty;
     /**
+     * Number of entity groups requesting the shutdown
+     */
+    private int nEntities;
+
+    /**
      * Checks the number of thieves inside the collection site
      * @return the number of thieves
      */
@@ -92,10 +101,14 @@ public class CollectionSite {
 
     /**
      * Collection on Site Constructor
-     * @param repos General Repository
      */
-    public CollectionSite(GeneralRepos repos) {
-        this.repos = repos;
+    public CollectionSite() {
+        master = new CollectionSiteClientProxy[N_THIEVES_MASTER];
+        for (int i = 0; i < N_THIEVES_MASTER; i++)
+            master[i] = null;
+        ordinary = new CollectionSiteClientProxy[N_THIEVES_ORDINARY];
+        for (int i = 0; i < N_THIEVES_ORDINARY; i++)
+            ordinary[i] = null;
         thieves = new boolean[N_THIEVES_ORDINARY];
         partiesInSite = new boolean[N_ASSAULT_PARTIES];
         closingParty = new boolean[N_ASSAULT_PARTIES];
@@ -116,6 +129,10 @@ public class CollectionSite {
      * @return Action to be taken
      */
     public synchronized int appraiseSit(int concentrationSiteOccupancy, int freeParty, int freeRoom) {
+        int masterId;
+        masterId = ((CollectionSiteClientProxy) Thread.currentThread()).getMasterId();
+        master[masterId] = (CollectionSiteClientProxy) Thread.currentThread();
+
         // end heist if all rooms are empty, if no thieves left in collection site and they are all in concentration site
         logger(this, "Emptied Rooms: " + count(emptiedRooms) + " Occupancy: " + occupancy() + " Concentration Site Occupancy: " + concentrationSiteOccupancy);
         if (freeRoom == -1
@@ -140,8 +157,9 @@ public class CollectionSite {
      */
 
     public synchronized void takeARest() {
-        MasterThief masterThief = (MasterThief) Thread.currentThread();
-        masterThief.setThiefState(MasterThiefStates.WAITING_ARRIVAL);
+        int masterId;
+        masterId = ((CollectionSiteClientProxy) Thread.currentThread()).getMasterId();
+        master[masterId].setMasterState(MasterThiefStates.WAITING_ARRIVAL);
 
         // sleep until an ordinary thief reaches the collection site and hands a canvas
         while (canvasToCollect() == 0) {
@@ -157,9 +175,11 @@ public class CollectionSite {
      * Ordinary Thief hands a canvas and waits for the master thief to appraise the situation
      */
     public synchronized void handACanvas(int partyID, int roomID, boolean hasCanvas) {
-        OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
-        ordinaryThief.setThiefState(OrdinaryThiefStates.COLLECTION_SITE);
-        int ordinaryThiefID = ordinaryThief.getThiefID();
+        int ordinaryId;
+        ordinaryId = ((CollectionSiteClientProxy) Thread.currentThread()).getOrdinaryId();
+        ordinary[ordinaryId] = (CollectionSiteClientProxy) Thread.currentThread();
+        ordinary[ordinaryId].setOrdinaryState(OrdinaryThiefStates.COLLECTION_SITE);
+        int ordinaryThiefID = ordinaryId;
 
         AppraisedThief thief = new AppraisedThief(ordinaryThiefID, roomID, partyID, hasCanvas);
         try {
@@ -201,8 +221,9 @@ public class CollectionSite {
      * @return array with the room id and state
      */
     public synchronized int[] collectACanvas() {
-        MasterThief masterThief = (MasterThief) Thread.currentThread();
-        masterThief.setThiefState(MasterThiefStates.DECIDING_WHAT_TO_DO);
+        int masterId;
+        masterId = ((CollectionSiteClientProxy) Thread.currentThread()).getMasterId();
+        master[masterId].setMasterState(MasterThiefStates.DECIDING_WHAT_TO_DO);
 
         AppraisedThief nextThief = null;
         try {
@@ -215,12 +236,12 @@ public class CollectionSite {
 
         if (nextThief.hasCanvas) {
             canvas++;
-            logger(masterThief, "Collected a canvas from Ordinary " + nextThief.thiefID + ". Total canvases collected so far: " + canvas);
+            GenericIO.writelnString("Collected a canvas from Ordinary " + nextThief.thiefID + ". Total canvases collected so far: " + canvas);
         }
         else {
             roomState = EMPTY_ROOM;
             emptiedRooms[nextThief.roomID] = true;
-            logger(masterThief, "Ordinary " + nextThief.thiefID + " had no canvas to collect.");
+            GenericIO.writelnString("Ordinary " + nextThief.thiefID + " had no canvas to collect.");
         }
 
         thiefCanvasState[nextThief.thiefID] = UNKNOWN;
@@ -263,14 +284,12 @@ public class CollectionSite {
      * Master Thief presents the report of the heist
      */
     public synchronized void sumUpResults() {
-        MasterThief masterThief = (MasterThief) Thread.currentThread();
-        masterThief.setThiefState(MasterThiefStates.PRESENTING_REPORT);
+        int masterId;
+        masterId = ((CollectionSiteClientProxy) Thread.currentThread()).getMasterId();
+        master[masterId].setMasterState(MasterThiefStates.PRESENTING_REPORT);
 
         notifyAll();
         logger(this, "The heist is over! Were collected " + canvas + " canvas.");
-
-        repos.setnCanvas(canvas);
-        repos.printSumUp();
     }
 
     /**
