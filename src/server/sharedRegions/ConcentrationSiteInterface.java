@@ -118,6 +118,10 @@ public class ConcentrationSiteInterface {
                 concentrationSite.setPartyActive(inMessage.getPartyId(), inMessage.isPartyActive());
                 outMessage = new Message(MessageType.CONSSETPARTYACTIVEDONE);
                 break;
+            case MessageType.SHUT:
+                concentrationSite.shutdown();
+                outMessage = new Message(MessageType.SHUTDONE);
+                break;
         }
 
         return (outMessage);

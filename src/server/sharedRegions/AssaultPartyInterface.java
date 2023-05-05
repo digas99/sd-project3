@@ -90,6 +90,10 @@ public class AssaultPartyInterface {
                 party.resetAssaultParty();
                 outMessage = new Message(MessageType.APRESETDONE);
                 break;
+            case MessageType.SHUT:
+                party.shutdown();
+                outMessage = new Message(MessageType.SHUTDONE);
+                break;
         }
 
         return (outMessage);

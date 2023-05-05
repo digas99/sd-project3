@@ -64,6 +64,10 @@ public class MuseumInterface {
                 outMessage.setRoomTotalPaintings(room.getTotalPaintings());
                 outMessage.setAssaultPartyId(room.getAssaultPartyID());
                 break;
+            case MessageType.SHUT:
+                museum.shutdown();
+                outMessage = new Message(MessageType.SHUTDONE);
+                break;
         }
 
         return (outMessage);
