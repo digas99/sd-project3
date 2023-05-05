@@ -11,7 +11,6 @@ import utils.MessageType;
  * It is responsible to validate and process the incoming message, execute the corresponding method on the
  * Concentration Site and generate the outgoing message.
  */
-
 public class ConcentrationSiteInterface {
     /**
      * Reference to the Concentration Site.

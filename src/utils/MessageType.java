@@ -253,4 +253,12 @@ public class MessageType {
      * ConcentrationSite set party active was done (reply)
      */
     public static final int CONSSETPARTYACTIVEDONE = 63;
+    /**
+     * Museum get room (service request)
+     */
+    public static final int MSGETROOM = 64;
+    /**
+     * Museum get room was done (reply)
+     */
+    public static final int MSGETROOMDONE = 65;
 }

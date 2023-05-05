@@ -93,6 +93,14 @@ public class Message implements Serializable {
      * Party State
      */
     private boolean partyActive = false;
+    /**
+     * Party Room Paintings
+     */
+    private int roomPaintings = -1;
+    /**
+     * Party Room Total Paintings
+     */
+    private int roomTotalPaintings = -1;
 
     /**
      * Message instantiation
@@ -121,8 +129,6 @@ public class Message implements Serializable {
             this.ordinaryThiefState = state;
         }
     }
-
-    // TODO: add more constructor forms
 
     /**
      * Get message type.
@@ -310,6 +316,22 @@ public class Message implements Serializable {
 
     public void setPartyActive(boolean partyActive) {
         this.partyActive = partyActive;
+    }
+
+    public int getRoomPaintings() {
+        return roomPaintings;
+    }
+
+    public void setRoomPaintings(int roomPaintings) {
+        this.roomPaintings = roomPaintings;
+    }
+
+    public int getRoomTotalPaintings() {
+        return roomTotalPaintings;
+    }
+
+    public void setRoomTotalPaintings(int roomTotalPaintings) {
+        this.roomTotalPaintings = roomTotalPaintings;
     }
 
     /**

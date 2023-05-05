@@ -2,6 +2,8 @@ package server.sharedRegions;
 
 import client.entities.OrdinaryThief;
 import client.entities.OrdinaryThiefStates;
+import server.main.ServerCollectionSite;
+import server.main.ServerMuseum;
 
 import static utils.Parameters.*;
 import static utils.Utils.*;
@@ -11,32 +13,23 @@ import static utils.Utils.*;
  * This class is responsible for keeping track of the paintings in the museum.
  */
 
-
 public class Museum {
-
+    /**
+     * Number of entity groups requesting the shutdown
+     */
+    private int nEntities;
     /**
      * Array of rooms in the museum
      */
     private final Room[] rooms = new Room[N_ROOMS];
 
     /**
-     * General Repository of Information
-     */
-    GeneralRepos repos;
-
-    /**
      * Museum constructor
-     * @param repos GeneralRepos
      */
-    public Museum(GeneralRepos repos) {
+    public Museum() {
         for (int i = 0; i < rooms.length; i++) {
             rooms[i] = new Room(i);
         }
-        this.repos = repos;
-        for (int i = 0; i < rooms.length; i++) {
-            repos.setnPaintings(i, rooms[i].getTotalPaintings());
-        }
-
     }
 
     @Override
@@ -62,8 +55,6 @@ public class Museum {
         else
             logger(ordinaryThief, "Rolled a canvas from " + room + ". " + room.getPaintings() + "/"+ room.getTotalPaintings() +" left");
 
-        repos.setOrdinaryThiefCanvas(ordinaryThief.getThiefID(), hasCanvas);
-
         return hasCanvas;
     }
 
@@ -78,6 +69,17 @@ public class Museum {
                 return room;
         }
         return null;
+    }
+
+    /**
+     * Operation server shutdown
+     */
+    public synchronized void shutdown() {
+        nEntities++;
+        if (nEntities >= N_ENTITIES_SHUTDOWN)
+            ServerMuseum.waitConnection = false;
+
+        notifyAll();
     }
 
     /**
@@ -172,6 +174,23 @@ public class Museum {
             distance = random(MIN_DISTANCE, MAX_DISTANCE);
             paintings = totalPaintings = random(MIN_PAINTINGS, MAX_PAINTINGS);
             assaultPartyID = -1;
+        }
+
+        /**
+         * Room constructor with all fields
+         *
+         * @param id Room ID
+         * @param distance Distance
+         * @param paintings Number of paintings
+         * @param totalPaintings Total number of paintings
+         * @param assaultPartyID AssaultParty ID
+         */
+        public Room(int id, int distance, int paintings, int totalPaintings, int assaultPartyID) {
+            this.id = id;
+            this.distance = distance;
+            this.paintings = paintings;
+            this.totalPaintings = totalPaintings;
+            this.assaultPartyID = assaultPartyID;
         }
 
         @Override

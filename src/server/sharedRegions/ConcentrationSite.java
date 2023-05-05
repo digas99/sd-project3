@@ -4,6 +4,7 @@ import client.entities.*;
 import genclass.GenericIO;
 import server.entities.ConcentrationSiteClientProxy;
 import server.main.ServerCollectionSite;
+import server.main.ServerConcentrationSite;
 
 import static utils.Parameters.*;
 import static utils.Utils.count;
@@ -277,7 +278,7 @@ public class ConcentrationSite {
     public synchronized void shutdown() {
         nEntities++;
         if (nEntities >= N_ENTITIES_SHUTDOWN)
-            ServerCollectionSite.waitConnection = false;
+            ServerConcentrationSite.waitConnection = false;
 
         notifyAll();
     }
