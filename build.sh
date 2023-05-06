@@ -1,3 +1,5 @@
+#!/bin/bash
+
 echo "Compiling source code."
 
 SRCFILES=src
