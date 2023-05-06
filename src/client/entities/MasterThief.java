@@ -4,6 +4,7 @@ import client.stubs.AssaultPartyStub;
 import client.stubs.CollectionSiteStub;
 import client.stubs.ConcentrationSiteStub;
 import client.stubs.MuseumStub;
+import genclass.GenericIO;
 import server.sharedRegions.*;
 import utils.MemException;
 
