@@ -12,27 +12,36 @@ if [ ! -d "temp" ]; then
   mkdir temp
 fi
 
-echo "  AssaultParty"
-rm -rf temp/dirAssaultParty
-mkdir -p temp/dirAssaultParty temp/dirAssaultParty/server temp/dirAssaultParty/server/main temp/dirAssaultParty/server/entities temp/dirAssaultParty/server/sharedRegions \
-         temp/dirAssaultParty/client temp/dirAssaultParty/client/entities temp/dirAssaultParty/client/stubs temp/dirAssaultParty/utils
-cp src/utils/Parameters.class src/server/main/ServerAssaultParty.class temp/dirAssaultParty/server/main
-cp src/server/entities/AssaultPartyClientProxy.class temp/dirAssaultParty/server/entities
-cp src/server/sharedRegions/AssaultPartyInterface.class src/server/sharedRegions/AssaultParty.class temp/dirAssaultParty/server/sharedRegions
-cp src/client/entities/MasterThiefStates.class src/client/entities/OrdinaryThiefStates.class \
-   temp/dirAssaultParty/client/entities
-cp src/utils/*.class temp/dirAssaultParty/utils
+# build servers
+./build_servers.sh AssaultParty
+./build_servers.sh CollectionSite
+./build_servers.sh ConcentrationSite
+./build_servers.sh Museum
 
-echo "Compressing execution environments."
-echo "  AssaultParty"
-rm -f  temp/dirAssaultParty.zip
-cd temp
-zip -rq dirAssaultParty.zip dirAssaultParty
-cd ..
+# build clients
+./build_clients.sh MasterThief
+./build_clients.sh OrdinaryThief
 
 echo "Deploying and decompressing execution environments."
 mkdir -p $PWD/test/Assault
 rm -rf $PWD/test/Assault/*
 cp temp/dirAssaultParty.zip $PWD/test/Assault
+cp temp/dirCollectionSite.zip $PWD/test/Assault
+cp temp/dirConcentrationSite.zip $PWD/test/Assault
+cp temp/dirMuseum.zip $PWD/test/Assault
+cp temp/dirMasterThief.zip $PWD/test/Assault
+cp temp/dirOrdinaryThief.zip $PWD/test/Assault
+
 cd $PWD/test/Assault
 unzip -q dirAssaultParty.zip
+rm -f dirAssaultParty.zip
+unzip -q dirCollectionSite.zip
+rm -f dirCollectionSite.zip
+unzip -q dirConcentrationSite.zip
+rm -f dirConcentrationSite.zip
+unzip -q dirMuseum.zip
+rm -f dirMuseum.zip
+unzip -q dirMasterThief.zip
+rm -f dirMasterThief.zip
+unzip -q dirOrdinaryThief.zip
+rm -f dirOrdinaryThief.zip

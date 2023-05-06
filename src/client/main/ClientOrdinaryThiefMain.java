@@ -17,7 +17,7 @@ import static utils.Parameters.*;
  *    Communication is based on a communication channel under the TCP protocol.
  */
 
-public class ClientOrdinaryMain
+public class ClientOrdinaryThiefMain
 {
     /**
      *  Main method.
