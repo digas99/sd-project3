@@ -101,6 +101,11 @@ public class CollectionSiteInterface {
                 outMessage = new Message(MessageType.COLLSOCCDONE);
                 outMessage.setCollectionSiteOccupancy(occupancy);
                 break;
+            case MessageType.SHUT:
+                collectionSite.shutdown();
+                outMessage = new Message(MessageType.SHUTDONE);
+                break;
+
         }
 
         return (outMessage);
