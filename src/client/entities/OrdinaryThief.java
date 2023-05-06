@@ -1,5 +1,9 @@
 package client.entities;
 
+import client.stubs.AssaultPartyStub;
+import client.stubs.CollectionSiteStub;
+import client.stubs.ConcentrationSiteStub;
+import client.stubs.MuseumStub;
 import server.sharedRegions.*;
 
 import static utils.Parameters.*;
@@ -18,11 +22,6 @@ public class OrdinaryThief extends Thief {
     private final int displacement;
 
     /**
-     * General repository
-     */
-    private GeneralRepos repos;
-
-    /**
      * Ordinary Thief Constructor
      * @param threadName Thread name
      * @param thiefID Thief ID
@@ -30,16 +29,13 @@ public class OrdinaryThief extends Thief {
      * @param concentrationSite Concentration Site
      * @param collectionSite Collection Site
      * @param assaultParties Assault Parties
-     * @param repos General Repository
      */
 
-    public OrdinaryThief(String threadName, int thiefID, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite, AssaultParty[] assaultParties, GeneralRepos repos){
-        super(threadName, thiefID, museum, concentrationSite, collectionSite, assaultParties,repos);
+    public OrdinaryThief(String threadName, int thiefID, MuseumStub museum, ConcentrationSiteStub concentrationSite, CollectionSiteStub collectionSite, AssaultPartyStub[] assaultParties){
+        super(threadName, thiefID, museum, concentrationSite, collectionSite, assaultParties);
         thiefState = OrdinaryThiefStates.CONCENTRATION_SITE;
         displacement = random(MIN_DISPLACEMENT, MAX_DISPLACEMENT);
-        this.repos = repos;
         partyID = roomID = -1;
-        repos.setOrdinaryThiefDisplacement(thiefID, displacement);
     }
 
     @Override
@@ -57,8 +53,8 @@ public class OrdinaryThief extends Thief {
             if (assaultData != null) {
                 partyID = assaultData[0];
                 roomID = assaultData[1];
-                Museum.Room room = museum.getRoom(roomID);
-                AssaultParty party = assaultParties[partyID];
+                MuseumStub.Room room = museum.getRoom(roomID);
+                AssaultPartyStub party = assaultParties[partyID];
 
                 party.crawlIn(room.getDistance(), displacement);
                 boolean hasCanvas = museum.rollACanvas(room.getID());
@@ -68,7 +64,6 @@ public class OrdinaryThief extends Thief {
                 party.crawlOut(room.getDistance(), displacement);
 
                 collectionSite.handACanvas(partyID, roomID, hasCanvas);
-                repos.setOrdinaryThiefSituation(getThiefID(), false);
             } else break;
         }
     }

@@ -45,6 +45,7 @@ public class MessageType {
      * Request to appraise situation (service request)
      */
     public static final int APPRAISESIT = 11;
+
     /**
      * MasterThief ends heist (reply)
      */

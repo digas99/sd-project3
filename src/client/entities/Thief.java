@@ -1,5 +1,9 @@
 package client.entities;
 
+import client.stubs.AssaultPartyStub;
+import client.stubs.CollectionSiteStub;
+import client.stubs.ConcentrationSiteStub;
+import client.stubs.MuseumStub;
 import server.sharedRegions.*;
 
 public abstract class Thief extends Thread {
@@ -7,22 +11,22 @@ public abstract class Thief extends Thread {
     /**
      * Concentration Site object of the thief
      */
-    protected final ConcentrationSite concentrationSite;
+    protected final ConcentrationSiteStub concentrationSite;
 
     /**
      * Collection Site object of the thief
      */
-    protected final CollectionSite collectionSite;
+    protected final CollectionSiteStub collectionSite;
 
     /**
      * Museum object of the thief
      */
-    protected final Museum museum;
+    protected final MuseumStub museum;
 
     /**
      * Assault Party array that stores the assault parties of the thief
      */
-    protected AssaultParty[] assaultParties;
+    protected AssaultPartyStub[] assaultParties;
 
     /**
      * Thief ID
@@ -63,7 +67,7 @@ public abstract class Thief extends Thread {
      * Get the Museum
      * @return Museum object
      */
-    public Museum getMuseum() {
+    public MuseumStub getMuseum() {
         return museum;
     }
 
@@ -75,9 +79,8 @@ public abstract class Thief extends Thread {
      * @param concentrationSite Concentration Site
      * @param collectionSite Collection Site
      * @param assaultParties Assault Parties
-     * @param repos General Repository
      */
-    public Thief(String threadName, int id, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite, AssaultParty[] assaultParties, GeneralRepos repos) {
+    public Thief(String threadName, int id, MuseumStub museum, ConcentrationSiteStub concentrationSite, CollectionSiteStub collectionSite, AssaultPartyStub[] assaultParties) {
         super(threadName);
 
         this.thiefID = id;

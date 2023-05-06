@@ -1,5 +1,7 @@
 package utils;
 
+import client.entities.Thief;
+
 import java.io.Serializable;
 
 /**
@@ -162,11 +164,16 @@ public class Message implements Serializable {
     public int getOrdinaryThiefId() {
         return (ordinaryThiefId);
     }
+
     /**
-     * Get ordinary thief state.
+     * Set ordinary thief id
      *
-     * @return ordinary thief state
+     * @param ordinaryThiefId ordinary thief id
      */
+    public void setOrdinaryThiefId(int ordinaryThiefId) {
+        this.ordinaryThiefId = ordinaryThiefId;
+    }
+
     public int getOrdinaryThiefState() {
         return (ordinaryThiefState);
     }
@@ -226,6 +233,15 @@ public class Message implements Serializable {
      */
     public int getDisplacement() {
         return (displacement);
+    }
+
+    /**
+     * Set ordinary thief displacement
+     *
+     * @param displacement displacement
+     */
+    public void setDisplacement(int displacement) {
+        this.displacement = displacement;
     }
 
     /**

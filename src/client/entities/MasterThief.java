@@ -1,5 +1,9 @@
 package client.entities;
 
+import client.stubs.AssaultPartyStub;
+import client.stubs.CollectionSiteStub;
+import client.stubs.ConcentrationSiteStub;
+import client.stubs.MuseumStub;
 import server.sharedRegions.*;
 import utils.MemException;
 
@@ -12,11 +16,6 @@ import static utils.Utils.logger;
 
 public class MasterThief extends Thief {
     /**
-     * General repository
-     */
-    private GeneralRepos repos;
-
-    /**
      * MasterThief constructor
      * @param threadName Thread name
      * @param thiefID Thief ID
@@ -24,13 +23,11 @@ public class MasterThief extends Thief {
      * @param concentrationSite ConcentrationSite
      * @param collectionSite CollectionSite
      * @param assaultParties AssaultParty array
-     * @param repos GeneralRepos
      */
 
-    public MasterThief(String threadName, int thiefID, Museum museum, ConcentrationSite concentrationSite, CollectionSite collectionSite, AssaultParty[] assaultParties, GeneralRepos repos) throws MemException {
-        super(threadName, thiefID, museum, concentrationSite, collectionSite, assaultParties,repos);
+    public MasterThief(String threadName, int thiefID, MuseumStub museum, ConcentrationSiteStub concentrationSite, CollectionSiteStub collectionSite, AssaultPartyStub[] assaultParties) {
+        super(threadName, thiefID, museum, concentrationSite, collectionSite, assaultParties);
         setThiefState(MasterThiefStates.PLANNING_HEIST);
-        this.repos = repos;
     }
 
     /**
@@ -43,7 +40,6 @@ public class MasterThief extends Thief {
             switch (collectionSite.appraiseSit(concentrationSite.occupancy(), concentrationSite.getFreeParty(), concentrationSite.peekFreeRoom())) {
                 case CREATE_ASSAULT_PARTY:
                     logger(this, "CREATE_ASSAULT_PARTY");
-                    repos.updateMasterThiefState(MasterThiefStates.PLANNING_HEIST);
                     int assaultPartyID = concentrationSite.prepareAssaultParty();
                     if (assaultPartyID >= 0) {
                         concentrationSite.setPartyActive(assaultPartyID, true);
@@ -52,7 +48,6 @@ public class MasterThief extends Thief {
                     break;
                 case WAIT_FOR_CANVAS:
                     logger(this, "WAIT_FOR_CANVAS");
-                    repos.updateMasterThiefState(MasterThiefStates.WAITING_ARRIVAL);
                     collectionSite.takeARest();
 
                     int[] partyState = collectionSite.collectACanvas();
@@ -76,7 +71,6 @@ public class MasterThief extends Thief {
                     break;
                 case END_HEIST:
                     logger(this, "END_HEIST");
-                    repos.updateMasterThiefState(MasterThiefStates.PRESENTING_REPORT);
                     collectionSite.sumUpResults();
                     break lifecycle;
             }

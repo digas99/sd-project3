@@ -86,7 +86,7 @@ public class Museum {
      * Helper class to represent a room in the museum
      */
 
-    public class Room {
+    public static class Room {
 
         private int id;
         private int distance;
