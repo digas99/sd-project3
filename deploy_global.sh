@@ -24,6 +24,8 @@ transfer_to_node() {
   sshpass -f password ssh $1 'rm -rf test/Assault/*'
   sshpass -f password ssh $1 'rm -rf lib'
   sshpass -f password scp temp/lib.zip $1:.
+  sshpass -f password ssh $1 'rm -f run_server.sh'
+  sshpass -f password ssh $1 'rm -f run_client.sh'
   sshpass -f password scp run_server.sh $1:.
   sshpass -f password scp run_client.sh $1:.
   sshpass -f password scp $2.zip $1:test/Assault

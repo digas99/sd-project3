@@ -11,7 +11,7 @@ SRCFILES=src
 GENCLASS=/lib/genclass.jar
 CLASSPATH=$PWD$SRCFILES:$PWD$GENCLASS
 
-javac -cp $CLASSPATH src/*/*.java src/*/*/*.java
+javac -source 1.8 -target 1.8 -cp $CLASSPATH src/*/*.java src/*/*/*.java
 
 echo "Distributing intermediate code to the different execution environments."
 
