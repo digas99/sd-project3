@@ -1,14 +1,8 @@
 package client.stubs;
 
 import genclass.GenericIO;
-import server.sharedRegions.Museum;
 import utils.*;
 import client.entities.*;
-import client.main.*;
-
-import static utils.Parameters.*;
-import static utils.Parameters.MAX_PAINTINGS;
-import static utils.Utils.random;
 
 public class MuseumStub {
 
@@ -58,7 +52,7 @@ public class MuseumStub {
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
 
-        if (inMessage.getMsgType() != MessageType.ROLLCANVASDONE || inMessage.getMsgType() != MessageType.NOCANVAS) {
+        if (inMessage.getMsgType() != MessageType.ROLLCANVASDONE && inMessage.getMsgType() != MessageType.NOCANVAS) {
             GenericIO.writelnString("Thread " + Thread.currentThread().getName() + ": Invalid Type!");
             GenericIO.writelnString(inMessage.toString());
             System.exit(1);
@@ -67,42 +61,7 @@ public class MuseumStub {
         con.close();
         ((OrdinaryThief) Thread.currentThread()).setThiefState(inMessage.getOrdinaryThiefState());
         return inMessage.getMsgType() == MessageType.ROLLCANVASDONE;
-
     }
-
-    /**
-     * Operation to get a Room
-     */
-    public Room getRoom(int roomId) {
-        ClientCom con = new ClientCom(serverHostName, serverPortNumb);
-        Message inMessage, outMessage;
-        Room room = null;
-
-        while (!con.open()) {
-            try {
-                Thread.currentThread().sleep((long) (10));
-            } catch (InterruptedException e) {
-            }
-        }
-
-        outMessage = new Message(MessageType.MSGETROOM);
-        outMessage.setRoomId(roomId);
-        con.writeObject(outMessage);
-        inMessage = (Message) con.readObject();
-
-        if (inMessage.getMsgType() != MessageType.MSGETROOMDONE) {
-            GenericIO.writelnString("Thread " + Thread.currentThread().getName() + ": Invalid Type!");
-            GenericIO.writelnString(inMessage.toString());
-            System.exit(1);
-        }
-
-        room = new Room(inMessage.getRoomId(), inMessage.getRoomDistance(), inMessage.getRoomPaintings(), inMessage.getRoomTotalPaintings(), inMessage.getAssaultPartyId());
-
-        con.close();
-        return room;
-    }
-
-
 
     /**
      * Operation to shut down the server (service request).
@@ -131,117 +90,78 @@ public class MuseumStub {
         con.close();
     }
 
-    public static class Room {
+    public int getRoomDistance(int roomID) {
+        ClientCom con = new ClientCom(serverHostName, serverPortNumb);
+        Message inMessage, outMessage;
 
-        private int id;
-        private int distance;
-        private int paintings;
-        private final int totalPaintings;
-        private int assaultPartyID;
-
-
-        /**
-         * Get the distance of the room
-         * @return Distance
-         */
-        public int getDistance() {
-            return distance;
+        while(!con.open()){
+            try{
+                Thread.currentThread().sleep((long) (10));
+            }catch(InterruptedException e){}
         }
 
-        public void setDistance(int distance) {
-            this.distance = distance;
+        outMessage = new Message(MessageType.GETROOMDIS);
+        outMessage.setRoomId(roomID);
+        con.writeObject(outMessage);
+        inMessage = (Message) con.readObject();
+
+        if(inMessage.getMsgType() != MessageType.GETROOMDISDONE){
+            GenericIO.writelnString("Thread " + Thread.currentThread().getName() + ": Invalid Type!");
+            GenericIO.writelnString(inMessage.toString());
+            System.exit(1);
         }
 
-        /**
-         * Get the number of paintings in the room
-         * @return Number of paintings
-         */
-        public int getPaintings() {
-            return paintings;
+        con.close();
+        return inMessage.getRoomDistance();
+    }
+
+    public int getRoomPaintings(int roomID) {
+        ClientCom con = new ClientCom(serverHostName, serverPortNumb);
+        Message inMessage, outMessage;
+
+        while(!con.open()){
+            try{
+                Thread.currentThread().sleep((long) (10));
+            }catch(InterruptedException e){}
         }
 
-        /**
-         * Set the number of paintings in the room
-         * @param paintings Number of paintings
-         */
-        public void setPaintings(int paintings) {
-            this.paintings = paintings;
+        outMessage = new Message(MessageType.GETROOMPAINT);
+        outMessage.setRoomId(roomID);
+        con.writeObject(outMessage);
+        inMessage = (Message) con.readObject();
+
+        if(inMessage.getMsgType() != MessageType.GETROOMPAINTDONE){
+            GenericIO.writelnString("Thread " + Thread.currentThread().getName() + ": Invalid Type!");
+            GenericIO.writelnString(inMessage.toString());
+            System.exit(1);
         }
 
-        /**
-         * Get the AssaultParty ID of the room
-         * @return AssaultParty ID
-         */
-        public int getAssaultPartyID() {
-            return assaultPartyID;
+        con.close();
+        return inMessage.getRoomPaintings();
+    }
+
+    public void setRoomPaintings(int roomID, int paintings) {
+        ClientCom con = new ClientCom(serverHostName, serverPortNumb);
+        Message inMessage, outMessage;
+
+        while(!con.open()){
+            try{
+                Thread.currentThread().sleep((long) (10));
+            }catch(InterruptedException e){}
         }
 
-        /**
-         * Set the AssaultParty ID of the room
-         * @param assaultPartyID AssaultParty ID
-         */
-        public void setAssaultPartyID(int assaultPartyID) {
-            this.assaultPartyID = assaultPartyID;
+        outMessage = new Message(MessageType.SETROOMPAINT);
+        outMessage.setRoomId(roomID);
+        outMessage.setRoomPaintings(paintings);
+        con.writeObject(outMessage);
+        inMessage = (Message) con.readObject();
+
+        if(inMessage.getMsgType() != MessageType.SETROOMPAINTDONE){
+            GenericIO.writelnString("Thread " + Thread.currentThread().getName() + ": Invalid Type!");
+            GenericIO.writelnString(inMessage.toString());
+            System.exit(1);
         }
 
-        /**
-         * Get the total number of paintings in the room
-         * @return Total number of paintings
-         */
-        public int getTotalPaintings() {
-            return totalPaintings;
-        }
-
-        /**
-         * Get the ID of the room
-         * @return ID
-         */
-        public int getID() {
-            return id;
-        }
-
-        /**
-         * Set the ID of the room
-         * @param id
-         */
-
-        public void setID(int id) {
-            this.id = id;
-        }
-
-        /**
-         * Room constructor that takes an ID to initialize the room
-         * It also initializes the distance and number of paintings in the room randomly
-         * @param id Room ID
-         */
-        public Room(int id) {
-            this.id = id;
-            distance = random(MIN_DISTANCE, MAX_DISTANCE);
-            paintings = totalPaintings = random(MIN_PAINTINGS, MAX_PAINTINGS);
-            assaultPartyID = -1;
-        }
-
-        /**
-         * Room constructor with all fields
-         *
-         * @param id Room ID
-         * @param distance Distance
-         * @param paintings Number of paintings
-         * @param totalPaintings Total number of paintings
-         * @param assaultPartyID AssaultParty ID
-         */
-        public Room(int id, int distance, int paintings, int totalPaintings, int assaultPartyID) {
-            this.id = id;
-            this.distance = distance;
-            this.paintings = paintings;
-            this.totalPaintings = totalPaintings;
-            this.assaultPartyID = assaultPartyID;
-        }
-
-        @Override
-        public String toString() {
-            return "Room_"+id;
-        }
-
+        con.close();
     }
 }

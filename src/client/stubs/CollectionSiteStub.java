@@ -83,10 +83,13 @@ public class CollectionSiteStub {
         }
 
         outMessage = new Message(MessageType.APPRAISESIT, true, ((MasterThief) Thread.currentThread()).getThiefID(), ((MasterThief) Thread.currentThread()).getThiefState());
+        outMessage.setConcentrationSiteOccupancy(concentrationSiteOccupancy);
+        outMessage.setFreeParty(freeParty);
+        outMessage.setFreeRoom(freeRoom);
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
 
-        if (inMessage.getMsgType() != MessageType.CREATEPARTY || inMessage.getMsgType() != MessageType.WAITFORCANVAS || inMessage.getMsgType() != MessageType.ENDHEIST){
+        if (inMessage.getMsgType() != MessageType.CREATEPARTY && inMessage.getMsgType() != MessageType.WAITFORCANVAS && inMessage.getMsgType() != MessageType.ENDHEIST){
             GenericIO.writelnString("Thread " + Thread.currentThread().getName() + ": Invalid Type!");
             GenericIO.writelnString(inMessage.toString());
             System.exit(1);
@@ -137,7 +140,7 @@ ClientCom con = new ClientCom(serverHostName, serverPortNumb);
     /**
      * Operation to Ordinary Thief to hand a canvas to the Master Thief (service request).
      */
-    public void handACanvas(int partyID, int roomID, boolean hasCnvas){
+    public void handACanvas(int partyID, int roomID, boolean hasCanvas){
         ClientCom con = new ClientCom(serverHostName, serverPortNumb);
         Message inMessage, outMessage;
 
@@ -148,6 +151,9 @@ ClientCom con = new ClientCom(serverHostName, serverPortNumb);
             }
         }
         outMessage = new Message(MessageType.HANDACANVAS, false, ((OrdinaryThief) Thread.currentThread()).getThiefID(), ((OrdinaryThief) Thread.currentThread()).getThiefState());
+        outMessage.setPartyId(partyID);
+        outMessage.setRoomId(roomID);
+        outMessage.hasCanvas(hasCanvas);
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
 

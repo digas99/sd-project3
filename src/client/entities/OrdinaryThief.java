@@ -4,6 +4,7 @@ import client.stubs.AssaultPartyStub;
 import client.stubs.CollectionSiteStub;
 import client.stubs.ConcentrationSiteStub;
 import client.stubs.MuseumStub;
+import genclass.GenericIO;
 import server.sharedRegions.*;
 
 import static utils.Parameters.*;
@@ -53,15 +54,15 @@ public class OrdinaryThief extends Thief {
             if (assaultData != null) {
                 partyID = assaultData[0];
                 roomID = assaultData[1];
-                MuseumStub.Room room = museum.getRoom(roomID);
                 AssaultPartyStub party = assaultParties[partyID];
 
-                party.crawlIn(room.getDistance(), displacement);
-                boolean hasCanvas = museum.rollACanvas(room.getID());
+                party.crawlIn(museum.getRoomDistance(roomID), displacement);
+                boolean hasCanvas = museum.rollACanvas(roomID);
                 if (hasCanvas)
-                    room.setPaintings(room.getPaintings() - 1);
+                    museum.setRoomPaintings(roomID, museum.getRoomPaintings(roomID) - 1);
+                GenericIO.writelnString("Canvas: " + museum.getRoomPaintings(roomID));
                 party.reverseDirection();
-                party.crawlOut(room.getDistance(), displacement);
+                party.crawlOut(museum.getRoomDistance(roomID), displacement);
 
                 collectionSite.handACanvas(partyID, roomID, hasCanvas);
             } else break;

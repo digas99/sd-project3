@@ -249,6 +249,7 @@ public class ConcentrationSiteStub {
      * @return true if the thief is still needed, false otherwise
      */
     public boolean amINeeded(){
+        GenericIO.writelnString("Thread " + Thread.currentThread().getName() + ": amINeeded");
         ClientCom con = new ClientCom(serverHostName, serverPortNumb);
         Message inMessage, outMessage;
 
@@ -261,8 +262,7 @@ public class ConcentrationSiteStub {
         outMessage = new Message(MessageType.AMINEEDED, false, ((OrdinaryThief) Thread.currentThread()).getThiefID(), ((OrdinaryThief) Thread.currentThread()).getThiefState());
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
-
-        if (inMessage.getMsgType()!= MessageType.ISNEEDED || inMessage.getMsgType()!= MessageType.ISNOTNEEDED){
+        if (inMessage.getMsgType()!= MessageType.ISNEEDED && inMessage.getMsgType()!= MessageType.ISNOTNEEDED){
             GenericIO.writelnString("Thread " + Thread.currentThread().getName() + ": Invalid Type!");
             GenericIO.writelnString(inMessage.toString());
             System.exit(1);
@@ -293,7 +293,7 @@ public class ConcentrationSiteStub {
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
 
-        if (inMessage.getMsgType()!= MessageType.NOFREEROOMS || inMessage.getMsgType()!= MessageType.PREPPARTYDONE){
+        if (inMessage.getMsgType()!= MessageType.NOFREEROOMS && inMessage.getMsgType()!= MessageType.PREPPARTYDONE){
             GenericIO.writelnString("Thread " + Thread.currentThread().getName() + ": Invalid Type!");
             GenericIO.writelnString(inMessage.toString());
             System.exit(1);
@@ -326,7 +326,7 @@ public class ConcentrationSiteStub {
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
 
-        if (inMessage.getMsgType()!= MessageType.NOFREEROOMS || inMessage.getMsgType()!= MessageType.PREPEXCURSIONDONE){
+        if (inMessage.getMsgType()!= MessageType.NOFREEROOMS && inMessage.getMsgType()!= MessageType.PREPEXCURSIONDONE){
             GenericIO.writelnString("Thread " + Thread.currentThread().getName() + ": Invalid Type!");
             GenericIO.writelnString(inMessage.toString());
             System.exit(1);

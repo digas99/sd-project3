@@ -1,6 +1,7 @@
 package server.sharedRegions;
 
 import server.entities.MuseumClientProxy;
+import server.sharedRegions.Museum.Room;
 import utils.Message;
 import utils.MessageException;
 import utils.MessageType;
@@ -56,13 +57,27 @@ public class MuseumInterface {
                         ((MuseumClientProxy) Thread.currentThread()).getOrdinaryState());
                 break;
             case MessageType.MSGETROOM:
-                Museum.Room room = museum.getRoom(inMessage.getRoomId());
+                Room room = museum.getRoom(inMessage.getRoomId());
                 outMessage = new Message(MessageType.MSGETROOMDONE);
                 outMessage.setRoomId(room.getID());
                 outMessage.setRoomDistance(room.getDistance());
                 outMessage.setRoomPaintings(room.getPaintings());
                 outMessage.setRoomTotalPaintings(room.getTotalPaintings());
                 outMessage.setAssaultPartyId(room.getAssaultPartyID());
+                break;
+            case MessageType.GETROOMDIS:
+                int distance = museum.getRoom(inMessage.getRoomId()).getDistance();
+                outMessage = new Message(MessageType.GETROOMDISDONE);
+                outMessage.setRoomDistance(distance);
+                break;
+            case MessageType.GETROOMPAINT:
+                int paintings = museum.getRoom(inMessage.getRoomId()).getPaintings();
+                outMessage = new Message(MessageType.GETROOMPAINTDONE);
+                outMessage.setRoomPaintings(paintings);
+                break;
+            case MessageType.SETROOMPAINT:
+                museum.getRoom(inMessage.getRoomId()).setPaintings(inMessage.getRoomPaintings());
+                outMessage = new Message(MessageType.SETROOMPAINTDONE);
                 break;
             case MessageType.SHUT:
                 museum.shutdown();

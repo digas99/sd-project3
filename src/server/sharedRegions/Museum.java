@@ -4,6 +4,8 @@ import client.entities.OrdinaryThief;
 import client.entities.OrdinaryThiefStates;
 import server.main.ServerCollectionSite;
 import server.main.ServerMuseum;
+import server.entities.CollectionSiteClientProxy;
+import server.entities.MuseumClientProxy;
 
 import static utils.Parameters.*;
 import static utils.Utils.*;
@@ -14,6 +16,10 @@ import static utils.Utils.*;
  */
 
 public class Museum {
+    /**
+     * Reference to Ordinary Thief threads
+     */
+    private final MuseumClientProxy[] ordinary;
     /**
      * Number of entity groups requesting the shutdown
      */
@@ -27,6 +33,9 @@ public class Museum {
      * Museum constructor
      */
     public Museum() {
+        ordinary = new MuseumClientProxy[N_THIEVES_ORDINARY];
+        for (int i = 0; i < N_THIEVES_ORDINARY; i++)
+            ordinary[i] = null;
         for (int i = 0; i < rooms.length; i++) {
             rooms[i] = new Room(i);
         }
@@ -42,18 +51,21 @@ public class Museum {
      * Ordinary Thieves to roll a canvas from a room
      */
     public synchronized boolean rollACanvas(int roomID) {
-        OrdinaryThief ordinaryThief = (OrdinaryThief) Thread.currentThread();
-        ordinaryThief.setThiefState(OrdinaryThiefStates.AT_A_ROOM);
-        logger(ordinaryThief, "Rolling a canvas");
+        int ordinaryId;
+        ordinaryId = ((MuseumClientProxy) Thread.currentThread()).getOrdinaryId();
+        ordinary[ordinaryId] = (MuseumClientProxy) Thread.currentThread();
+        ordinary[ordinaryId].setOrdinaryState(OrdinaryThiefStates.AT_A_ROOM);
+
+        logger(ordinary, "Rolling a canvas");
         Room room = getRoom(roomID);
 
         boolean hasCanvas = room.getPaintings() > 0;
 
 
         if (room.getPaintings() == 0)
-            logger(ordinaryThief, "Left empty handed from " + room);
+            logger(ordinary, "Left empty handed from " + room);
         else
-            logger(ordinaryThief, "Rolled a canvas from " + room + ". " + room.getPaintings() + "/"+ room.getTotalPaintings() +" left");
+            logger(ordinary, "Rolled a canvas from " + room + ". " + room.getPaintings() + "/"+ room.getTotalPaintings() +" left");
 
         return hasCanvas;
     }
@@ -86,7 +98,7 @@ public class Museum {
      * Helper class to represent a room in the museum
      */
 
-    public static class Room {
+    public class Room {
 
         private int id;
         private int distance;

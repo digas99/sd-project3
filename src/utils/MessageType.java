@@ -262,4 +262,28 @@ public class MessageType {
      * Museum get room was done (reply)
      */
     public static final int MSGETROOMDONE = 65;
+    /*
+     * Room get distance (service request)
+     */
+    public static final int GETROOMDIS = 66;
+    /**
+     * Room get distance was done (reply)
+     */
+    public static final int GETROOMDISDONE = 67;
+    /*
+     * Room get paint (service request)
+     */
+    public static final int GETROOMPAINT = 68;
+    /**
+     * Room get paint was done (reply)
+     */
+    public static final int GETROOMPAINTDONE = 69;
+    /*
+     * Room set paint (service request)
+     */
+    public static final int SETROOMPAINT = 70;
+    /**
+     * Room set paint was done (reply)
+     */
+    public static final int SETROOMPAINTDONE = 71;
 }

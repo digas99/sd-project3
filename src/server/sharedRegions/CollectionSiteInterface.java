@@ -61,8 +61,8 @@ public class CollectionSiteInterface {
                         ((CollectionSiteClientProxy) Thread.currentThread()).getMasterState());
                 break;
             case MessageType.TAKEREST:
-                ((CollectionSiteClientProxy) Thread.currentThread()).setMasterId(inMessage.getOrdinaryThiefId());
-                ((CollectionSiteClientProxy) Thread.currentThread()).setMasterState(inMessage.getOrdinaryThiefState());
+                ((CollectionSiteClientProxy) Thread.currentThread()).setMasterId(inMessage.getMasterThiefId());
+                ((CollectionSiteClientProxy) Thread.currentThread()).setMasterState(inMessage.getMasterThiefState());
                 collectionSite.takeARest();
                 outMessage = new Message(MessageType.TAKERESTDONE, true,
                         ((CollectionSiteClientProxy) Thread.currentThread()).getMasterId(),
