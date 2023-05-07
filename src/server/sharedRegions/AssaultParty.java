@@ -82,11 +82,18 @@ public class AssaultParty {
     * This method resets the Assault Party, setting all the variables to their initial values.
     */
    public void resetAssaultParty() {
-      begin = false;
+      GenericIO.writelnString("AssaultParty_" + id + " is resetting.");
       nextThiefID = -1;
       for (int i = 0; i < N_THIEVES_PER_PARTY; i++)
          thieves[i] = null;
+   }
 
+   public boolean allEnded() {
+      for (int i = 0; i < thieves.length; i++) {
+         if (!thieves[i].ended())
+            return false;
+      }
+      return true;
    }
 
    /**
@@ -123,6 +130,7 @@ public class AssaultParty {
       master[masterId] = (AssaultPartyClientProxy) Thread.currentThread();
       master[masterId].setMasterState(MasterThiefStates.DECIDING_WHAT_TO_DO);
 
+      GenericIO.writelnString("MasterThief_" + masterId + " is sending AssaultParty_" + id + ".");
       begin = true;
       notifyAll();
    }
@@ -138,6 +146,8 @@ public class AssaultParty {
       ordinary[ordinaryId].setOrdinaryState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
       getThief(ordinaryId).isAtGoal(false);
       inRoom++;
+
+      GenericIO.writelnString("Thief_" + ordinaryId + " is reversing direction.");
 
       // if last thief reaching room, set begin to true and notify all
       if (inRoom == N_THIEVES_PER_PARTY) {
@@ -157,6 +167,8 @@ public class AssaultParty {
       }
       // /\/\ DEBUGING PURPOSES ONLY /\/\
 
+      //GenericIO.writelnString("Thief_" + thiefID + ":");
+      //GenericIO.writelnString("isAtGoal: " + getThief(thiefID).isAtGoal() + " begin: " + begin + " nextThiefID: " + nextThiefID + " size: " + size(thieves));
       return !getThief(thiefID).isAtGoal() && (!begin || nextThiefID != thiefID || size(thieves) < N_THIEVES_PER_PARTY);
    }
 
@@ -173,12 +185,15 @@ public class AssaultParty {
       ordinary[thiefID].setOrdinaryState(OrdinaryThiefStates.CRAWLING_INWARDS);
 
        if (nextThiefID == -1) {
-           logger(this, "Reset");
            resetAssaultParty();
            nextThiefID = thiefID;
        }
 
        addThief(thiefID, displacement);
+
+       GenericIO.writelnString("Thief " + thiefID + " is crawling inwards.");
+
+       notifyAll();
 
        do {
            // wait until master says to begin
@@ -203,6 +218,8 @@ public class AssaultParty {
       thiefID = ((AssaultPartyClientProxy) Thread.currentThread()).getOrdinaryId();
       ordinary[thiefID].setOrdinaryState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
 
+      GenericIO.writelnString("Thief " + thiefID + " is crawling outwards.");
+
        do {
            // wait until master says to begin
            while (sleep(thiefID)){
@@ -214,8 +231,14 @@ public class AssaultParty {
            }
        } while(crawl(thiefID, displacement, roomDistance, 0));
 
+       GenericIO.writelnString("Thief " + thiefID + " is out of the Museum.");
+
        inRoom--;
        getThief(thiefID).isAtGoal(false);
+       getThief(thiefID).ended(true);
+
+       if (allEnded())
+          begin = false;
 
        ordinary[thiefID].setOrdinaryState(OrdinaryThiefStates.COLLECTION_SITE);
    }
@@ -234,6 +257,7 @@ public class AssaultParty {
 
       // wake up next thief
       nextThiefID = getNextThief(thiefID, backwards);
+      GenericIO.writelnString("Thief " + thiefID + " is waking up thief " + nextThiefID + " to crawl.");
       notifyAll();
 
       return !getThief(thiefID).isAtGoal();
@@ -261,6 +285,7 @@ public class AssaultParty {
          validMove = !wrongSeparation(backwards) && !checkOverlay(beginning, goal);
          if (!validMove) {
             updateThiefPosition(thiefID, move, !backwards);
+            //GenericIO.writelnString("Thief_" + thiefID + " is moving: " + move);
             move--;
          } else {
             if (getThiefPosition(thiefID) == goal) {
@@ -448,6 +473,7 @@ public class AssaultParty {
       private int position;
       private int displacement;
       private boolean isAtGoal;
+      private boolean ended;
 
       /**
        * Mapping initialization.
@@ -460,7 +486,7 @@ public class AssaultParty {
          this.thiefID = thiefID;
          this.position = position;
          this.displacement = displacement;
-         this.isAtGoal = false;
+         this.isAtGoal = this.ended = false;
       }
 
       @Override
@@ -482,6 +508,12 @@ public class AssaultParty {
       }
       public void isAtGoal(boolean atGoal) {
          isAtGoal = atGoal;
+      }
+      public boolean ended() {
+         return ended;
+      }
+      public void ended(boolean ended) {
+         this.ended = ended;
       }
    }
 }

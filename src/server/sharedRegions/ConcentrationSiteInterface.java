@@ -72,6 +72,7 @@ public class ConcentrationSiteInterface {
                 outMessage = new Message(response, true,
                         ((ConcentrationSiteClientProxy) Thread.currentThread()).getMasterId(),
                         ((ConcentrationSiteClientProxy) Thread.currentThread()).getMasterState());
+                GenericIO.writelnString("ConcentrationSiteInterface: party = " + party);
                 outMessage.setPartyId(party);
                 break;
             case MessageType.PREPEXCURSION:

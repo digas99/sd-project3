@@ -65,7 +65,7 @@ public class ConcentrationSiteStub {
      * Operation to set the room state (service request).
      * @param state room state
      */
-    public void setRoomState(int state,int roomID) {
+    public void setRoomState(int roomID, int state) {
         ClientCom con = new ClientCom(serverHostName, serverPortNumb);
         Message inMessage, outMessage;
 

@@ -51,17 +51,16 @@ public class OrdinaryThief extends Thief {
     public void run() {
         while (concentrationSite.amINeeded()) {
             int[] assaultData = concentrationSite.prepareExcursion();
-            if (assaultData != null) {
+            if (assaultData != null && assaultData[0] != -1) {
                 partyID = assaultData[0];
                 roomID = assaultData[1];
                 AssaultPartyStub party = assaultParties[partyID];
 
                 party.crawlIn(museum.getRoomDistance(roomID), displacement);
                 boolean hasCanvas = museum.rollACanvas(roomID);
-                GenericIO.writelnString("Canvas: " + museum.getRoomPaintings(roomID));
                 party.reverseDirection();
                 party.crawlOut(museum.getRoomDistance(roomID), displacement);
-
+                GenericIO.writelnString("Thief " + thiefID + " has a canvas: " + hasCanvas);
                 collectionSite.handACanvas(partyID, roomID, hasCanvas);
             } else break;
         }

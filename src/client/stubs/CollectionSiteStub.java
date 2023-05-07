@@ -81,7 +81,6 @@ public class CollectionSiteStub {
             } catch (InterruptedException e) {
             }
         }
-
         outMessage = new Message(MessageType.APPRAISESIT, true, ((MasterThief) Thread.currentThread()).getThiefID(), ((MasterThief) Thread.currentThread()).getThiefState());
         outMessage.setConcentrationSiteOccupancy(concentrationSiteOccupancy);
         outMessage.setFreeParty(freeParty);
@@ -186,16 +185,16 @@ ClientCom con = new ClientCom(serverHostName, serverPortNumb);
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
 
-        if (inMessage.getMsgType() != MessageType.COLLECTACANVASDONE){
+        if (inMessage.getMsgType() != MessageType.COLLECTACANVASDONE) {
             GenericIO.writelnString("Thread " + Thread.currentThread().getName() + ": Invalid Type!");
             GenericIO.writelnString(inMessage.toString());
             System.exit(1);
-        } else {
-            canvas[0] = inMessage.getRoomId();
-            canvas[1] = inMessage.getPartyId();
-            canvas[2] = inMessage.getRoomState();
-            canvas[3] = inMessage.lastThief() ? 1 : 0;
         }
+
+        canvas[0] = inMessage.getPartyId();
+        canvas[1] = inMessage.getRoomId();
+        canvas[2] = inMessage.getRoomState();
+        canvas[3] = inMessage.lastThief() ? 1 : 0;
 
         con.close();
         ((MasterThief) Thread.currentThread()).setThiefState(inMessage.getMasterThiefState());

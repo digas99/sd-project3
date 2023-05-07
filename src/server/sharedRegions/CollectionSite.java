@@ -144,7 +144,7 @@ public class CollectionSite {
 
         // wait for a canvas if there are parties active, if all thieves aren't in concentration site and if there are
         // parties in the collection site
-        //logger("Master", "Active Assault Parties: " + activeAssaultParties + " Concentration Site Occupancy: " + concentrationSiteOccupancy + " Parties in Site: " + numberOfPartiesInSite() + "\nThief Queue Size: " + thiefQueue.size() + "\nFree Party: " + freeParty);
+        logger(master, "Parties in Site: " + numberOfPartiesInSite() + "\nThief Queue Size: " + thiefQueue.size() + "\nFree Party: " + freeParty);
         if ((concentrationSiteOccupancy < N_THIEVES_PER_PARTY
                 && numberOfPartiesInSite() > 0)
             || thiefQueue.size() > 0
@@ -164,7 +164,10 @@ public class CollectionSite {
         master[masterId].setMasterState(MasterThiefStates.WAITING_ARRIVAL);
 
         // sleep until an ordinary thief reaches the collection site and hands a canvas
+        GenericIO.writelnString("Master Thief is waiting for a canvas");
+        GenericIO.writelnString("Canvas to collect: "+canvasToCollect());
         while (canvasToCollect() == 0) {
+            GenericIO.writelnString("Canvas to collect: "+canvasToCollect());
             try {
                 wait();
             } catch (InterruptedException e) {
@@ -182,6 +185,7 @@ public class CollectionSite {
         ordinary[ordinaryId] = (CollectionSiteClientProxy) Thread.currentThread();
         ordinary[ordinaryId].setOrdinaryState(OrdinaryThiefStates.COLLECTION_SITE);
         int ordinaryThiefID = ordinaryId;
+        GenericIO.writelnString("Ordinary Thief " + ordinaryThiefID + " is handing a canvas");
 
         AppraisedThief thief = new AppraisedThief(ordinaryThiefID, roomID, partyID, hasCanvas);
         try {
@@ -215,7 +219,7 @@ public class CollectionSite {
         // leave collection site
         thieves[ordinaryThiefID] = false;
         notifyAll();
-        //logger(ordinaryThief, "Left collection site. Collection Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
+        GenericIO.writelnString("Ordinary_" + ordinaryId + " left collection site. Collection Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
     }
 
     /**
@@ -261,7 +265,7 @@ public class CollectionSite {
 
         //logger(masterThief, "Parties in site: " + numberOfPartiesInSite());
 
-        logger( nextThief, " Room " + nextThief.roomID);
+        GenericIO.writelnString("Room " + nextThief.roomID);
         switch (roomState) {
             case BUSY_ROOM:
                 GenericIO.writelnString("BUSY");
@@ -276,7 +280,7 @@ public class CollectionSite {
 
         // wake up next thief
         appraisedThief = nextThief.thiefID;
-        //logger(masterThief, "Waking up Ordinary " + nextThief.thiefID + " to leave the collection site.");
+        GenericIO.writelnString("Waking up Ordinary " + nextThief.thiefID + " to leave the collection site.");
         notifyAll();
 
         return new int[]{nextThief.partyID, nextThief.roomID, roomState, lastThief ? 1 : 0};

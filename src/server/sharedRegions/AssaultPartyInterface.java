@@ -1,5 +1,6 @@
 package server.sharedRegions;
 
+import genclass.GenericIO;
 import server.entities.AssaultPartyClientProxy;
 import utils.Message;
 import utils.MessageException;

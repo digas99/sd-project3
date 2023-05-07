@@ -57,16 +57,16 @@ public class Museum {
         ordinary[ordinaryId] = (MuseumClientProxy) Thread.currentThread();
         ordinary[ordinaryId].setOrdinaryState(OrdinaryThiefStates.AT_A_ROOM);
 
-        logger(ordinary, "Rolling a canvas");
+        GenericIO.writelnString(("Ordinary_" + ordinaryId + " is rolling a canvas from Room_" + roomID));
         Room room = getRoom(roomID);
 
         boolean hasCanvas = room.getPaintings() > 0;
 
 
         if (room.getPaintings() == 0)
-            logger(ordinary, "Left empty handed from " + room);
+            GenericIO.writelnString("Ordinary_" + ordinaryId + "left empty handed from Room_" + roomID);
         else
-            logger(ordinary, "Rolled a canvas from " + room + ". " + room.getPaintings() + "/"+ room.getTotalPaintings() +" left");
+            GenericIO.writelnString("Ordinary_" + ordinaryId + " rolled a canvas from Room_" + roomID + ". Paintings: " + room.getPaintings() + "/" + room.getTotalPaintings());
 
         if (hasCanvas)
             room.setPaintings(room.getPaintings() - 1);
@@ -128,7 +128,6 @@ public class Museum {
          * @return Number of paintings
          */
         public int getPaintings() {
-            GenericIO.writelnString("Room " + id + " has " + paintings + " paintings");
             return paintings;
         }
 
@@ -138,7 +137,6 @@ public class Museum {
          */
         public void setPaintings(int paintings) {
             this.paintings = paintings;
-            GenericIO.writelnString("Room " + id + " has " + paintings + " paintings left");
         }
 
         /**

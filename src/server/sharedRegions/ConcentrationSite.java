@@ -3,12 +3,10 @@ package server.sharedRegions;
 import client.entities.*;
 import genclass.GenericIO;
 import server.entities.ConcentrationSiteClientProxy;
-import server.main.ServerCollectionSite;
 import server.main.ServerConcentrationSite;
 
 import static utils.Parameters.*;
 import static utils.Utils.count;
-import static utils.Utils.logger;
 
 /**
  * Shared Region with methods used by the Master Thief and the Ordinary Thieves.
@@ -93,9 +91,11 @@ public class ConcentrationSite {
     public int getFreeParty() {
         for (int i = 0; i < N_ASSAULT_PARTIES; i++) {
             if (!partyActive[i]) {
+                GenericIO.writelnString("Party " + i + " is free");
                 return i;
             }
         }
+        GenericIO.writelnString("No free parties");
         return -1;
     }
 
@@ -160,7 +160,7 @@ public class ConcentrationSite {
         }
 
         thieves[ordinaryId] = true;
-        logger(ordinary, "Entered concentration site. Concentration Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
+        GenericIO.writelnString("Ordinary_"+ordinaryId+" entered concentration site. Concentration Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
 
         // wake up master to check if there are enough thieves to form a party
         notifyAll();
@@ -194,7 +194,7 @@ public class ConcentrationSite {
         }
 
         makingParty = true;
-        logger(master, "Enough thieves to make a party. Preparing excursion");
+        GenericIO.writelnString("Enough thieves to make a party. Preparing excursion");
         nextParty = getFreeParty();
         notifyAll();
 
@@ -208,7 +208,8 @@ public class ConcentrationSite {
         }
 
         // set the party as active
-        partyActive[nextParty] = true;
+        if (nextParty > -1 && nextParty < N_ASSAULT_PARTIES) partyActive[nextParty] = true;
+        GenericIO.writelnString("Setting Party " + nextParty);
         return nextParty;
     }
 
@@ -243,7 +244,8 @@ public class ConcentrationSite {
         // if rooms are available, join the party
         nJoinedParty++;
         int nextRoom = peekFreeRoom();
-        logger(ordinary, "Joined Party " + nextParty + ". Party Occupancy: " + nJoinedParty + "/" + N_THIEVES_PER_PARTY);
+        GenericIO.writelnString("Ordinary_"+ordinaryId+" joined Party " + nextParty + ". Party Occupancy: " + nJoinedParty + "/" + N_THIEVES_PER_PARTY);
+        GenericIO.writelnString("Room: " + nextRoom);
 
         // if last thief to join the party, reset variables and notify master
         if (nJoinedParty == N_THIEVES_PER_PARTY) {

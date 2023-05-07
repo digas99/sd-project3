@@ -61,12 +61,12 @@ public class ClientOrdinaryThief
             }
             catch (InterruptedException e) {}
             GenericIO.writelnString ("Ordinary_" + (i+1) + " has terminated.");
+            assaultPartyStub[0].shutDown();
+            assaultPartyStub[1].shutDown();
+            collectionSiteStub.shutDown();
+            concentrationSiteStub.shutDown();
+            museumStub.shutDown();
         }
         GenericIO.writelnString ();
-        assaultPartyStub[0].shutDown();
-        assaultPartyStub[1].shutDown();
-        collectionSiteStub.shutDown();
-        concentrationSiteStub.shutDown();
-        museumStub.shutDown();
     }
 }

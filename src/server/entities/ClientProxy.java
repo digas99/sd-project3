@@ -40,6 +40,11 @@ public abstract class ClientProxy extends Thread {
         return proxyId;
     }
 
+    @Override
+    public String toString() {
+        return masterId != -1 ? "Master_"+masterId : "Ordinary_"+ordinaryId;
+    }
+
     public int getMasterId() {
         return masterId;
     }

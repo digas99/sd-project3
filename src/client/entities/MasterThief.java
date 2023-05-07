@@ -42,6 +42,7 @@ public class MasterThief extends Thief {
                 case CREATE_ASSAULT_PARTY:
                     logger(this, "CREATE_ASSAULT_PARTY");
                     int assaultPartyID = concentrationSite.prepareAssaultParty();
+                    GenericIO.writelnString("Assault Party ID: " + assaultPartyID);
                     if (assaultPartyID >= 0) {
                         concentrationSite.setPartyActive(assaultPartyID, true);
                         assaultParties[assaultPartyID].sendAssaultParty();
@@ -56,6 +57,10 @@ public class MasterThief extends Thief {
                     int roomID = partyState[1];
                     int roomState = partyState[2];
                     boolean lastThief = partyState[3] == 1;
+                    GenericIO.writelnString("Party ID: " + partyID);
+                    GenericIO.writelnString("Room ID: " + roomID);
+                    GenericIO.writelnString("Room State: " + roomState);
+                    GenericIO.writelnString("Last Thief: " + lastThief);
 
                     if (lastThief) {
                         concentrationSite.setPartyActive(partyID, false);
