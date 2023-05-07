@@ -10,7 +10,7 @@ public class ConcentrationSiteClientProxy extends ClientProxy {
     private ConcentrationSiteInterface concentrationSiteInter;
 
     public ConcentrationSiteClientProxy(ServerCom sconi, ConcentrationSiteInterface inter) {
-        super(sconi, "ConcentrationSiteProxy");
+        super(sconi, "ConcentrationSiteClientProxy");
         this.concentrationSiteInter = inter;
     }
 

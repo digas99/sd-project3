@@ -231,7 +231,7 @@ public class ConcentrationSiteStub {
             }
         }
 
-        outMessage = new Message(MessageType.STARTOPS);
+        outMessage = new Message(MessageType.STARTOPS, true, ((MasterThief) Thread.currentThread()).getThiefID(), ((MasterThief) Thread.currentThread()).getThiefState());
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
 
@@ -251,7 +251,6 @@ public class ConcentrationSiteStub {
     public boolean amINeeded(){
         ClientCom con = new ClientCom(serverHostName, serverPortNumb);
         Message inMessage, outMessage;
-        boolean needed = false;
 
         while (!con.open()) {
             try {
@@ -259,7 +258,7 @@ public class ConcentrationSiteStub {
             } catch (InterruptedException e) {
             }
         }
-        outMessage = new Message(MessageType.AMINEEDED);
+        outMessage = new Message(MessageType.AMINEEDED, false, ((OrdinaryThief) Thread.currentThread()).getThiefID(), ((OrdinaryThief) Thread.currentThread()).getThiefState());
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
 
@@ -290,7 +289,7 @@ public class ConcentrationSiteStub {
             } catch (InterruptedException e) {
             }
         }
-        outMessage = new Message(MessageType.PREPPARTY);
+        outMessage = new Message(MessageType.PREPPARTY, true, ((MasterThief) Thread.currentThread()).getThiefID(), ((MasterThief) Thread.currentThread()).getThiefState());
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
 
@@ -323,7 +322,7 @@ public class ConcentrationSiteStub {
             } catch (InterruptedException e) {
             }
         }
-        outMessage = new Message(MessageType.PREPEXCURSION);
+        outMessage = new Message(MessageType.PREPEXCURSION, false, ((OrdinaryThief) Thread.currentThread()).getThiefID(), ((OrdinaryThief) Thread.currentThread()).getThiefState());
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
 
@@ -355,7 +354,7 @@ public class ConcentrationSiteStub {
             } catch (InterruptedException e) {
             }
         }
-        outMessage = new Message(MessageType.ENDOPS);
+        outMessage = new Message(MessageType.ENDOPS, true, ((MasterThief) Thread.currentThread()).getThiefID(), ((MasterThief) Thread.currentThread()).getThiefState());
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
 

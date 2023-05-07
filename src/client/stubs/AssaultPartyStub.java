@@ -112,7 +112,7 @@ public class AssaultPartyStub {
             }
         }
 
-        outMessage = new Message(MessageType.SENDPARTY);
+        outMessage = new Message(MessageType.SENDPARTY, true, ((MasterThief) Thread.currentThread()).getThiefID(), ((MasterThief) Thread.currentThread()).getThiefState());
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
 
@@ -138,7 +138,7 @@ public class AssaultPartyStub {
             }catch(InterruptedException e){}
         }
 
-        outMessage = new Message(MessageType.REVERSE);
+        outMessage = new Message(MessageType.REVERSE, false, ((OrdinaryThief) Thread.currentThread()).getThiefID(), ((OrdinaryThief) Thread.currentThread()).getThiefState());
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
 
@@ -169,7 +169,7 @@ public class AssaultPartyStub {
             }catch(InterruptedException e){}
         }
 
-        outMessage = new Message(MessageType.CRAWLIN);
+        outMessage = new Message(MessageType.CRAWLIN, false, ((OrdinaryThief) Thread.currentThread()).getThiefID(), ((OrdinaryThief) Thread.currentThread()).getThiefState());
         outMessage.setRoomDistance(roomDistance);
         outMessage.setDisplacement(displacement);
         con.writeObject(outMessage);
@@ -201,7 +201,7 @@ public class AssaultPartyStub {
             }catch(InterruptedException e){}
         }
 
-        outMessage = new Message(MessageType.CRAWLOUT);
+        outMessage = new Message(MessageType.CRAWLOUT, false, ((OrdinaryThief) Thread.currentThread()).getThiefID(), ((OrdinaryThief) Thread.currentThread()).getThiefState());
         outMessage.setRoomDistance(roomDistance);
         outMessage.setDisplacement(displacement);
         con.writeObject(outMessage);

@@ -40,6 +40,14 @@ public abstract class Thief extends Thread {
 
 
     /**
+     * Get the thief state
+     * @return Thief state
+     */
+    public int getThiefState() {
+        return thiefState;
+    }
+
+    /**
      * Set the thief state
      * @param thiefState Thief state
      */

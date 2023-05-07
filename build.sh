@@ -15,14 +15,14 @@ if [ ! -d "temp" ]; then
 fi
 
 # build servers
-./build_servers.sh AssaultParty
-./build_servers.sh CollectionSite
-./build_servers.sh ConcentrationSite
-./build_servers.sh Museum
+./build_server.sh AssaultParty
+./build_server.sh CollectionSite
+./build_server.sh ConcentrationSite
+./build_server.sh Museum
 
 # build clients
-./build_clients.sh MasterThief
-./build_clients.sh OrdinaryThief
+./build_client.sh MasterThief
+./build_client.sh OrdinaryThief
 
 echo "Deploying and decompressing execution environments."
 mkdir -p $PWD/test/Assault

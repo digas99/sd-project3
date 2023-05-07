@@ -9,7 +9,7 @@ import utils.ServerCom;
 public class CollectionSiteClientProxy extends ClientProxy {
     private CollectionSiteInterface collectionSiteInter;
     public CollectionSiteClientProxy(ServerCom sconi, CollectionSiteInterface inter) {
-        super(sconi, "CollectionSiteProxy");
+        super(sconi, "CollectionSiteClientProxy");
         this.collectionSiteInter = inter;
     }
 

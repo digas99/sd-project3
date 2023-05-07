@@ -82,7 +82,7 @@ public class CollectionSiteStub {
             }
         }
 
-        outMessage = new Message(MessageType.APPRAISESIT);
+        outMessage = new Message(MessageType.APPRAISESIT, true, ((MasterThief) Thread.currentThread()).getThiefID(), ((MasterThief) Thread.currentThread()).getThiefState());
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
 
@@ -120,7 +120,7 @@ ClientCom con = new ClientCom(serverHostName, serverPortNumb);
             }
         }
 
-        outMessage = new Message(MessageType.TAKEREST);
+        outMessage = new Message(MessageType.TAKEREST, true, ((MasterThief) Thread.currentThread()).getThiefID(), ((MasterThief) Thread.currentThread()).getThiefState());
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
 
@@ -147,7 +147,7 @@ ClientCom con = new ClientCom(serverHostName, serverPortNumb);
             } catch (InterruptedException e) {
             }
         }
-        outMessage = new Message(MessageType.HANDACANVAS);
+        outMessage = new Message(MessageType.HANDACANVAS, false, ((OrdinaryThief) Thread.currentThread()).getThiefID(), ((OrdinaryThief) Thread.currentThread()).getThiefState());
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
 
@@ -176,7 +176,7 @@ ClientCom con = new ClientCom(serverHostName, serverPortNumb);
             } catch (InterruptedException e) {
             }
         }
-        outMessage = new Message(MessageType.COLLECTACANVAS);
+        outMessage = new Message(MessageType.COLLECTACANVAS, true, ((MasterThief) Thread.currentThread()).getThiefID(), ((MasterThief) Thread.currentThread()).getThiefState());
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
 
@@ -210,7 +210,7 @@ ClientCom con = new ClientCom(serverHostName, serverPortNumb);
             } catch (InterruptedException e) {
             }
         }
-        outMessage = new Message(MessageType.SUMUPRES);
+        outMessage = new Message(MessageType.SUMUPRES, true, ((MasterThief) Thread.currentThread()).getThiefID(), ((MasterThief) Thread.currentThread()).getThiefState());
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
 

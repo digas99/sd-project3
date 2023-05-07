@@ -10,7 +10,7 @@ public class AssaultPartyClientProxy extends ClientProxy {
     private AssaultPartyInterface assaultPartyInter;
 
     public AssaultPartyClientProxy(ServerCom sconi, AssaultPartyInterface inter) {
-        super(sconi, "AssaultPartyProxy");
+        super(sconi, "AssaultPartyClientProxy");
         this.assaultPartyInter = inter;
     }
 

@@ -11,7 +11,7 @@ public class MuseumClientProxy extends ClientProxy {
     private MuseumInterface museumInter;
 
     public MuseumClientProxy(ServerCom sconi, MuseumInterface museumInter) {
-        super(sconi, "MuseumProxy");
+        super(sconi, "MuseumClientProxy");
         this.museumInter = museumInter;
     }
 

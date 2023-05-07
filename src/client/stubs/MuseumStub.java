@@ -53,7 +53,7 @@ public class MuseumStub {
             }
         }
 
-        outMessage = new Message(MessageType.ROLLCANVAS);
+        outMessage = new Message(MessageType.ROLLCANVAS, false, ((OrdinaryThief) Thread.currentThread()).getThiefID(), ((OrdinaryThief) Thread.currentThread()).getThiefState());
         outMessage.setRoomId(roomID);
         con.writeObject(outMessage);
         inMessage = (Message) con.readObject();
