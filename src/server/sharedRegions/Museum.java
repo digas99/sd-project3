@@ -2,6 +2,7 @@ package server.sharedRegions;
 
 import client.entities.OrdinaryThief;
 import client.entities.OrdinaryThiefStates;
+import genclass.GenericIO;
 import server.main.ServerCollectionSite;
 import server.main.ServerMuseum;
 import server.entities.CollectionSiteClientProxy;
@@ -67,6 +68,9 @@ public class Museum {
         else
             logger(ordinary, "Rolled a canvas from " + room + ". " + room.getPaintings() + "/"+ room.getTotalPaintings() +" left");
 
+        if (hasCanvas)
+            room.setPaintings(room.getPaintings() - 1);
+
         return hasCanvas;
     }
 
@@ -124,6 +128,7 @@ public class Museum {
          * @return Number of paintings
          */
         public int getPaintings() {
+            GenericIO.writelnString("Room " + id + " has " + paintings + " paintings");
             return paintings;
         }
 
@@ -133,6 +138,7 @@ public class Museum {
          */
         public void setPaintings(int paintings) {
             this.paintings = paintings;
+            GenericIO.writelnString("Room " + id + " has " + paintings + " paintings left");
         }
 
         /**

@@ -58,8 +58,6 @@ public class OrdinaryThief extends Thief {
 
                 party.crawlIn(museum.getRoomDistance(roomID), displacement);
                 boolean hasCanvas = museum.rollACanvas(roomID);
-                if (hasCanvas)
-                    museum.setRoomPaintings(roomID, museum.getRoomPaintings(roomID) - 1);
                 GenericIO.writelnString("Canvas: " + museum.getRoomPaintings(roomID));
                 party.reverseDirection();
                 party.crawlOut(museum.getRoomDistance(roomID), displacement);
