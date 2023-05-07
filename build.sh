@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "$1" != "local" ] && [ "$1" != "global" ]; then
+  echo "Invalid argument. Use 'local' or 'global'."
+  exit 1
+fi
+
 echo "Compiling source code."
 
 SRCFILES=src
@@ -24,26 +29,18 @@ fi
 ./build_client.sh MasterThief
 ./build_client.sh OrdinaryThief
 
-echo "Deploying and decompressing execution environments."
-mkdir -p $PWD/test/Assault
-rm -rf $PWD/test/Assault/*
-cp temp/dirAssaultParty.zip $PWD/test/Assault
-cp temp/dirCollectionSite.zip $PWD/test/Assault
-cp temp/dirConcentrationSite.zip $PWD/test/Assault
-cp temp/dirMuseum.zip $PWD/test/Assault
-cp temp/dirMasterThief.zip $PWD/test/Assault
-cp temp/dirOrdinaryThief.zip $PWD/test/Assault
+# build genclass dependency
+mkdir -p temp/lib
+rm -rf temp/lib/*
+cp lib/genclass.jar temp/lib
+cd temp
+zip -rq lib.zip lib
+cd ..
 
-cd $PWD/test/Assault
-unzip -q dirAssaultParty.zip
-rm -f dirAssaultParty.zip
-unzip -q dirCollectionSite.zip
-rm -f dirCollectionSite.zip
-unzip -q dirConcentrationSite.zip
-rm -f dirConcentrationSite.zip
-unzip -q dirMuseum.zip
-rm -f dirMuseum.zip
-unzip -q dirMasterThief.zip
-rm -f dirMasterThief.zip
-unzip -q dirOrdinaryThief.zip
-rm -f dirOrdinaryThief.zip
+if [ "$1" == "local" ]; then
+  ./deploy_local.sh
+elif [ "$1" == "global" ]; then
+  ./deploy_global.sh
+else
+  echo "Invalid argument. Use 'local' or 'global'."
+fi

@@ -6,7 +6,7 @@ REPOS_HOSTNAME=$3
 REPOS_PORT=$4
 
 BINPATH=/test/Assault/dir$1
-GENCLASS=/lib/genclass.jar
+GENCLASS=$5
 CLASSPATH=$PWD$BINPATH:$PWD$GENCLASS
 
 echo "Server $1 running on port $SERVER_PORT"
