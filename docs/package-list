@@ -1,4 +1,7 @@
 client.entities
+client.main
+client.stubs
+server.entities
 server.main
 server.sharedRegions
 utils
