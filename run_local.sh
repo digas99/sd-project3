@@ -1,5 +1,9 @@
 #!/bin/bash
 
+get_value() {
+    grep "$1" "$2" | cut -d "=" -f2
+}
+
 ASSAULTPARTYAPORT=$(get_value ASSAULT_PARTY_A_PORT config)
 ASSAULTPARTYBPORT=$(get_value ASSAULT_PARTY_B_PORT config)
 COLLECTIONSITEPORT=$(get_value COLLECTION_SITE_PORT config)

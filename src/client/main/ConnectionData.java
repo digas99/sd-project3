@@ -18,7 +18,7 @@ public class ConnectionData {
         this.properties = new Properties();
 
         if (!configFile.exists())
-            throw new FileNotFoundException("File does not exist");
+            throw new FileNotFoundException("File does not exist at: " + filePath);
 
         try (FileInputStream in = new FileInputStream(configFile)) {
             properties.load(in);

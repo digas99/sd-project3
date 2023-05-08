@@ -6,7 +6,7 @@ if [ ! -d "temp" ]; then
 elif [ ! -f config ]; then
   echo "Missing config file!"
   exit 1
-elif [ -f password ]; then
+elif [ ! -f password ]; then
   echo "Missing password file!"
   exit 1
 fi
@@ -51,26 +51,33 @@ decompress_data() {
 }
 
 echo "Transfering data to computer nodes"
-echo "  Assault Party A"
 transfer_to_node $ASSAULTPARTYAHOST temp/dirAssaultParty
-echo "  Assault Party B"
+echo -e "  Assault Party A \u2714 [${ASSAULTPARTYAHOST#*@}]"
 transfer_to_node $ASSAULTPARTYBHOST temp/dirAssaultParty
-echo "  Collection Site"
+echo -e "  Assault Party B \u2714 [${ASSAULTPARTYBHOST#*@}]"
 transfer_to_node $COLLECTIONSITEHOST temp/dirCollectionSite
-echo "  Concentration Site"
+echo -e "  Collection Site \u2714 [${COLLECTIONSITEHOST#*@}]"
 transfer_to_node $CONCENTRATIONSITEHOST temp/dirConcentrationSite
-echo "  Museum"
+echo -e "  Concentration Site \u2714 [${CONCENTRATIONSITEHOST#*@}]"
 transfer_to_node $MUSEUMHOST temp/dirMuseum
-echo "  Master Thief"
+echo -e "  Museum \u2714 [${MUSEUMHOST#*@}]"
 transfer_to_node $MASTERTHIEFHOST temp/dirMasterThief
-echo "  Ordinary Thief"
+echo -e "  Master Thief \u2714 [${MASTERTHIEFHOST#*@}]"
 transfer_to_node $ORDINARYTHIEFHOST temp/dirOrdinaryThief
+echo -e "  Ordinary Thief \u2714 [${ORDINARYTHIEFHOST#*@}]"
 
 echo "Decompressing data sent to the computer nodes."
 decompress_data $ASSAULTPARTYAHOST dirAssaultParty
+echo -e "  Assault Party A \u2714 [${ASSAULTPARTYAHOST#*@}]"
 decompress_data $ASSAULTPARTYBHOST dirAssaultParty
+echo -e "  Assault Party B \u2714 [${ASSAULTPARTYBHOST#*@}]"
 decompress_data $COLLECTIONSITEHOST dirCollectionSite
+echo -e "  Collection Site \u2714 [${COLLECTIONSITEHOST#*@}]"
 decompress_data $CONCENTRATIONSITEHOST dirConcentrationSite
+echo -e "  Concentration Site \u2714 [${CONCENTRATIONSITEHOST#*@}]"
 decompress_data $MUSEUMHOST dirMuseum
+echo -e "  Museum \u2714 [${MUSEUMHOST#*@}]"
 decompress_data $MASTERTHIEFHOST dirMasterThief
+echo -e "  Master Thief \u2714 [${MASTERTHIEFHOST#*@}]"
 decompress_data $ORDINARYTHIEFHOST dirOrdinaryThief
+echo -e "  Ordinary Thief \u2714 [${ORDINARYTHIEFHOST#*@}]"

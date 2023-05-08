@@ -3,7 +3,7 @@
 if [ ! -f config ]; then
     echo "Missing config file!"
     exit 1
-elif [ -f password ]; then
+elif [ ! -f password ]; then
     echo "Missing password file!"
     exit 1
 fi

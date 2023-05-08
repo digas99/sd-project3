@@ -9,6 +9,7 @@ import genclass.GenericIO;
 
 import static utils.Parameters.*;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 
 /**
@@ -36,7 +37,7 @@ public class ClientOrdinaryThief
 
         ConnectionData connData;
         try {
-            connData = new ConnectionData("../../../config");
+            connData = new ConnectionData("config");
         } catch (FileNotFoundException e) {
             GenericIO.writelnString("Configuration file not found!");
             e.printStackTrace();

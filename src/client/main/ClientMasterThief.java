@@ -36,7 +36,7 @@ public class ClientMasterThief
 
         ConnectionData connData;
         try {
-            connData = new ConnectionData("../../../config");
+            connData = new ConnectionData("config");
         } catch (FileNotFoundException e) {
             GenericIO.writelnString("Configuration file not found!");
             e.printStackTrace();

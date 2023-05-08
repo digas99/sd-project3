@@ -21,14 +21,12 @@ if [ ! -d "temp" ]; then
 fi
 
 # build servers
-echo "Building servers."
 ./build_server.sh AssaultParty
 ./build_server.sh CollectionSite
 ./build_server.sh ConcentrationSite
 ./build_server.sh Museum
 
 # build clients
-echo "Building clients."
 ./build_client.sh MasterThief
 ./build_client.sh OrdinaryThief
 

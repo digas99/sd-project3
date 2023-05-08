@@ -9,6 +9,8 @@ The deployment configuration is in the `config` file in the root directory of th
 
 Put the password to access the machines in the `password` file in the root directory of the project.
 
+If you want to deploy the project locally, don't forget to change the machine names in the `config` file to `localhost`.
+
 ### Build the project
 To build the project, run the following commands in the root directory of the project:
 ```bash
