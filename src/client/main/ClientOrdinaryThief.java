@@ -7,8 +7,9 @@ import client.stubs.ConcentrationSiteStub;
 import client.stubs.MuseumStub;
 import genclass.GenericIO;
 
-import static client.main.ConnectionData.*;
 import static utils.Parameters.*;
+
+import java.io.FileNotFoundException;
 
 /**
  *    Client side of the Ordinary Thief.
@@ -32,6 +33,30 @@ public class ClientOrdinaryThief
         MuseumStub museumStub;
 
         /* problem initialization */
+
+        ConnectionData connData;
+        try {
+            connData = new ConnectionData("../../../config");
+        } catch (FileNotFoundException e) {
+            GenericIO.writelnString("Configuration file not found!");
+            e.printStackTrace();
+            return;
+        } catch (Exception e) {
+            GenericIO.writelnString("Error reading configuration file!");
+            e.printStackTrace();
+            return;
+        }
+
+        String ASSAULT_PARTY_0_MACHINE = connData.getMachine("ASSAULT_PARTY_A");
+        int ASSAULT_PARTY_0_PORT = connData.getPort("ASSAULT_PARTY_A");
+        String ASSAULT_PARTY_1_MACHINE = connData.getMachine("ASSAULT_PARTY_B");
+        int ASSAULT_PARTY_1_PORT = connData.getPort("ASSAULT_PARTY_B");
+        String COLLECTION_SITE_MACHINE = connData.getMachine("COLLECTION_SITE");
+        int COLLECTION_SITE_PORT = connData.getPort("COLLECTION_SITE");
+        String CONCENTRATION_SITE_MACHINE = connData.getMachine("CONCENTRATION_SITE");
+        int CONCENTRATION_SITE_PORT = connData.getPort("CONCENTRATION_SITE");
+        String MUSEUM_MACHINE = connData.getMachine("MUSEUM");
+        int MUSEUM_PORT = connData.getPort("MUSEUM");
 
         assaultPartyStub[0] = new AssaultPartyStub(ASSAULT_PARTY_0_MACHINE, ASSAULT_PARTY_0_PORT);
         assaultPartyStub[1] = new AssaultPartyStub(ASSAULT_PARTY_1_MACHINE, ASSAULT_PARTY_1_PORT);

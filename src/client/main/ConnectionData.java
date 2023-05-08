@@ -1,17 +1,43 @@
 package client.main;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
+
 public class ConnectionData {
-    public static final String ASSAULT_PARTY_0_MACHINE = "l040101-ws01.ua.pt";
-    public static final int ASSAULT_PARTY_0_PORT = 22330;
-    public static final String ASSAULT_PARTY_1_MACHINE = "l040101-ws02.ua.pt";
-    public static final int ASSAULT_PARTY_1_PORT = 22332;
 
-    public static final String COLLECTION_SITE_MACHINE = "l040101-ws03.ua.pt";
-    public static final int COLLECTION_SITE_PORT = 22334;
+    private String filePath;
+    private File configFile;
+    private Properties properties;
 
-    public static final String CONCENTRATION_SITE_MACHINE = "l040101-ws04.ua.pt";
-    public static final int CONCENTRATION_SITE_PORT = 22336;
+    public ConnectionData(String filePath) throws FileNotFoundException, IOException {
+        this.filePath = filePath;
+        this.configFile = new File(filePath);
+        this.properties = new Properties();
 
-    public static final String MUSEUM_MACHINE = "l040101-ws05.ua.pt";
-    public static final int MUSEUM_PORT = 22338;
+        if (!configFile.exists())
+            throw new FileNotFoundException("File does not exist");
+
+        try (FileInputStream in = new FileInputStream(configFile)) {
+            properties.load(in);
+        }
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public File getConfigFile() {
+        return configFile;
+    }
+
+    public String getMachine(String key) {
+        return properties.getProperty(key + "_MACHINE");
+    }
+
+    public int getPort(String key) {
+        return Integer.parseInt(properties.getProperty(key + "_PORT"));
+    }
 }

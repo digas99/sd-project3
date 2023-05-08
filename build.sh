@@ -11,6 +11,7 @@ SRCFILES=src
 GENCLASS=/lib/genclass.jar
 CLASSPATH=$PWD$SRCFILES:$PWD$GENCLASS
 
+# compile with compatibility for Java 8 (52.0)
 javac -source 1.8 -target 1.8 -cp $CLASSPATH src/*/*.java src/*/*/*.java
 
 echo "Distributing intermediate code to the different execution environments."
@@ -20,12 +21,14 @@ if [ ! -d "temp" ]; then
 fi
 
 # build servers
+echo "Building servers."
 ./build_server.sh AssaultParty
 ./build_server.sh CollectionSite
 ./build_server.sh ConcentrationSite
 ./build_server.sh Museum
 
 # build clients
+echo "Building clients."
 ./build_client.sh MasterThief
 ./build_client.sh OrdinaryThief
 

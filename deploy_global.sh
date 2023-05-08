@@ -3,31 +3,45 @@
 if [ ! -d "temp" ]; then
   echo "Folder /temp is missing, please run build.sh first."
   exit 1
+elif [ ! -f config ]; then
+  echo "Missing config file!"
+  exit 1
+elif [ -f password ]; then
+  echo "Missing password file!"
+  exit 1
 fi
 
-X=3
-Y=04
+get_value() {
+    grep "$1" "$2" | cut -d "=" -f2
+}
+
+X=$(get_value TURMA config)
+Y=$(get_value GRUPO config)
 TAG=$X$Y
 
-ASSAULTPARTYAHOST=sd$TAG@l040101-ws01.ua.pt
-ASSAULTPARTYBHOST=sd$TAG@l040101-ws02.ua.pt
-COLLECTIONSITEHOST=sd$TAG@l040101-ws03.ua.pt
-CONCENTRATIONSITEHOST=sd$TAG@l040101-ws04.ua.pt
-MUSEUMHOST=sd$TAG@l040101-ws05.ua.pt
-MASTERTHIEFHOST=sd$TAG@l040101-ws06.ua.pt
-ORDINARYTHIEFHOST=sd$TAG@l040101-ws07.ua.pt
-
-PORT=$((22000 + 100 * $X + 10 * ($Y - 1)))
+ASSAULTPARTYAHOST="sd$TAG@$(get_value ASSAULT_PARTY_A_MACHINE config)"
+ASSAULTPARTYBHOST="sd$TAG@$(get_value ASSAULT_PARTY_B_MACHINE config)"
+COLLECTIONSITEHOST="sd$TAG@$(get_value COLLECTION_SITE_MACHINE config)"
+CONCENTRATIONSITEHOST="sd$TAG@$(get_value CONCENTRATION_SITE_MACHINE config)"
+MUSEUMHOST="sd$TAG@$(get_value MUSEUM_MACHINE config)"
+MASTERTHIEFHOST="sd$TAG@$(get_value MASTER_THIEF_MACHINE config)"
+ORDINARYTHIEFHOST="sd$TAG@$(get_value ORDINARY_THIEF_MACHINE config)"
 
 transfer_to_node() {
   sshpass -f password ssh $1 'mkdir -p test/Assault'
   sshpass -f password ssh $1 'rm -rf test/Assault/*'
+
   sshpass -f password ssh $1 'rm -rf lib'
   sshpass -f password scp temp/lib.zip $1:.
+
   sshpass -f password ssh $1 'rm -f run_server.sh'
   sshpass -f password ssh $1 'rm -f run_client.sh'
   sshpass -f password scp run_server.sh $1:.
   sshpass -f password scp run_client.sh $1:.
+
+  sshpass -f password ssh $1 'rm -f config'
+  sshpass -f password scp config $1:.
+
   sshpass -f password scp $2.zip $1:test/Assault
 }
 
@@ -37,12 +51,19 @@ decompress_data() {
 }
 
 echo "Transfering data to computer nodes"
+echo "  Assault Party A"
 transfer_to_node $ASSAULTPARTYAHOST temp/dirAssaultParty
+echo "  Assault Party B"
 transfer_to_node $ASSAULTPARTYBHOST temp/dirAssaultParty
+echo "  Collection Site"
 transfer_to_node $COLLECTIONSITEHOST temp/dirCollectionSite
+echo "  Concentration Site"
 transfer_to_node $CONCENTRATIONSITEHOST temp/dirConcentrationSite
+echo "  Museum"
 transfer_to_node $MUSEUMHOST temp/dirMuseum
+echo "  Master Thief"
 transfer_to_node $MASTERTHIEFHOST temp/dirMasterThief
+echo "  Ordinary Thief"
 transfer_to_node $ORDINARYTHIEFHOST temp/dirOrdinaryThief
 
 echo "Decompressing data sent to the computer nodes."

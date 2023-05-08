@@ -1,11 +1,17 @@
 #!/bin/bash
 
+ASSAULTPARTYAPORT=$(get_value ASSAULT_PARTY_A_PORT config)
+ASSAULTPARTYBPORT=$(get_value ASSAULT_PARTY_B_PORT config)
+COLLECTIONSITEPORT=$(get_value COLLECTION_SITE_PORT config)
+CONCENTRATIONSITEPORT=$(get_value CONCENTRATION_SITE_PORT config)
+MUSEUMPORT=$(get_value MUSEUM_PORT config)
+
 run_servers() {
-  xterm -T "AssaultPartyA" -hold -e "./run_server.sh AssaultParty 22001 localhost 22002 /lib/genclass.jar" &
-  xterm -T "AssaultPartyB" -hold -e "./run_server.sh AssaultParty 22003 localhost 22004 /lib/genclass.jar" &
-  xterm -T "CollectionSite" -hold -e "./run_server.sh CollectionSite 22005 localhost 22006 /lib/genclass.jar" &
-  xterm -T "ConcentrationSite" -hold -e "./run_server.sh ConcentrationSite 22007 localhost 22008 /lib/genclass.jar" &
-  xterm -T "Museum" -hold -e "./run_server.sh Museum 22009 localhost 22010 /lib/genclass.jar"
+  xterm -T "AssaultPartyA" -hold -e "./run_server.sh AssaultParty $ASSAULTPARTYAPORT localhost $((ASSAULTPARTYAPORT+1)) /lib/genclass.jar" &
+  xterm -T "AssaultPartyB" -hold -e "./run_server.sh AssaultParty $ASSAULTPARTYBPORT localhost $((ASSAULTPARTYBPORT+1)) /lib/genclass.jar" &
+  xterm -T "CollectionSite" -hold -e "./run_server.sh CollectionSite $COLLECTIONSITEPORT localhost $((COLLECTIONSITEPORT+1)) /lib/genclass.jar" &
+  xterm -T "ConcentrationSite" -hold -e "./run_server.sh ConcentrationSite $CONCENTRATIONSITEPORT localhost $((CONCENTRATIONSITEPORT+1)) /lib/genclass.jar" &
+  xterm -T "Museum" -hold -e "./run_server.sh Museum $MUSEUMPORT localhost $((MUSEUMPORT+1)) /lib/genclass.jar"
 }
 
 run_clients() {
