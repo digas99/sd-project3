@@ -50,7 +50,7 @@ decompress_data() {
   sshpass -f password ssh $1 "cd test/Assault; unzip -uq $2.zip; rm -f $2.zip"
 }
 
-echo "Transfering data to computer nodes"
+echo -e "\nTransfering data to computer nodes..."
 transfer_to_node $ASSAULTPARTYAHOST temp/dirAssaultParty
 echo -e "  Assault Party A \u2714 [${ASSAULTPARTYAHOST#*@}]"
 transfer_to_node $ASSAULTPARTYBHOST temp/dirAssaultParty
@@ -66,7 +66,7 @@ echo -e "  Master Thief \u2714 [${MASTERTHIEFHOST#*@}]"
 transfer_to_node $ORDINARYTHIEFHOST temp/dirOrdinaryThief
 echo -e "  Ordinary Thief \u2714 [${ORDINARYTHIEFHOST#*@}]"
 
-echo "Decompressing data sent to the computer nodes."
+echo "Decompressing data sent to the computer nodes..."
 decompress_data $ASSAULTPARTYAHOST dirAssaultParty
 echo -e "  Assault Party A \u2714 [${ASSAULTPARTYAHOST#*@}]"
 decompress_data $ASSAULTPARTYBHOST dirAssaultParty

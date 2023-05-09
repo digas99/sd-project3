@@ -95,7 +95,8 @@ public class ClientCom
         catch (ConnectException e)
         { GenericIO.writelnString (Thread.currentThread ().getName () +
                 " - the server does not respond at: " + serverHostName + "." + serverPortNumb + "!");
-            if (e.getMessage ().equals ("Connection refused"))
+            
+            if (e.getMessage ().contains ("Connection refused"))
                 success = false;
             else { GenericIO.writelnString (e.getMessage () + "!");
                 e.printStackTrace ();

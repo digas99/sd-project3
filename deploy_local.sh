@@ -5,7 +5,7 @@ if [ ! -d "temp" ]; then
   exit 1
 fi
 
-echo "Creating test folder with execution environments."
+echo -e "\nCreating test folder with execution environments..."
 mkdir -p $PWD/test/Assault
 rm -rf $PWD/test/Assault/*
 cp temp/dirAssaultParty.zip $PWD/test/Assault
@@ -15,7 +15,7 @@ cp temp/dirMuseum.zip $PWD/test/Assault
 cp temp/dirMasterThief.zip $PWD/test/Assault
 cp temp/dirOrdinaryThief.zip $PWD/test/Assault
 
-echo "Decompressing execution environments."
+echo "Decompressing execution environments..."
 cd $PWD/test/Assault
 unzip -q dirAssaultParty.zip;       rm -f dirAssaultParty.zip
 unzip -q dirCollectionSite.zip;     rm -f dirCollectionSite.zip

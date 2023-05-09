@@ -23,6 +23,8 @@ run_clients() {
  xterm -T "OrdinaryThief" -hold -e "./run_client.sh OrdinaryThief /lib/genclass.jar"
 }
 
+echo -e "\nRunning servers on your computer, check the terminals that pop up on your screen."
+
 if [ $# -eq 0 ]; then
   run_servers &
   run_clients

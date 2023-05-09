@@ -5,7 +5,7 @@ if [ "$1" != "local" ] && [ "$1" != "global" ]; then
   exit 1
 fi
 
-echo "Compiling source code."
+echo -e "\nCompiling source code..."
 
 SRCFILES=src
 GENCLASS=/lib/genclass.jar
@@ -14,7 +14,7 @@ CLASSPATH=$PWD$SRCFILES:$PWD$GENCLASS
 # compile with compatibility for Java 8 (52.0)
 javac -source 1.8 -target 1.8 -cp $CLASSPATH src/*/*.java src/*/*/*.java
 
-echo "Distributing intermediate code to the different execution environments."
+echo "Distributing intermediate code to the different execution environments..."
 
 if [ ! -d "temp" ]; then
   mkdir temp

@@ -4,17 +4,29 @@ Project 2 for the course of Sistemas Distribuídos (Distributed Systems) at Univ
 
 ## Heist to the Museum
 
+### Run everything out of the box
+To **compile**, **build**, **deploy** and **run** the project, run the following commands in the root directory of the project:
+```bash
+$ chmod +x *.sh
+$ ./random_machines.sh; ./build.sh global; ./run_global.sh
+```
+or
+```bash
+$ chmod +x *.sh
+$ ./local_machines.sh; ./build.sh local; ./run_local.sh
+```
+
 ### Deployment configurations
 The deployment configuration is in the `config` file in the root directory of the project. Use this to change the **machine** and **ports** used by the servers and clients.
 
 Put the password to access the machines in the `password` file in the root directory of the project.
 
-If you want to deploy the project locally, don't forget to change the machine names in the `config` file to `localhost`.
+If you want to deploy the project locally, don't forget to change the machine names in the `config` file to `localhost` (can be done automatically by running `./local_machines.sh` in the root directory of the project).
 
 ### Build the project
 To build the project, run the following commands in the root directory of the project:
 ```bash
-$ chmod +x build.sh build_server.sh build_client.sh
+$ chmod +x build.sh build_server.sh build_client.sh deploy_local.sh deploy_global.sh
 $ ./build.sh <local | global>
 ```
 This file compiles, builds and deploys the project. The argument can be either `local` or `global`, depending on the type of deployment you want to do.
