@@ -27,6 +27,7 @@ echo -e "\nRunning servers on your computer, check the terminals that pop up on 
 
 if [ $# -eq 0 ]; then
   run_servers &
+  sleep 1
   run_clients
 else
   if [ $1 = "servers" ]; then
