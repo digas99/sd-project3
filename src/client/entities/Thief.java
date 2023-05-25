@@ -4,7 +4,6 @@ import client.stubs.AssaultPartyStub;
 import client.stubs.CollectionSiteStub;
 import client.stubs.ConcentrationSiteStub;
 import client.stubs.MuseumStub;
-import server.sharedRegions.*;
 
 public abstract class Thief extends Thread {
 

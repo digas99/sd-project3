@@ -2,8 +2,7 @@ package server.main;
 
 import genclass.GenericIO;
 import server.entities.AssaultPartyClientProxy;
-import server.sharedRegions.AssaultParty;
-import server.sharedRegions.AssaultPartyInterface;
+import server.objects.AssaultParty;
 import utils.ServerCom;
 
 import java.net.SocketTimeoutException;

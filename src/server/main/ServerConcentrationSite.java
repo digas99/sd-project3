@@ -2,8 +2,7 @@ package server.main;
 
 import genclass.GenericIO;
 import server.entities.ConcentrationSiteClientProxy;
-import server.sharedRegions.ConcentrationSite;
-import server.sharedRegions.ConcentrationSiteInterface;
+import server.objects.ConcentrationSite;
 import utils.ServerCom;
 
 import java.net.SocketTimeoutException;

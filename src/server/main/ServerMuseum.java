@@ -1,12 +1,8 @@
 package server.main;
 
 import genclass.GenericIO;
-import server.entities.ConcentrationSiteClientProxy;
 import server.entities.MuseumClientProxy;
-import server.sharedRegions.ConcentrationSite;
-import server.sharedRegions.ConcentrationSiteInterface;
-import server.sharedRegions.Museum;
-import server.sharedRegions.MuseumInterface;
+import server.objects.Museum;
 import utils.ServerCom;
 
 import java.net.SocketTimeoutException;

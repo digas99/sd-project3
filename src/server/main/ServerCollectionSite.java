@@ -1,13 +1,8 @@
 package server.main;
 
 import genclass.GenericIO;
-import server.entities.AssaultPartyClientProxy;
-import server.entities.ClientProxy;
 import server.entities.CollectionSiteClientProxy;
-import server.sharedRegions.AssaultParty;
-import server.sharedRegions.AssaultPartyInterface;
-import server.sharedRegions.CollectionSite;
-import server.sharedRegions.CollectionSiteInterface;
+import server.objects.CollectionSite;
 import utils.ServerCom;
 
 import java.net.SocketTimeoutException;

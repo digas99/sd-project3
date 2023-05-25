@@ -3,5 +3,5 @@ client.main
 client.stubs
 server.entities
 server.main
-server.sharedRegions
+server.objects
 utils

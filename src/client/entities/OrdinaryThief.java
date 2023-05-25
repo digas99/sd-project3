@@ -5,7 +5,6 @@ import client.stubs.CollectionSiteStub;
 import client.stubs.ConcentrationSiteStub;
 import client.stubs.MuseumStub;
 import genclass.GenericIO;
-import server.sharedRegions.*;
 
 import static utils.Parameters.*;
 import static utils.Utils.*;
