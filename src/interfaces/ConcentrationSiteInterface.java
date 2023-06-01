@@ -15,15 +15,15 @@ public interface ConcentrationSiteInterface extends Remote {
 
     public void setPartyActive(int partyID, boolean state) throws RemoteException;
 
-    public void startOperations() throws RemoteException;
+    public int startOperations(int masterId) throws RemoteException;
 
-    public boolean amINeeded() throws RemoteException;
+    public ReturnBoolean amINeeded(int ordinaryId) throws RemoteException;
 
-    public int prepareAssaultParty() throws RemoteException;
+    public int[] prepareAssaultParty(int masterId) throws RemoteException;
 
-    public int[] prepareExcursion() throws RemoteException;
+    public int[] prepareExcursion(int ordinaryId) throws RemoteException;
 
     public void endOperations() throws RemoteException;
 
-    public void shutDown() throws RemoteException;
+    public void shutdown() throws RemoteException;
 }

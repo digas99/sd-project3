@@ -1,20 +1,23 @@
 package server.main;
 
 import genclass.GenericIO;
-import server.entities.CollectionSiteClientProxy;
+import interfaces.CollectionSiteInterface;
+import interfaces.Register;
 import server.objects.CollectionSite;
-import utils.ServerCom;
 
-import java.net.SocketTimeoutException;
+import java.rmi.*;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 
 /**
  * Server that instantiates the CollectionSite.
  */
 public class ServerCollectionSite {
     /**
-     * Flag signaling the service is active.
+     *  Flag signaling the end of operations.
      */
-    public static boolean waitConnection;
+    private static boolean end = false;
 
     /**
      * Main method.
@@ -22,16 +25,12 @@ public class ServerCollectionSite {
      * @param args runtime arguments
      *             args[0] - port nunber for listening to service requests
      *             args[1] - name of the platform where is located the server for the general repository
-     *             args[2] - port nunber where the server for the general repository is listening to service requests
+     *             args[2] - port nmnber where the server for the general repository is listening to service requests
      */
     public static void main(String[] args) {
-        CollectionSite collectionSite;
-        CollectionSiteInterface collectionSiteInter;
-        // GeneralReposStub reposStub;
-        ServerCom scon, sconi;
         int portNumber = -1;
-        String reposServerName;
-        int reposPortNumber = -1;
+        String rmiRegHostName;
+        int rmiRegPortNumb = -1;
 
         if (args.length != 3) {
             GenericIO.writelnString("Wrong number of parameters!");
@@ -48,36 +47,134 @@ public class ServerCollectionSite {
             GenericIO.writelnString("args[0] is not a valid port number!");
             System.exit(1);
         }
-        reposServerName = args[1];
+        rmiRegHostName = args[1];
         try {
-            reposPortNumber = Integer.parseInt(args[2]);
+            rmiRegPortNumb = Integer.parseInt(args[2]);
         } catch (NumberFormatException e) {
             GenericIO.writelnString("args[2] is not a number!");
             System.exit(1);
         }
-        if ((reposPortNumber < 4000) || (reposPortNumber >= 65536)) {
+        if ((rmiRegPortNumb < 4000) || (rmiRegPortNumb >= 65536)) {
             GenericIO.writelnString("args[2] is not a valid port number!");
             System.exit(1);
         }
 
-        collectionSite = new CollectionSite();
-        collectionSiteInter = new CollectionSiteInterface(collectionSite);
-        scon = new ServerCom(portNumber);
-        scon.start();
-        GenericIO.writelnString("Service CollectionSite has been established!");
-        GenericIO.writelnString("Server is listening or service requests.");
+        /* create and install the security manager */
+        if (System.getSecurityManager() == null)
+            System.setSecurityManager(new SecurityManager());
+        GenericIO.writelnString("Security manager was installed!");
 
-        CollectionSiteClientProxy proxy;
-
-        waitConnection = true;
-        while (waitConnection) {
-            try {
-                sconi = scon.accept();
-                proxy = new CollectionSiteClientProxy(sconi, collectionSiteInter);
-                proxy.start();
-            } catch (SocketTimeoutException e) {}
+        Registry registry = null;
+        try {
+            registry = LocateRegistry.getRegistry(rmiRegHostName, rmiRegPortNumb);
+        } catch (RemoteException e) {
+            GenericIO.writelnString("RMI registry creation exception: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
         }
-        scon.end();
-        GenericIO.writelnString("Server CollectionSite was shutdown.");
+        GenericIO.writelnString("RMI registry was created!");
+
+        CollectionSite collectionSite = new CollectionSite();
+        CollectionSiteInterface collectionSiteStub = null;
+
+        try {
+            collectionSiteStub = (CollectionSiteInterface) UnicastRemoteObject.exportObject(collectionSite, portNumber);
+        } catch (RemoteException e) {
+            GenericIO.writelnString("CollectionSite stub generation exception: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        }
+        GenericIO.writelnString("Stub was generated!");
+
+        /* register it with the general registry service */
+        String nameEntryBase = "RegisterHandler";
+        String nameEntryObject = "CollectionSite";
+        Register reg = null;
+
+        try {
+            reg = (Register) registry.lookup(nameEntryBase);
+        } catch (RemoteException e) {
+            GenericIO.writelnString("RegisterRemoteObject lookup exception: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        } catch (NotBoundException e) {
+            GenericIO.writelnString("RegisterRemoteObject not bound exception: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        try {
+            reg.bind(nameEntryObject, collectionSiteStub);
+        } catch (RemoteException e) {
+            GenericIO.writelnString("CollectionSite registration exception: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        } catch (AlreadyBoundException e) {
+            GenericIO.writelnString("CollectionSite already bound exception: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        }
+        GenericIO.writelnString("CollectionSite object was registered!");
+
+        /* wait for the end of operations */
+        GenericIO.writelnString("CollectionSite is in operation!");
+        try {
+            while (!end)
+                synchronized (Class.forName("server.main.ServerCollectionSite")) {
+                    try {
+                        (Class.forName("server.main.ServerCollectionSite")).wait();
+                    } catch (InterruptedException e) {
+                        GenericIO.writelnString("CollectionSite main thread was interrupted!");
+                    }
+                }
+        } catch (ClassNotFoundException e) {
+            GenericIO.writelnString("The data type ServerCollectionSite was not found (blocking)!");
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        /* server shutdown */
+        boolean shutdownDone = false;
+
+        try {
+            reg.unbind(nameEntryObject);
+        } catch (RemoteException e) {
+            GenericIO.writelnString("CollectionSite deregistration exception: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        } catch (NotBoundException e) {
+            GenericIO.writelnString("CollectionSite not bound exception: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        }
+        GenericIO.writelnString("CollectionSite was deregistered!");
+
+        try {
+            shutdownDone = UnicastRemoteObject.unexportObject(collectionSite, true);
+        } catch (NoSuchObjectException e) {
+            GenericIO.writelnString("CollectionSite unexport exception: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        if (shutdownDone)
+            GenericIO.writelnString("CollectionSite was shutdown!");
+    }
+
+    /**
+     * Close of operations.
+     */
+
+    public static void shutdown() {
+        end = true;
+        try {
+            synchronized (Class.forName("server.main.ServerCollectionSite")) {
+                (Class.forName("server.main.ServerCollectionSite")).notify();
+            }
+        } catch (ClassNotFoundException e) {
+            GenericIO.writelnString("The data type ServerCollectionSite was not found (waking up)!");
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 }

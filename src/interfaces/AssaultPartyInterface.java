@@ -10,13 +10,13 @@ public interface AssaultPartyInterface extends Remote {
 
     public void resetAssaultParty() throws RemoteException;
 
-    public void sendAssaultParty() throws RemoteException;
+    public int sendAssaultParty(int masterId) throws RemoteException;
 
-    public void reverseDirection() throws RemoteException;
+    public int reverseDirection(int ordinaryId) throws RemoteException;
 
-    public void crawlIn(int roomDistance, int displacement) throws RemoteException;
+    public int crawlIn(int thiefID, int roomDistance, int displacement) throws RemoteException;
 
-    public void crawlOut(int roomDistance, int displacement) throws RemoteException;
+    public int crawlOut(int thiefID, int roomDistance, int displacement) throws RemoteException;
 
-    public void shutDown() throws RemoteException;
+    public void shutdown() throws RemoteException;
 }

@@ -2,8 +2,9 @@ package server.objects;
 
 import client.entities.OrdinaryThiefStates;
 import genclass.GenericIO;
+import interfaces.MuseumInterface;
+import interfaces.ReturnBoolean;
 import server.main.ServerMuseum;
-import server.entities.MuseumClientProxy;
 
 import static utils.Parameters.*;
 import static utils.Utils.*;
@@ -13,11 +14,11 @@ import static utils.Utils.*;
  * This class is responsible for keeping track of the paintings in the museum.
  */
 
-public class Museum {
+public class Museum implements MuseumInterface {
     /**
      * Reference to Ordinary Thief threads
      */
-    private final MuseumClientProxy[] ordinary;
+    private final Thread[] ordinary;
     /**
      * Number of entity groups requesting the shutdown
      */
@@ -31,7 +32,7 @@ public class Museum {
      * Museum constructor
      */
     public Museum() {
-        ordinary = new MuseumClientProxy[N_THIEVES_ORDINARY];
+        ordinary = new Thread[N_THIEVES_ORDINARY];
         for (int i = 0; i < N_THIEVES_ORDINARY; i++)
             ordinary[i] = null;
         for (int i = 0; i < rooms.length; i++) {
@@ -48,11 +49,8 @@ public class Museum {
      * Method used by the setnPaintings
      * Ordinary Thieves to roll a canvas from a room
      */
-    public synchronized boolean rollACanvas(int roomID) {
-        int ordinaryId;
-        ordinaryId = ((MuseumClientProxy) Thread.currentThread()).getOrdinaryId();
-        ordinary[ordinaryId] = (MuseumClientProxy) Thread.currentThread();
-        ordinary[ordinaryId].setOrdinaryState(OrdinaryThiefStates.AT_A_ROOM);
+    public synchronized ReturnBoolean rollACanvas(int ordinaryId, int roomID) {
+        ordinary[ordinaryId] = Thread.currentThread();
 
         GenericIO.writelnString(("Ordinary_" + ordinaryId + " is rolling a canvas from Room_" + roomID));
         Room room = getRoom(roomID);
@@ -68,7 +66,7 @@ public class Museum {
         if (hasCanvas)
             room.setPaintings(room.getPaintings() - 1);
 
-        return hasCanvas;
+        return new ReturnBoolean(hasCanvas, OrdinaryThiefStates.AT_A_ROOM);
     }
 
     /**
@@ -76,7 +74,7 @@ public class Museum {
      * @param roomID Room ID
      * @return Room
      */
-    public Room getRoom(int roomID) {
+    public synchronized Room getRoom(int roomID) {
         for (Room room : rooms) {
             if (room.getID() == roomID)
                 return room;

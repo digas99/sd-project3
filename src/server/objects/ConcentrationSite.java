@@ -2,7 +2,8 @@ package server.objects;
 
 import client.entities.*;
 import genclass.GenericIO;
-import server.entities.ConcentrationSiteClientProxy;
+import interfaces.ConcentrationSiteInterface;
+import interfaces.ReturnBoolean;
 import server.main.ServerConcentrationSite;
 
 import static utils.Parameters.*;
@@ -13,15 +14,15 @@ import static utils.Utils.count;
  * This class is responsible for gathering thieves and sending them to an Assault Party.
  */
 
-public class ConcentrationSite {
+public class ConcentrationSite implements ConcentrationSiteInterface {
     /**
      * Reference to Master Thief threads
      */
-    private final ConcentrationSiteClientProxy[] master;
+    private final Thread[] master;
     /**
      * Reference to Ordinary Thief threads
      */
-    private final ConcentrationSiteClientProxy[] ordinary;
+    private final Thread[] ordinary;
     private final boolean[] thieves;
     private final boolean[] partyActive;
     private int[] roomState;
@@ -38,7 +39,7 @@ public class ConcentrationSite {
      * Checks the number of thieves inside the concentration site
      * @return the number of thieves
      */
-    public int occupancy() {
+    public synchronized int occupancy() {
         return count(thieves);
     }
 
@@ -47,7 +48,7 @@ public class ConcentrationSite {
      * @param roomID id of the room
      * @param state state of the room
      */
-    public void setRoomState(int roomID, int state) {
+    public synchronized void setRoomState(int roomID, int state) {
         roomState[roomID] = state;
     }
 
@@ -56,7 +57,7 @@ public class ConcentrationSite {
      * @param roomID id of the room
      * @return state of the room
      */
-    public int getRoomState(int roomID) {
+    public synchronized int getRoomState(int roomID) {
         return roomState[roomID];
     }
 
@@ -64,7 +65,7 @@ public class ConcentrationSite {
      * Function to peek the next free room
      * @return roomID or -1 if no free room
      */
-    public int peekFreeRoom() {
+    public synchronized int peekFreeRoom() {
         for (int i = 0; i < N_ROOMS; i++) {
             if (roomState[i] == FREE_ROOM)
                 return i;
@@ -88,7 +89,7 @@ public class ConcentrationSite {
      * Searches for a party that is not active at the moment
      * @return the index of the party that is free, -1 if all active
      */
-    public int getFreeParty() {
+    public synchronized int getFreeParty() {
         for (int i = 0; i < N_ASSAULT_PARTIES; i++) {
             if (!partyActive[i]) {
                 GenericIO.writelnString("Party " + i + " is free");
@@ -104,7 +105,7 @@ public class ConcentrationSite {
      * @param partyID ID of the party
      * @param state state to set
      */
-    public void setPartyActive(int partyID, boolean state) {
+    public synchronized void setPartyActive(int partyID, boolean state) {
         GenericIO.writelnString("Party " + partyID + " is now " + (state ? "active" : "inactive"));
         partyActive[partyID] = state;
     }
@@ -114,10 +115,10 @@ public class ConcentrationSite {
     * No relevant parameters are passed to the constructor but many of the variables are initialized
     */
     public ConcentrationSite() {
-        master = new ConcentrationSiteClientProxy[N_THIEVES_MASTER];
+        master = new Thread[N_THIEVES_MASTER];
         for (int i = 0; i < N_THIEVES_MASTER; i++)
             master[i] = null;
-        ordinary = new ConcentrationSiteClientProxy[N_THIEVES_ORDINARY];
+        ordinary = new Thread[N_THIEVES_ORDINARY];
         for (int i = 0; i < N_THIEVES_ORDINARY; i++)
             ordinary[i] = null;
         thieves = new boolean[N_THIEVES_ORDINARY];
@@ -135,11 +136,9 @@ public class ConcentrationSite {
     /**
      * Function to be called by the Master Thief to start the operations
      */
-    public synchronized void startOperations() {
-        int masterId;
-        masterId = ((ConcentrationSiteClientProxy) Thread.currentThread()).getMasterId();
-        master[masterId] = (ConcentrationSiteClientProxy) Thread.currentThread();
-        master[masterId].setMasterState(MasterThiefStates.DECIDING_WHAT_TO_DO);
+    public synchronized int startOperations(int masterId) {
+        master[masterId] = Thread.currentThread();
+        return MasterThiefStates.DECIDING_WHAT_TO_DO;
     }
 
     /**
@@ -148,15 +147,12 @@ public class ConcentrationSite {
      * @return true if the thief is still needed, false if the heist is over
      */
 
-    public synchronized boolean amINeeded() {
-        int ordinaryId;
-        ordinaryId = ((ConcentrationSiteClientProxy) Thread.currentThread()).getOrdinaryId();
-        ordinary[ordinaryId] = (ConcentrationSiteClientProxy) Thread.currentThread();
-        ordinary[ordinaryId].setOrdinaryState(OrdinaryThiefStates.CONCENTRATION_SITE);
+    public synchronized ReturnBoolean amINeeded(int ordinaryId) {
+        ordinary[ordinaryId] = Thread.currentThread();
 
         if (endHeist) {
             notifyAll();
-            return false;
+            return new ReturnBoolean(false, OrdinaryThiefStates.CONCENTRATION_SITE);
         }
 
         thieves[ordinaryId] = true;
@@ -165,7 +161,7 @@ public class ConcentrationSite {
         // wake up master to check if there are enough thieves to form a party
         notifyAll();
 
-        return true;
+        return new ReturnBoolean(true, OrdinaryThiefStates.CONCENTRATION_SITE);
     }
 
     /**
@@ -173,15 +169,11 @@ public class ConcentrationSite {
      * @return the party ID or -1 if there are no more rooms available
      *
      */
-    public synchronized int prepareAssaultParty() {
-        int masterId;
-        masterId = ((ConcentrationSiteClientProxy) Thread.currentThread()).getMasterId();
-        master[masterId].setMasterState(MasterThiefStates.ASSEMBLING_GROUP);
-
+    public synchronized int[] prepareAssaultParty(int masterId) {
         // make sure there are free rooms
         if (peekFreeRoom() == -1) {
             notifyAll();
-            return -1;
+            return new int[]{-1, MasterThiefStates.ASSEMBLING_GROUP};
         }
 
         // wait until there are enough thieves to form a party
@@ -210,18 +202,14 @@ public class ConcentrationSite {
         // set the party as active
         if (nextParty > -1 && nextParty < N_ASSAULT_PARTIES) partyActive[nextParty] = true;
         GenericIO.writelnString("Setting Party " + nextParty);
-        return nextParty;
+        return new int[]{nextParty, MasterThiefStates.ASSEMBLING_GROUP};
     }
 
     /**
      * Function to be called by the Ordinary Thief enroll in a party
      * @return an array with the party ID and the room ID or null if there are no more rooms available
      */
-    public synchronized int[] prepareExcursion() {
-        int ordinaryId;
-        ordinaryId = ((ConcentrationSiteClientProxy) Thread.currentThread()).getOrdinaryId();
-        ordinary[ordinaryId].setOrdinaryState(OrdinaryThiefStates.CRAWLING_INWARDS);
-
+    public synchronized int[] prepareExcursion(int ordinaryId) {
         //logger(ordinaryThief, "End Heist: " + endHeist + ". Making Party: " + makingParty + ". N Joined Party: " + nJoinedParty);
 
         // wait until master says it's time to form a party
@@ -263,7 +251,7 @@ public class ConcentrationSite {
         // wake up next thief
         notifyAll();
 
-        return new int[]{nextParty, nextRoom};
+        return new int[]{nextParty, nextRoom, OrdinaryThiefStates.CRAWLING_INWARDS};
     }
 
     /**

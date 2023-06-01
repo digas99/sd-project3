@@ -1,15 +1,13 @@
 package interfaces;
 
+import server.objects.Museum;
+
 import java.rmi.*;
 
 public interface MuseumInterface extends Remote {
-    public boolean rollACanvas(int roomID) throws RemoteException;
+    public ReturnBoolean rollACanvas(int ordinaryId, int roomID) throws RemoteException;
 
-    public void shutDown() throws RemoteException;
+    public Museum.Room getRoom(int roomID) throws RemoteException;
 
-    public int getRoomDistance(int roomID) throws RemoteException;
-
-    public int getRoomPaintings(int roomID) throws RemoteException;
-
-    public int setRomPaintings(int roomID, int paintings) throws RemoteException;
+    public void shutdown() throws RemoteException;
 }

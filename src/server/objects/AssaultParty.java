@@ -1,9 +1,11 @@
 package server.objects;
 
+import client.entities.MasterThief;
 import client.entities.MasterThiefStates;
+import client.entities.OrdinaryThief;
 import client.entities.OrdinaryThiefStates;
 import genclass.GenericIO;
-import server.entities.AssaultPartyClientProxy;
+import interfaces.AssaultPartyInterface;
 import server.main.ServerAssaultParty;
 
 import java.util.Arrays;
@@ -17,7 +19,7 @@ import static utils.Utils.*;
  * This class is responsible for the management of the Assault Parties and the crawling movements of its thieves.
  */
 
-public class AssaultParty {
+public class AssaultParty implements AssaultPartyInterface {
    /**
     * ID of the Assault Party
     */
@@ -25,11 +27,11 @@ public class AssaultParty {
    /**
     * Reference to Master Thief threads
     */
-   private final AssaultPartyClientProxy[] master;
+   private final Thread[] master;
    /**
     * Reference to Ordinary Thief threads
     */
-   private final AssaultPartyClientProxy[] ordinary;
+   private final Thread[] ordinary;
    /**
     * Begin the crawl movement
     */
@@ -56,7 +58,7 @@ public class AssaultParty {
     *
     * @return ID of the Assault Party
     */
-   public int getID() {
+   public synchronized int getID() {
       return id;
    }
 
@@ -68,7 +70,7 @@ public class AssaultParty {
     * @param thiefID ID of the thief to be added
     * @param displacement Displacement of the thief to be added
     */
-   public void addThief(int thiefID, int displacement) {
+   public synchronized void addThief(int thiefID, int displacement) {
       for (int i = 0; i < N_THIEVES_PER_PARTY; i++) {
          if (thieves[i] == null) {
             thieves[i] = new Mapping(thiefID, 0, displacement);
@@ -81,14 +83,14 @@ public class AssaultParty {
     * Reset the Assault Party.
     * This method resets the Assault Party, setting all the variables to their initial values.
     */
-   public void resetAssaultParty() {
+   public synchronized void resetAssaultParty() {
       GenericIO.writelnString("AssaultParty_" + id + " is resetting.");
       nextThiefID = -1;
       for (int i = 0; i < N_THIEVES_PER_PARTY; i++)
          thieves[i] = null;
    }
 
-   public boolean allEnded() {
+   public synchronized boolean allEnded() {
       for (int i = 0; i < thieves.length; i++) {
          if (!thieves[i].ended())
             return false;
@@ -104,10 +106,10 @@ public class AssaultParty {
     */
    public AssaultParty(int id) {
       this.id = id;
-      master = new AssaultPartyClientProxy[N_THIEVES_MASTER];
+      master = new Thread[N_THIEVES_MASTER];
       for (int i = 0; i < N_THIEVES_MASTER; i++)
          master[i] = null;
-      ordinary = new AssaultPartyClientProxy[N_THIEVES_ORDINARY];
+      ordinary = new Thread[N_THIEVES_ORDINARY];
       for (int i = 0; i < N_THIEVES_ORDINARY; i++)
          ordinary[i] = null;
       thieves = new Mapping[N_THIEVES_PER_PARTY];
@@ -124,15 +126,14 @@ public class AssaultParty {
     * This method is called by the Master Thief, and tells the Ordinary Thieves to start crawling.
     * The Master Thief goes to the DECIDING_WHAT_TO_DO state.
     */
-   public synchronized void sendAssaultParty() {
-      int masterId;
-      masterId = ((AssaultPartyClientProxy) Thread.currentThread()).getMasterId();
-      master[masterId] = (AssaultPartyClientProxy) Thread.currentThread();
-      master[masterId].setMasterState(MasterThiefStates.DECIDING_WHAT_TO_DO);
+   public synchronized int sendAssaultParty(int masterId) {
+      master[masterId] = Thread.currentThread();
 
       GenericIO.writelnString("MasterThief_" + masterId + " is sending AssaultParty_" + id + ".");
       begin = true;
       notifyAll();
+
+      return MasterThiefStates.DECIDING_WHAT_TO_DO;
    }
 
    /**
@@ -140,10 +141,7 @@ public class AssaultParty {
     * This method is called by the Ordinary Thieves and, when called by the last thief, it triggers the crawling out movement.
     * The Ordinary Thief goes to the CRAWLING_OUTWARDS state.
     */
-   public synchronized void reverseDirection() {
-      int ordinaryId;
-      ordinaryId = ((AssaultPartyClientProxy) Thread.currentThread()).getOrdinaryId();
-      ordinary[ordinaryId].setOrdinaryState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
+   public synchronized int reverseDirection(int ordinaryId) {
       getThief(ordinaryId).isAtGoal(false);
       inRoom++;
 
@@ -154,6 +152,8 @@ public class AssaultParty {
          begin = true;
          notifyAll();
       }
+
+      return OrdinaryThiefStates.CRAWLING_OUTWARDS;
    }
 
    private boolean sleep(int thiefID) {
@@ -178,11 +178,8 @@ public class AssaultParty {
     * The Ordinary Thief goes to the CRAWLING_INW repos.setAssaultPartyID(id);
       repos.setOrdinaryThiefAssaultPartyID(thiefID, id);ARDS state.
     */
-   public synchronized void crawlIn(int roomDistance, int displacement) {
-      int thiefID;
-      thiefID = ((AssaultPartyClientProxy) Thread.currentThread()).getOrdinaryId();
-      ordinary[thiefID] = (AssaultPartyClientProxy) Thread.currentThread();
-      ordinary[thiefID].setOrdinaryState(OrdinaryThiefStates.CRAWLING_INWARDS);
+   public synchronized int crawlIn(int thiefID, int roomDistance, int displacement) {
+      ordinary[thiefID] = Thread.currentThread();
 
        if (nextThiefID == -1) {
            resetAssaultParty();
@@ -205,7 +202,7 @@ public class AssaultParty {
            //GenericIO.writelnString(getThiefPosition(thiefID)+"is the position of thief "+thiefID);
        } while(crawl(thiefID, displacement, 0, roomDistance));
 
-       ordinary[thiefID].setOrdinaryState(OrdinaryThiefStates.AT_A_ROOM);
+       return OrdinaryThiefStates.AT_A_ROOM;
    }
 
    /**
@@ -213,11 +210,7 @@ public class AssaultParty {
     * This method is called by the Ordinary Thieves, and makes them crawl from the room's distance to position 0.
     * The Ordinary Thief goes to the CRAWLING_OUTWARDS state.
     */
-   public synchronized void crawlOut(int roomDistance, int displacement) {
-      int thiefID;
-      thiefID = ((AssaultPartyClientProxy) Thread.currentThread()).getOrdinaryId();
-      ordinary[thiefID].setOrdinaryState(OrdinaryThiefStates.CRAWLING_OUTWARDS);
-
+   public synchronized int crawlOut(int thiefID, int roomDistance, int displacement) {
       GenericIO.writelnString("Thief " + thiefID + " is crawling outwards.");
 
        do {
@@ -240,7 +233,7 @@ public class AssaultParty {
        if (allEnded())
           begin = false;
 
-       ordinary[thiefID].setOrdinaryState(OrdinaryThiefStates.COLLECTION_SITE);
+       return OrdinaryThiefStates.COLLECTION_SITE;
    }
 
    /**
@@ -420,7 +413,7 @@ public class AssaultParty {
    public synchronized void shutdown() {
       nEntities++;
       if (nEntities >= N_ENTITIES_SHUTDOWN)
-         ServerAssaultParty.waitConnection = false;
+         ServerAssaultParty.shutdown();
 
       notifyAll();
    }

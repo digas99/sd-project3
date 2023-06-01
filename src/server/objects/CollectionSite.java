@@ -1,9 +1,10 @@
 package server.objects;
 
 import client.entities.MasterThiefStates;
+import client.entities.OrdinaryThief;
 import client.entities.OrdinaryThiefStates;
 import genclass.GenericIO;
-import server.entities.CollectionSiteClientProxy;
+import interfaces.CollectionSiteInterface;
 import server.main.ServerCollectionSite;
 import utils.MemException;
 import utils.MemFIFO;
@@ -16,15 +17,15 @@ import static utils.Utils.*;
  * This class is responsible for gathering canvas and shaping the lifecycle of the Master Thief.
  */
 
-public class CollectionSite {
+public class CollectionSite implements CollectionSiteInterface {
     /**
      * Reference to Master Thief threads
      */
-    private final CollectionSiteClientProxy[] master;
+    private final Thread[] master;
     /**
      * Reference to Ordinary Thief threads
      */
-    private final CollectionSiteClientProxy[] ordinary;
+    private final Thread[] ordinary;
     /**
      * Queue of thieves waiting to be appraised
      */
@@ -70,7 +71,7 @@ public class CollectionSite {
      * Checks the number of thieves inside the collection site
      * @return the number of thieves
      */
-    public int occupancy() {
+    public synchronized int occupancy() {
         return count(thieves);
     }
 
@@ -102,10 +103,10 @@ public class CollectionSite {
      * Collection on Site Constructor
      */
     public CollectionSite() {
-        master = new CollectionSiteClientProxy[N_THIEVES_MASTER];
+        master = new Thread[N_THIEVES_MASTER];
         for (int i = 0; i < N_THIEVES_MASTER; i++)
             master[i] = null;
-        ordinary = new CollectionSiteClientProxy[N_THIEVES_ORDINARY];
+        ordinary = new Thread[N_THIEVES_ORDINARY];
         for (int i = 0; i < N_THIEVES_ORDINARY; i++)
             ordinary[i] = null;
         thieves = new boolean[N_THIEVES_ORDINARY];
@@ -127,10 +128,8 @@ public class CollectionSite {
      * Master Thief Appraises the Situation
      * @return Action to be taken
      */
-    public synchronized int appraiseSit(int concentrationSiteOccupancy, int freeParty, int freeRoom) {
-        int masterId;
-        masterId = ((CollectionSiteClientProxy) Thread.currentThread()).getMasterId();
-        master[masterId] = (CollectionSiteClientProxy) Thread.currentThread();
+    public synchronized int appraiseSit(int masterId, int concentrationSiteOccupancy, int freeParty, int freeRoom) {
+        master[masterId] = Thread.currentThread();
 
         // end heist if all rooms are empty, if no thieves left in collection site and they are all in concentration site
         logger(this, "Emptied Rooms: " + count(emptiedRooms) + " Occupancy: " + occupancy() + " Concentration Site Occupancy: " + concentrationSiteOccupancy);
@@ -155,11 +154,7 @@ public class CollectionSite {
      * Master Thief takes a rest while waiting for an ordinary thief to hand a canvas
      */
 
-    public synchronized void takeARest() {
-        int masterId;
-        masterId = ((CollectionSiteClientProxy) Thread.currentThread()).getMasterId();
-        master[masterId].setMasterState(MasterThiefStates.WAITING_ARRIVAL);
-
+    public synchronized int takeARest(int masterId) {
         // sleep until an ordinary thief reaches the collection site and hands a canvas
         GenericIO.writelnString("Master Thief is waiting for a canvas");
         GenericIO.writelnString("Canvas to collect: "+canvasToCollect());
@@ -171,16 +166,15 @@ public class CollectionSite {
                 e.printStackTrace();
             }
         }
+
+        return MasterThiefStates.WAITING_ARRIVAL;
     }
 
     /**
      * Ordinary Thief hands a canvas and waits for the master thief to appraise the situation
      */
-    public synchronized void handACanvas(int partyID, int roomID, boolean hasCanvas) {
-        int ordinaryId;
-        ordinaryId = ((CollectionSiteClientProxy) Thread.currentThread()).getOrdinaryId();
-        ordinary[ordinaryId] = (CollectionSiteClientProxy) Thread.currentThread();
-        ordinary[ordinaryId].setOrdinaryState(OrdinaryThiefStates.COLLECTION_SITE);
+    public synchronized int handACanvas(int ordinaryId, int partyID, int roomID, boolean hasCanvas) {
+        ordinary[ordinaryId] = Thread.currentThread();
         int ordinaryThiefID = ordinaryId;
         GenericIO.writelnString("Ordinary Thief " + ordinaryThiefID + " is handing a canvas");
 
@@ -217,17 +211,15 @@ public class CollectionSite {
         thieves[ordinaryThiefID] = false;
         notifyAll();
         GenericIO.writelnString("Ordinary_" + ordinaryId + " left collection site. Collection Site Occupancy: " + occupancy() + "/" + N_THIEVES_ORDINARY);
+
+        return OrdinaryThiefStates.COLLECTION_SITE;
     }
 
     /**
      * Master Thief collects a canvas from an ordinary thief
      * @return array with the room id and state
      */
-    public synchronized int[] collectACanvas() {
-        int masterId;
-        masterId = ((CollectionSiteClientProxy) Thread.currentThread()).getMasterId();
-        master[masterId].setMasterState(MasterThiefStates.DECIDING_WHAT_TO_DO);
-
+    public synchronized int[] collectACanvas(int masterId) {
         AppraisedThief nextThief = null;
         try {
             nextThief = thiefQueue.read();
@@ -280,19 +272,17 @@ public class CollectionSite {
         GenericIO.writelnString("Waking up Ordinary " + nextThief.thiefID + " to leave the collection site.");
         notifyAll();
 
-        return new int[]{nextThief.partyID, nextThief.roomID, roomState, lastThief ? 1 : 0};
+        return new int[]{nextThief.partyID, nextThief.roomID, roomState, lastThief ? 1 : 0, MasterThiefStates.DECIDING_WHAT_TO_DO};
     }
 
     /**
      * Master Thief presents the report of the heist
      */
-    public synchronized void sumUpResults() {
-        int masterId;
-        masterId = ((CollectionSiteClientProxy) Thread.currentThread()).getMasterId();
-        master[masterId].setMasterState(MasterThiefStates.PRESENTING_REPORT);
-
+    public synchronized int sumUpResults() {
         notifyAll();
         logger(this, "The heist is over! Were collected " + canvas + " canvas.");
+
+        return MasterThiefStates.PRESENTING_REPORT;
     }
 
     /**
