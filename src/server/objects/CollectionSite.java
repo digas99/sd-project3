@@ -291,7 +291,7 @@ public class CollectionSite implements CollectionSiteInterface {
     public synchronized void shutdown() {
         nEntities++;
         if (nEntities >= N_ENTITIES_SHUTDOWN)
-            ServerCollectionSite.waitConnection = false;
+            ServerCollectionSite.shutdown();
 
         notifyAll();
     }

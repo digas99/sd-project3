@@ -268,7 +268,7 @@ public class ConcentrationSite implements ConcentrationSiteInterface {
     public synchronized void shutdown() {
         nEntities++;
         if (nEntities >= N_ENTITIES_SHUTDOWN)
-            ServerConcentrationSite.waitConnection = false;
+            ServerConcentrationSite.shutdown();
 
         notifyAll();
     }

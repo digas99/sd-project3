@@ -88,7 +88,7 @@ public class Museum implements MuseumInterface {
     public synchronized void shutdown() {
         nEntities++;
         if (nEntities >= N_ENTITIES_SHUTDOWN)
-            ServerMuseum.waitConnection = false;
+            ServerMuseum.shutdown();
 
         notifyAll();
     }
