@@ -38,9 +38,7 @@ public class OrdinaryThief extends Thief {
 
     private int roomID;
 
-
-
-
+    private int displacement;
     private int nEntities;
 
     /**
@@ -56,6 +54,7 @@ public class OrdinaryThief extends Thief {
     public OrdinaryThief(String threadName, int thiefID, MuseumInterface museum, ConcentrationSiteInterface concentrationSite, CollectionSiteInterface collectionSite, AssaultPartyInterface[] assaultParties){
         super(threadName, thiefID, museum, concentrationSite, collectionSite, assaultParties);
         thiefState = OrdinaryThiefStates.CONCENTRATION_SITE;
+        displacement = random(MIN_DISPLACEMENT, MAX_DISPLACEMENT);
         ordinary = new Thread[N_THIEVES_ORDINARY];
         for (int i = 0; i < N_THIEVES_ORDINARY; i++)
             ordinary[i] = null;
@@ -83,14 +82,12 @@ public class OrdinaryThief extends Thief {
         while (amINeeded()) {
             int[] assaultData = prepareExcursion();
             if (assaultData != null && assaultData[0] != -1) {
-                int partyID = assaultData[0];
-                int roomID = assaultData[1];
-                AssaultPartyInterface party = assaultParties[partyID];
-
+                partyID = assaultData[0];
+                roomID = assaultData[1];
                 crawlIn(partyID, getRoomDistance(roomID), displacement);
                 boolean hasCanvas = rollACanvas(roomID);
                 reverseDirection(partyID);
-                crawlOut(partyID,getRoomDistance(roomID), displacement);
+                crawlOut(partyID, getRoomDistance(roomID), displacement);
                 GenericIO.writelnString("Thief " + thiefID + " has a canvas: " + hasCanvas);
                 handACanvas(partyID, roomID, hasCanvas);
             } else break;
@@ -160,7 +157,7 @@ public class OrdinaryThief extends Thief {
         return ret;
     }
 
-    int crawlOut(int roomID,int displacement){
+    int crawlOut(int partyID, int roomID,int displacement){
         int ret = -1;
         try {
             ret = assaultPartiesStub[partyID].crawlOut(ordinaryID,roomID,displacement);
@@ -170,10 +167,14 @@ public class OrdinaryThief extends Thief {
         return ret;
     }
 
-
-
-
-
-
+    int getRoomDistance(int roomID){
+        int ret = -1;
+        try {
+            ret = museumStub.getRoom(roomID).getDistance();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return ret;
+    }
 
 }
