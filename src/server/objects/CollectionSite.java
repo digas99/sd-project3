@@ -9,6 +9,8 @@ import server.main.ServerCollectionSite;
 import utils.MemException;
 import utils.MemFIFO;
 
+import java.rmi.RemoteException;
+
 import static utils.Parameters.*;
 import static utils.Utils.*;
 
@@ -283,6 +285,22 @@ public class CollectionSite implements CollectionSiteInterface {
         logger(this, "The heist is over! Were collected " + canvas + " canvas.");
 
         return MasterThiefStates.PRESENTING_REPORT;
+    }
+
+    @Override
+    public synchronized void endOperation(int ordinaryId) throws RemoteException
+    {
+        while (nEntities == 0)
+        {
+            try
+            {
+                wait();
+            }
+            catch (InterruptedException e) {}
+        }
+
+        if (master[ordinaryId] != null)
+            master[ordinaryId].interrupt();
     }
 
     /**

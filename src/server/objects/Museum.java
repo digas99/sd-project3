@@ -6,6 +6,8 @@ import interfaces.MuseumInterface;
 import interfaces.ReturnBoolean;
 import server.main.ServerMuseum;
 
+import java.rmi.RemoteException;
+
 import static utils.Parameters.*;
 import static utils.Utils.*;
 

@@ -87,8 +87,8 @@ public class ServerAssaultParty {
         GenericIO.writelnString("Stub was generated!");
 
         /* register it with the general registry service */
-        String nameEntryBase = "RegisterHandler";
         String nameEntryObject = "AssaultParty";
+        String nameEntryBase = "RegisterHandler";
         Register reg = null;
 
         try {
@@ -132,6 +132,7 @@ public class ServerAssaultParty {
             e.printStackTrace();
             System.exit(1);
         }
+
 
         /* server shutdown */
         boolean shutdownDone = false;

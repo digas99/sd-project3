@@ -6,6 +6,8 @@ import interfaces.ConcentrationSiteInterface;
 import interfaces.ReturnBoolean;
 import server.main.ServerConcentrationSite;
 
+import java.rmi.RemoteException;
+
 import static utils.Parameters.*;
 import static utils.Utils.count;
 
@@ -260,6 +262,22 @@ public class ConcentrationSite implements ConcentrationSiteInterface {
     public synchronized void endOperations() {
         endHeist = true;
         notifyAll();
+    }
+
+    @Override
+    public synchronized void endOperation(int ordinaryId) throws RemoteException
+    {
+        while (nEntities == 0)
+        {
+            try
+            {
+                wait();
+            }
+            catch (InterruptedException e) {}
+        }
+
+        if (master[ordinaryId] != null)
+            master[ordinaryId].interrupt();
     }
 
     /**

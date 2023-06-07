@@ -1,15 +1,17 @@
 package client.main;
 
 import client.entities.MasterThief;
-import client.stubs.AssaultPartyStub;
-import client.stubs.CollectionSiteStub;
-import client.stubs.ConcentrationSiteStub;
-import client.stubs.MuseumStub;
 import genclass.GenericIO;
+import interfaces.AssaultPartyInterface;
+import interfaces.CollectionSiteInterface;
+import interfaces.ConcentrationSiteInterface;
+import interfaces.MuseumInterface;
 
 import static utils.Parameters.*;
 
-import java.io.FileNotFoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
 /**
  *    Client side of the Master Thief.
@@ -26,72 +28,167 @@ public class ClientMasterThief
 
     public static void main (String [] args)
     {
-        MasterThief[] master = new MasterThief[N_THIEVES_MASTER];
-        AssaultPartyStub[] assaultPartyStub = new AssaultPartyStub[N_ASSAULT_PARTIES];
-        CollectionSiteStub collectionSiteStub;
-        ConcentrationSiteStub concentrationSiteStub;
-        MuseumStub museumStub;
+        String rmiRegHostName;
+        int rmiRegPortNumb = -1;
 
-        /* problem initialization */
+        if (args.length != 2)
+        { GenericIO.writelnString ("Wrong number of parameters!");
+          System.exit (1);
+        }
 
-        ConnectionData connData;
+        rmiRegHostName = args[0];
+        try
+        { rmiRegPortNumb = Integer.parseInt (args[1]);
+        }
+        catch (NumberFormatException e)
+        { GenericIO.writelnString ("args[1] is not a number!");
+          System.exit (1);
+        }
+
+        if ((rmiRegPortNumb < 4000) || (rmiRegPortNumb >= 65536))
+        { GenericIO.writelnString ("args[1] is not a valid port number!");
+          System.exit (1);
+        }
+
+        String nameEntryAssaultPartyA = "AssaultPartyA";
+        String nameEntryAssaultPartyB = "AssaultPartyB";
+        AssaultPartyInterface[] partiesStub = null;
+        String nameEntryMuseum = "Museum";
+        MuseumInterface museumStub = null;
+        String nameEntryCollectionSite = "CollectionSite";
+        CollectionSiteInterface collectionSiteStub = null;
+        String nameEntryConcentrationSite = "ConcentrationSite";
+        ConcentrationSiteInterface concentrationSiteStub = null;
+        Registry registry = null;
+        MasterThief[] masters = new MasterThief[N_THIEVES_MASTER];
+
         try {
-            connData = new ConnectionData("config");
-        } catch (FileNotFoundException e) {
-            GenericIO.writelnString("Configuration file not found!");
-            e.printStackTrace();
-            return;
+            registry = LocateRegistry.getRegistry (rmiRegHostName, rmiRegPortNumb);
         } catch (Exception e) {
-            GenericIO.writelnString("Error reading configuration file!");
-            e.printStackTrace();
-            return;
+            GenericIO.writelnString ("RMI registry creation exception: " + e.getMessage ());
+            e.printStackTrace ();
+            System.exit (1);
         }
 
-        String ASSAULT_PARTY_0_MACHINE = connData.getMachine("ASSAULT_PARTY_A");
-        int ASSAULT_PARTY_0_PORT = connData.getPort("ASSAULT_PARTY_A");
-        String ASSAULT_PARTY_1_MACHINE = connData.getMachine("ASSAULT_PARTY_B");
-        int ASSAULT_PARTY_1_PORT = connData.getPort("ASSAULT_PARTY_B");
-        String COLLECTION_SITE_MACHINE = connData.getMachine("COLLECTION_SITE");
-        int COLLECTION_SITE_PORT = connData.getPort("COLLECTION_SITE");
-        String CONCENTRATION_SITE_MACHINE = connData.getMachine("CONCENTRATION_SITE");
-        int CONCENTRATION_SITE_PORT = connData.getPort("CONCENTRATION_SITE");
-        String MUSEUM_MACHINE = connData.getMachine("MUSEUM");
-        int MUSEUM_PORT = connData.getPort("MUSEUM");
+        try {
+            museumStub = (MuseumInterface) registry.lookup (nameEntryMuseum);
+        } catch (Exception e) {
+            GenericIO.writelnString ("Museum stub lookup exception: " + e.getMessage ());
+            e.printStackTrace ();
+            System.exit (1);
+        }
 
-        assaultPartyStub[0] = new AssaultPartyStub(ASSAULT_PARTY_0_MACHINE, ASSAULT_PARTY_0_PORT);
-        assaultPartyStub[1] = new AssaultPartyStub(ASSAULT_PARTY_1_MACHINE, ASSAULT_PARTY_1_PORT);
-        collectionSiteStub = new CollectionSiteStub(COLLECTION_SITE_MACHINE, COLLECTION_SITE_PORT);
-        concentrationSiteStub = new ConcentrationSiteStub(CONCENTRATION_SITE_MACHINE, CONCENTRATION_SITE_PORT);
-        museumStub = new MuseumStub(MUSEUM_MACHINE, MUSEUM_PORT);
+        try {
+            collectionSiteStub = (CollectionSiteInterface) registry.lookup (nameEntryCollectionSite);
+        } catch (Exception e) {
+            GenericIO.writelnString ("Collection Site stub lookup exception: " + e.getMessage ());
+            e.printStackTrace ();
+            System.exit (1);
+        }
 
-        /* init master thieves */
+        try {
+            concentrationSiteStub = (ConcentrationSiteInterface) registry.lookup (nameEntryConcentrationSite);
+        } catch (Exception e) {
+            GenericIO.writelnString ("Concentration Site stub lookup exception: " + e.getMessage ());
+            e.printStackTrace ();
+            System.exit (1);
+        }
+
+        try {
+            partiesStub = new AssaultPartyInterface[2];
+            partiesStub[0] = (AssaultPartyInterface) registry.lookup (nameEntryAssaultPartyA);
+            partiesStub[1] = (AssaultPartyInterface) registry.lookup (nameEntryAssaultPartyB);
+        } catch (Exception e) {
+            GenericIO.writelnString ("Assault Party stub lookup exception: " + e.getMessage ());
+            e.printStackTrace ();
+            System.exit (1);
+        }
+
         for (int i = 0; i < N_THIEVES_MASTER; i++)
-            master[i] = new MasterThief("Master_"+i, i, museumStub, concentrationSiteStub, collectionSiteStub, assaultPartyStub);
+            masters[i] = new MasterThief("MasterThief", i, museumStub, concentrationSiteStub, collectionSiteStub, partiesStub);
 
-        /* start of the simulation */
+        /* start master thief threads */
 
         for (int i = 0; i < N_THIEVES_MASTER; i++)
-            master[i].start ();
+            masters[i].start();
 
-        /* waiting for the end of the simulation */
+        /* wait for master thief threads to finish */
 
-        GenericIO.writelnString ();
         for (int i = 0; i < N_THIEVES_MASTER; i++)
-        { while (master[i].isAlive ())
         {
-            Thread.yield ();
-        }
-            try
-            { master[i].join ();
+            while (masters[i].isAlive())
+            {
+                try {
+                    collectionSiteStub.endOperation(i);
+                } catch (RemoteException e) {
+                    GenericIO.writelnString("Collection Site remote exception: " + e.getMessage());
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+
+                try {
+                    concentrationSiteStub.endOperation(i);
+                } catch (RemoteException e) {
+                    GenericIO.writelnString("Concentration Site remote exception: " + e.getMessage());
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+
+                for (int j = 0; j < N_ASSAULT_PARTIES; j++)
+                {
+                    try {
+                        partiesStub[j].endOperation(i);
+                    } catch (RemoteException e) {
+                        GenericIO.writelnString("Assault Party " + i + " remote exception: " + e.getMessage());
+                        e.printStackTrace();
+                        System.exit(1);
+                    }
+                }
+
+                Thread.yield();
             }
-            catch (InterruptedException e) {}
-            GenericIO.writelnString ("Master_" + (i+1) + " has terminated.");
-            assaultPartyStub[0].shutDown();
-            assaultPartyStub[1].shutDown();
-            collectionSiteStub.shutDown();
-            concentrationSiteStub.shutDown();
-            museumStub.shutDown();
+
+            try {
+                masters[i].join();
+            } catch (InterruptedException e) {}
+            GenericIO.writelnString("The master thief " + i + " has terminated.");
         }
-        GenericIO.writelnString ();
+        GenericIO.writelnString();
+
+        try {
+            museumStub.shutdown();
+        } catch (RemoteException e) {
+            GenericIO.writelnString("Museum remote exception: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        try {
+            collectionSiteStub.shutdown();
+        } catch (RemoteException e) {
+            GenericIO.writelnString("Collection Site remote exception: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        try {
+            concentrationSiteStub.shutdown();
+        } catch (RemoteException e) {
+            GenericIO.writelnString("Concentration Site remote exception: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        for (int i = 0; i < N_ASSAULT_PARTIES; i++)
+        {
+            try {
+                partiesStub[i].shutdown();
+            } catch (RemoteException e) {
+                GenericIO.writelnString("Assault Party " + i + " remote exception: " + e.getMessage());
+                e.printStackTrace();
+                System.exit(1);
+            }
+        }
     }
+
 }

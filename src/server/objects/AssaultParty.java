@@ -8,6 +8,7 @@ import genclass.GenericIO;
 import interfaces.AssaultPartyInterface;
 import server.main.ServerAssaultParty;
 
+import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -405,6 +406,22 @@ public class AssaultParty implements AssaultPartyInterface {
          Arrays.sort(thieves, Comparator.comparingInt(Mapping::getPosition).reversed());
       else
          Arrays.sort(thieves, Comparator.comparingInt(Mapping::getPosition));
+   }
+
+   @Override
+   public synchronized void endOperation(int ordinaryId) throws RemoteException
+   {
+      while (nEntities == 0)
+      {
+         try
+         {
+            wait();
+         }
+         catch (InterruptedException e) {}
+      }
+
+      if (master[ordinaryId] != null)
+         master[ordinaryId].interrupt();
    }
 
    /**

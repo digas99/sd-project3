@@ -1,16 +1,14 @@
 package client.main;
 
 import client.entities.OrdinaryThief;
-import client.stubs.AssaultPartyStub;
-import client.stubs.CollectionSiteStub;
-import client.stubs.ConcentrationSiteStub;
-import client.stubs.MuseumStub;
 import genclass.GenericIO;
+import interfaces.*;
 
 import static utils.Parameters.*;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
 /**
  *    Client side of the Ordinary Thief.
@@ -27,72 +25,135 @@ public class ClientOrdinaryThief
 
     public static void main (String [] args)
     {
-        OrdinaryThief[] ordinary = new OrdinaryThief[N_THIEVES_ORDINARY];
-        AssaultPartyStub[] assaultPartyStub = new AssaultPartyStub[N_ASSAULT_PARTIES];
-        CollectionSiteStub collectionSiteStub;
-        ConcentrationSiteStub concentrationSiteStub;
-        MuseumStub museumStub;
+        String rmiRegHostName;
+        int rmiRegPortNumb = -1;
 
-        /* problem initialization */
+        if (args.length != 2)
+        { GenericIO.writelnString ("Wrong number of parameters!");
+          System.exit (1);
+        }
 
-        ConnectionData connData;
+        rmiRegHostName = args[0];
+        try
+        { rmiRegPortNumb = Integer.parseInt (args[1]);
+        }
+        catch (NumberFormatException e)
+        { GenericIO.writelnString ("args[1] is not a number!");
+          System.exit (1);
+        }
+
+        if ((rmiRegPortNumb < 4000) || (rmiRegPortNumb >= 65536))
+        { GenericIO.writelnString ("args[1] is not a valid port number!");
+          System.exit (1);
+        }
+
+        String nameEntryAssaultPartyA = "AssaultPartyA";
+        String nameEntryAssaultPartyB = "AssaultPartyB";
+        String nameEntryMuseum = "Museum";
+        String nameEntryCollectionSite = "CollectionSite";
+        String nameEntryConcentrationSite = "ConcentrationSite";
+        AssaultPartyInterface[] partiesStub = null;
+        MuseumInterface museumStub = null;
+        ConcentrationSiteInterface concentrationSiteStub = null;
+        CollectionSiteInterface collectionSiteStub = null;
+        Registry registry = null;
+        OrdinaryThief[] thieves = new OrdinaryThief[N_THIEVES_ORDINARY];
+
         try {
-            connData = new ConnectionData("config");
-        } catch (FileNotFoundException e) {
-            GenericIO.writelnString("Configuration file not found!");
-            e.printStackTrace();
-            return;
+            registry = LocateRegistry.getRegistry (rmiRegHostName, rmiRegPortNumb);
+        } catch (RemoteException e) {
+            GenericIO.writelnString("RMI registry creation exception: " + e.getMessage ());
+            e.printStackTrace ();
+            System.exit (1);
+        }
+
+        try {
+            museumStub = (MuseumInterface) registry.lookup (nameEntryMuseum);
         } catch (Exception e) {
-            GenericIO.writelnString("Error reading configuration file!");
-            e.printStackTrace();
-            return;
+            GenericIO.writelnString ("Museum stub lookup exception: " + e.getMessage ());
+            e.printStackTrace ();
+            System.exit (1);
         }
 
-        String ASSAULT_PARTY_0_MACHINE = connData.getMachine("ASSAULT_PARTY_A");
-        int ASSAULT_PARTY_0_PORT = connData.getPort("ASSAULT_PARTY_A");
-        String ASSAULT_PARTY_1_MACHINE = connData.getMachine("ASSAULT_PARTY_B");
-        int ASSAULT_PARTY_1_PORT = connData.getPort("ASSAULT_PARTY_B");
-        String COLLECTION_SITE_MACHINE = connData.getMachine("COLLECTION_SITE");
-        int COLLECTION_SITE_PORT = connData.getPort("COLLECTION_SITE");
-        String CONCENTRATION_SITE_MACHINE = connData.getMachine("CONCENTRATION_SITE");
-        int CONCENTRATION_SITE_PORT = connData.getPort("CONCENTRATION_SITE");
-        String MUSEUM_MACHINE = connData.getMachine("MUSEUM");
-        int MUSEUM_PORT = connData.getPort("MUSEUM");
+        try {
+            collectionSiteStub = (CollectionSiteInterface) registry.lookup (nameEntryCollectionSite);
+        } catch (Exception e) {
+            GenericIO.writelnString ("Collection Site stub lookup exception: " + e.getMessage ());
+            e.printStackTrace ();
+            System.exit (1);
+        }
 
-        assaultPartyStub[0] = new AssaultPartyStub(ASSAULT_PARTY_0_MACHINE, ASSAULT_PARTY_0_PORT);
-        assaultPartyStub[1] = new AssaultPartyStub(ASSAULT_PARTY_1_MACHINE, ASSAULT_PARTY_1_PORT);
-        collectionSiteStub = new CollectionSiteStub(COLLECTION_SITE_MACHINE, COLLECTION_SITE_PORT);
-        concentrationSiteStub = new ConcentrationSiteStub(CONCENTRATION_SITE_MACHINE, CONCENTRATION_SITE_PORT);
-        museumStub = new MuseumStub(MUSEUM_MACHINE, MUSEUM_PORT);
+        try {
+            concentrationSiteStub = (ConcentrationSiteInterface) registry.lookup (nameEntryConcentrationSite);
+        } catch (Exception e) {
+            GenericIO.writelnString ("Concentration Site stub lookup exception: " + e.getMessage ());
+            e.printStackTrace ();
+            System.exit (1);
+        }
 
-        /* init master thieves */
+        try {
+            partiesStub = new AssaultPartyInterface[2];
+            partiesStub[0] = (AssaultPartyInterface) registry.lookup (nameEntryAssaultPartyA);
+            partiesStub[1] = (AssaultPartyInterface) registry.lookup (nameEntryAssaultPartyB);
+        } catch (Exception e) {
+            GenericIO.writelnString ("Assault Party stub lookup exception: " + e.getMessage ());
+            e.printStackTrace ();
+            System.exit (1);
+        }
+
         for (int i = 0; i < N_THIEVES_ORDINARY; i++)
-            ordinary[i] = new OrdinaryThief("Ordinary_"+i, i, museumStub, concentrationSiteStub, collectionSiteStub, assaultPartyStub);
-
-        /* start of the simulation */
+            thieves[i] = new OrdinaryThief("Ordinary", i, museumStub, concentrationSiteStub, collectionSiteStub, partiesStub);
 
         for (int i = 0; i < N_THIEVES_ORDINARY; i++)
-            ordinary[i].start ();
+            thieves[i].start();
 
-        /* waiting for the end of the simulation */
-
-        GenericIO.writelnString ();
         for (int i = 0; i < N_THIEVES_ORDINARY; i++)
-        { while (ordinary[i].isAlive ())
         {
-            Thread.yield ();
+            try {
+                thieves[i].join();
+            } catch (InterruptedException e) {}
+            GenericIO.writelnString("The Ordinary Thief " + i + " has terminated.");
         }
-            try
-            { ordinary[i].join ();
-            }
-            catch (InterruptedException e) {}
-            GenericIO.writelnString ("Ordinary_" + (i+1) + " has terminated.");
-            assaultPartyStub[0].shutDown();
-            assaultPartyStub[1].shutDown();
-            collectionSiteStub.shutDown();
-            concentrationSiteStub.shutDown();
-            museumStub.shutDown();
+        GenericIO.writelnString();
+
+        try {
+            concentrationSiteStub.shutdown();
+        } catch (RemoteException e) {
+            GenericIO.writelnString("Concentration Site shutdown exception: " + e.getMessage ());
+            e.printStackTrace ();
+            System.exit (1);
         }
-        GenericIO.writelnString ();
+
+        try {
+            collectionSiteStub.shutdown();
+        } catch (RemoteException e) {
+            GenericIO.writelnString("Collection Site shutdown exception: " + e.getMessage ());
+            e.printStackTrace ();
+            System.exit (1);
+        }
+
+        try {
+            museumStub.shutdown();
+        } catch (RemoteException e) {
+            GenericIO.writelnString("Museum shutdown exception: " + e.getMessage ());
+            e.printStackTrace ();
+            System.exit (1);
+        }
+
+        try {
+            partiesStub[0].shutdown();
+        } catch (RemoteException e) {
+            GenericIO.writelnString("Assault Party A shutdown exception: " + e.getMessage ());
+            e.printStackTrace ();
+            System.exit (1);
+        }
+
+        try {
+            partiesStub[1].shutdown();
+        } catch (RemoteException e) {
+            GenericIO.writelnString("Assault Party B shutdown exception: " + e.getMessage ());
+            e.printStackTrace ();
+            System.exit (1);
+        }
     }
 }

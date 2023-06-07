@@ -25,5 +25,7 @@ public interface ConcentrationSiteInterface extends Remote {
 
     public void endOperations() throws RemoteException;
 
+    public void endOperation(int masterId) throws RemoteException;
+
     public void shutdown() throws RemoteException;
 }
