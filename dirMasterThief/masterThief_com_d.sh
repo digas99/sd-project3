@@ -1,1 +1,1 @@
-java clientSide.main.ClientSleepingBarbersBarber l040101-ws08.ua.pt 22000
+java client.main.ClientMasterThief l040101-ws08.ua.pt 22330

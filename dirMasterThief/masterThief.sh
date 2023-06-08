@@ -1,1 +1,1 @@
-java clientSide.main.ClientSleepingBarbersBarber localhost 22000
+java client.main.ClientMasterThief localhost 22330
