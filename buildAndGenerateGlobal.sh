@@ -18,9 +18,9 @@ rm -rf dirCollectionSite/server dirCollectionSite/client dirCollectionSite/inter
 mkdir -p dirCollectionSite/server dirCollectionSite/server/main dirCollectionSite/server/objects dirCollectionSite/interfaces \
          dirCollectionSite/client dirCollectionSite/client/entities dirCollectionSite/utils
 cp utils/Parameters.class server/main/ServerCollectionSite.class dirCollectionSite/server/main
-cp server/objects/CollectionSite.class dirCollectionSite/server/objects
+cp server/objects/CollectionSite*.class dirCollectionSite/server/objects
 cp interfaces/*.class dirCollectionSite/interfaces
-cp client/entities/MasterThiefStates.class client/entities/OrdinaryThiefStates.class dirCollectionSite/client/entities
+cp client/entities/Thief.class client/entities/MasterThiefStates.class client/entities/OrdinaryThiefStates.class dirCollectionSite/client/entities
 cp utils/*.class dirCollectionSite/utils
 
 echo "  Concentration Site"
@@ -28,9 +28,9 @@ rm -rf dirConcentrationSite/server dirConcentrationSite/client dirConcentrationS
 mkdir -p dirConcentrationSite/server dirConcentrationSite/server/main dirConcentrationSite/server/objects dirConcentrationSite/interfaces \
          dirConcentrationSite/client dirConcentrationSite/client/entities dirConcentrationSite/utils
 cp utils/Parameters.class server/main/ServerConcentrationSite.class dirConcentrationSite/server/main
-cp server/objects/ConcentrationSite.class dirConcentrationSite/server/objects
+cp server/objects/ConcentrationSite*.class dirConcentrationSite/server/objects
 cp interfaces/*.class dirConcentrationSite/interfaces
-cp client/entities/MasterThiefStates.class client/entities/OrdinaryThiefStates.class dirConcentrationSite/client/entities
+cp client/entities/Thief.class client/entities/MasterThiefStates.class client/entities/OrdinaryThiefStates.class dirConcentrationSite/client/entities
 cp utils/*.class dirConcentrationSite/utils
 
 echo "  Museum"
@@ -38,48 +38,50 @@ rm -rf dirMuseum/server dirMuseum/client dirMuseum/interfaces dirMuseum/utils
 mkdir -p dirMuseum/server dirMuseum/server/main dirMuseum/server/objects dirMuseum/interfaces \
          dirMuseum/client dirMuseum/client/entities dirMuseum/utils
 cp utils/Parameters.class server/main/ServerMuseum.class dirMuseum/server/main
-cp server/objects/Museum.class dirMuseum/server/objects
+cp server/objects/Museum*.class dirMuseum/server/objects
 cp interfaces/*.class dirMuseum/interfaces
-cp client/entities/MasterThiefStates.class client/entities/OrdinaryThiefStates.class dirMuseum/client/entities
+cp client/entities/Thief.class client/entities/MasterThiefStates.class client/entities/OrdinaryThiefStates.class dirMuseum/client/entities
 cp utils/*.class dirMuseum/utils
 
 echo "  Assault Party A"
 rm -rf dirAssaultPartyA/server dirAssaultPartyA/client dirAssaultPartyA/interfaces dirAssaultPartyA/utils
 mkdir -p dirAssaultPartyA/server dirAssaultPartyA/server/main dirAssaultPartyA/server/objects dirAssaultPartyA/interfaces \
          dirAssaultPartyA/client dirAssaultPartyA/client/entities dirAssaultPartyA/utils
-cp utils/Parameters.class server/main/ServerAssaultPartyA.class dirAssaultPartyA/server/main
-cp server/objects/AssaultPartyA.class dirAssaultPartyA/server/objects
+cp utils/Parameters.class server/main/ServerAssaultParty.class dirAssaultPartyA/server/main
+cp server/objects/AssaultParty*.class dirAssaultPartyA/server/objects
 cp interfaces/*.class dirAssaultPartyA/interfaces
-cp client/entities/MasterThiefStates.class client/entities/OrdinaryThiefStates.class dirAssaultPartyA/client/entities
+cp client/entities/Thief.class client/entities/MasterThiefStates.class client/entities/OrdinaryThiefStates.class dirAssaultPartyA/client/entities
 cp utils/*.class dirAssaultPartyA/utils
 
 echo "  Assault Party B"
 rm -rf dirAssaultPartyB/server dirAssaultPartyB/client dirAssaultPartyB/interfaces dirAssaultPartyB/utils
 mkdir -p dirAssaultPartyB/server dirAssaultPartyB/server/main dirAssaultPartyB/server/objects dirAssaultPartyB/interfaces \
          dirAssaultPartyB/client dirAssaultPartyB/client/entities dirAssaultPartyB/utils
-cp utils/Parameters.class server/main/ServerAssaultPartyB.class dirAssaultPartyB/server/main
-cp server/objects/AssaultPartyB.class dirAssaultPartyB/server/objects
+cp utils/Parameters.class server/main/ServerAssaultParty.class dirAssaultPartyB/server/main
+cp server/objects/AssaultParty*.class dirAssaultPartyB/server/objects
 cp interfaces/*.class dirAssaultPartyB/interfaces
-cp client/entities/MasterThiefStates.class client/entities/OrdinaryThiefStates.class dirAssaultPartyB/client/entities
+cp client/entities/Thief.class client/entities/MasterThiefStates.class client/entities/OrdinaryThiefStates.class dirAssaultPartyB/client/entities
 cp utils/*.class dirAssaultPartyB/utils
 
-echo "  Masters"
+echo "  Master Thief"
 rm -rf dirMasterThief/server dirMasterThief/client dirMasterThief/interfaces
 mkdir -p dirMasterThief/server dirMasterThief/server/main dirMasterThief/client dirMasterThief/client/main dirMasterThief/client/entities \
          dirMasterThief/interfaces
 cp utils/Parameters.class dirMasterThief/server/main
 cp client/main/ClientMasterThief.class dirMasterThief/client/main
-cp client/entities/MasterThief.class client/entities/MasterThiefStates.class dirMasterThief/client/entities
-cp interfaces/CollectionSiteInterface.class interfaces/ConcentrationSite.class interfaces/MuseumInterface.class interfaces/AssaultPartyInterface.class interfaces/ReturnBoolean.class dirMasterThief/interfaces
+cp client/entities/Thief.class client/entities/MasterThief.class client/entities/MasterThiefStates.class dirMasterThief/client/entities
+cp interfaces/CollectionSiteInterface.class interfaces/ConcentrationSiteInterface.class interfaces/MuseumInterface.class interfaces/RoomInterface.class interfaces/MappingInterface.class interfaces/AppraisedThiefInterface.class interfaces/AssaultPartyInterface.class interfaces/ReturnBoolean.class dirMasterThief/interfaces
+cp utils/*.class dirMasterThief/utils
 
-echo "  Customers"
+echo "  Ordinary Thief"
 rm -rf dirOrdinaryThief/server dirOrdinaryThief/client dirOrdinaryThief/interfaces
 mkdir -p dirOrdinaryThief/server dirOrdinaryThief/server/main dirOrdinaryThief/client dirOrdinaryThief/client/main dirOrdinaryThief/client/entities \
          dirOrdinaryThief/interfaces
 cp utils/Parameters.class dirOrdinaryThief/server/main
 cp client/main/ClientOrdinaryThief.class dirOrdinaryThief/client/main
-cp client/entities/OrdinaryThief.class client/entities/OrdinaryThiefStates.class dirOrdinaryThief/client/entities
-cp interfaces/CollectionSiteInterface.class interfaces/ConcentrationSite.class interfaces/MuseumInterface.class interfaces/AssaultPartyInterface.class interfaces/ReturnBoolean.class dirOrdinaryThief/interfaces
+cp client/entities/Thief.class client/entities/OrdinaryThief.class client/entities/OrdinaryThiefStates.class dirOrdinaryThief/client/entities
+cp interfaces/CollectionSiteInterface.class interfaces/ConcentrationSiteInterface.class interfaces/MuseumInterface.class interfaces/RoomInterface.class interfaces/AssaultPartyInterface.class interfaces/ReturnBoolean.class dirOrdinaryThief/interfaces
+cp utils/*.class dirOrdinaryThief/utils
 
 echo "Compressing execution environments."
 echo "  RMI registry"
