@@ -1,5 +1,5 @@
 echo "Compiling source code."
-javac */*.java */*/*.java
+javac -source 1.8 -target 1.8 -cp $PWD:$PWD/lib/genclass.jar */*.java */*/*.java
 echo "Distributing intermediate code to the different execution environments."
 echo "  RMI registry"
 rm -rf dirRMIRegistry/interfaces

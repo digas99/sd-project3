@@ -1,5 +1,5 @@
 echo "Compiling source code."
-javac */*.java */*/*.java
+javac -source 1.8 -target 1.8 -cp $PWD:$PWD/lib/genclass.jar */*.java */*/*.java
 echo "Distributing intermediate code to the different execution environments."
 echo "  Register Remote Objects"
 rm -rf dirRegistry/server dirRegistry/interfaces
@@ -45,21 +45,21 @@ echo "  Assault Party A"
 rm -rf dirAssaultPartyA/server dirAssaultPartyA/client dirAssaultPartyA/interfaces dirAssaultPartyA/utils
 mkdir -p dirAssaultPartyA/server dirAssaultPartyA/server/main dirAssaultPartyA/server/objects dirAssaultPartyA/interfaces \
          dirAssaultPartyA/client dirAssaultPartyA/client/entities dirAssaultPartyA/utils
-cp utils/Parameters.class server/main/ServerAssaultParty.class dirAssaultParty/server/main
-cp server/objects/AssaultParty.class dirAssaultParty/server/objects
-cp interfaces/*.class dirAssaultParty/interfaces
-cp client/entities/MasterThiefStates.class client/entities/OrdinaryThiefStates.class dirAssaultParty/client/entities
-cp utils/*.class dirAssaultParty/utils
+cp utils/Parameters.class server/main/ServerAssaultParty.class dirAssaultPartyA/server/main
+cp server/objects/AssaultParty.class dirAssaultPartyA/server/objects
+cp interfaces/*.class dirAssaultPartyA/interfaces
+cp client/entities/MasterThiefStates.class client/entities/OrdinaryThiefStates.class dirAssaultPartyA/client/entities
+cp utils/*.class dirAssaultPartyA/utils
 
 echo "  Assault Party B"
 rm -rf dirAssaultPartyB/server dirAssaultPartyB/client dirAssaultPartyB/interfaces dirAssaultPartyB/utils
 mkdir -p dirAssaultPartyB/server dirAssaultPartyB/server/main dirAssaultPartyB/server/objects dirAssaultPartyB/interfaces \
          dirAssaultPartyB/client dirAssaultPartyB/client/entities dirAssaultPartyB/utils
-cp utils/Parameters.class server/main/ServerAssaultParty.class dirAssaultParty/server/main
-cp server/objects/AssaultParty.class dirAssaultParty/server/objects
-cp interfaces/*.class dirAssaultParty/interfaces
-cp client/entities/MasterThiefStates.class client/entities/OrdinaryThiefStates.class dirAssaultParty/client/entities
-cp utils/*.class dirAssaultParty/utils
+cp utils/Parameters.class server/main/ServerAssaultParty.class dirAssaultPartyB/server/main
+cp server/objects/AssaultParty.class dirAssaultPartyB/server/objects
+cp interfaces/*.class dirAssaultPartyB/interfaces
+cp client/entities/MasterThiefStates.class client/entities/OrdinaryThiefStates.class dirAssaultPartyB/client/entities
+cp utils/*.class dirAssaultPartyB/utils
 
 
 #Entities
@@ -70,7 +70,7 @@ mkdir -p dirMasterThief/server dirMasterThief/server/main dirMasterThief/client 
 cp utils/Parameters.class dirMasterThief/server/main
 cp client/main/ClientMasterThief.class dirMasterThief/client/main
 cp client/entities/MasterThief.class client/entities/MasterThiefStates.class dirMasterThief/client/entities
-cp interfaces/AssaultPartyInterface.class CollectionSiteInterface.class ConcentrationSiteInterface.class MuseumInterface.class interfaces/ReturnBoolean.class dirMasterThief/interfaces
+cp interfaces/AssaultPartyInterface.class interfaces/CollectionSiteInterface.class interfaces/ConcentrationSiteInterface.class interfaces/MuseumInterface.class interfaces/ReturnBoolean.class dirMasterThief/interfaces
 
 echo "  Ordinary Thief"
 rm -rf dirOrdinaryThief/server dirOrdinaryThief/client dirOrdinaryThief/interfaces
@@ -79,7 +79,7 @@ mkdir -p dirOrdinaryThief/server dirOrdinaryThief/server/main dirOrdinaryThief/c
 cp utils/Parameters.class dirOrdinaryThief/server/main
 cp client/main/ClientOrdinaryThief.class dirOrdinaryThief/client/main
 cp client/entities/OrdinaryThief.class client/entities/OrdinaryThiefStates.class dirOrdinaryThief/client/entities
-cp interfaces/AssaultPartyInterface.class CollectionSiteInterface.class ConcentrationSiteInterface.class MuseumInterface.class interfaces/ReturnBoolean.class dirOrdinaryThief/interfaces
+cp interfaces/AssaultPartyInterface.class interfaces/CollectionSiteInterface.class interfaces/ConcentrationSiteInterface.class interfaces/MuseumInterface.class interfaces/ReturnBoolean.class dirOrdinaryThief/interfaces
 
 
 echo "Compressing execution environments."
@@ -105,7 +105,7 @@ zip -rq dirAssaultPartyB.zip dirAssaultPartyB
 
 echo "  Master Thief"
 rm -f  dirMasterThief.zip
-zip -rq dirMasterThief.zip diMasterThief
+zip -rq dirMasterThief.zip dirMasterThief
 echo "  Ordinary Thief"
 rm -f  dirOrdinaryThief.zip
 zip -rq dirOrdinaryThief.zip dirOrdinaryThief
@@ -116,7 +116,7 @@ mkdir -p /home/$1/test/Heist
 rm -rf /home/$1/test/Heist/*
 cp dirRegistry.zip /home/$1/test/Heist
 cp dirCollectionSite.zip /home/$1/test/Heist
-cp dirCollectionSite.zip /home/$1/test/Heist
+cp dirConcentrationSite.zip /home/$1/test/Heist
 cp dirMuseum.zip /home/$1/test/Heist
 cp dirAssaultPartyA.zip /home/$1/test/Heist
 cp dirAssaultPartyB.zip /home/$1/test/Heist
