@@ -43,6 +43,6 @@ xterm  -T "Concentration Site" -hold -e "./ConcentrationSiteDeployAndRun.sh" &
 xterm  -T "Museum" -hold -e "./MuseumDeployAndRun.sh" &
 xterm  -T "Assault Party A" -hold -e "./AssaultPartyADeployAndRun.sh" &
 xterm  -T "Assault Party B" -hold -e "./AssaultPartyBDeployAndRun.sh" &
-sleep 1
+sleep 4
 xterm  -T "Master" -hold -e "./MasterThiefDeployAndRun.sh" &
 xterm  -T "Ordinaries" -hold -e "./OrdinaryThiefDeployAndRun.sh" &

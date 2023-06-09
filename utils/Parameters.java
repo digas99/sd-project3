@@ -76,7 +76,7 @@ public final class Parameters {
     /**
      * Number of entities requesting shutdown.
      */
-    public static final int N_ENTITIES_SHUTDOWN = N_THIEVES_MASTER + N_THIEVES_ORDINARY;
+    public static final int N_ENTITIES_SHUTDOWN = 2;
 
 
     /**
